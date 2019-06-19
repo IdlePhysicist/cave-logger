@@ -1,0 +1,10 @@
+# Project
+*.db
+
+
+# Editor
+.vs_code/
+*.swp
+
+# Mac
+*.DS_Store
