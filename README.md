@@ -1,6 +1,5 @@
-# Cave-Logger
+# Cave Logger
 
-OSX Cocoa Objective-C implementation of the logging software
+Cave Logger is a WASM service written in Go, and it allows cavers to track the caves that they have been to, who with, and when. 
 
-***
-The caveLogger software contained in this repository is a Obj-C implementation of a program to hold a database of the caves the user has been to, and on what dates, and with whom.
+
