@@ -1,6 +1,7 @@
 # Project
 *.db
-
+config.yml
+config/
 
 # Editor
 .vs_code/

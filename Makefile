@@ -8,4 +8,3 @@ wasm_exec:
 clean:
 	rm -rf ./html
 	mkdir ./html
-

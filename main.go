@@ -22,11 +22,10 @@ func main() {
   }
   log.SetLevel(level)
 
-  _http  := os.Getenv("HTTP")
+  port  := os.Getenv("HTTP")
   if _http == "" {
-    _http = ":8000"
+    port = ":8000"
   }
 
-  service.NewService(log,  _http).Run()
+  service.NewService(log,  port).Run()
 }
-
