@@ -134,7 +134,7 @@ func (k *Keeper) InsertLog(args interface{}) error {
 // INTERNAL FUNCTIONS ----------------------------------------------------------
 
 func (k *Keeper) fetchCaverIDs(names string) ([]string, error) {
-	caverIDs := make(map[]string)
+	var caverIDs []string
 	for id, name := range CaverList {
 	
 		fullNames := strings.Split(names, ",")
