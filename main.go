@@ -5,7 +5,7 @@ import (
 
   "github.com/sirupsen/logrus"
 
-  "github.com/idlephysicist/cave-logger/pkg/service"
+  "github.com/idlephysicist/cave-logger/internal/pkg/service"
 )
 
 func main() {
