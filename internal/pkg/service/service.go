@@ -68,12 +68,12 @@ func (service *Service) General() http.HandlerFunc {
       return
     }
 
-    log := service.log.WithFields(logrus.Fields{
+    service.log.WithFields(logrus.Fields{
       "id": uuid.String(), "ip": r.RemoteAddr, "method": r.Method,
     })
 
     wrkr := func () *worker.Worker {
-      return worker.NewWorker(log, r)
+      return worker.NewWorker(service.log, r)
     }()
 
     wrkr.ListEntries()
@@ -91,12 +91,12 @@ func (service *Service) Detail() http.HandlerFunc {
       return
     }
 
-    log := service.log.WithFields(logrus.Fields{
+    service.log.WithFields(logrus.Fields{
       "id": uuid.String(), "ip": r.RemoteAddr, "method": r.Method,
     })
 
     wrkr := func () *worker.Worker {
-      return worker.NewWorker(log, r)
+      return worker.NewWorker(service.log, r)
     }()
 
     wrkr.Get()
@@ -117,5 +117,6 @@ func (service *Service) StatsHandler() http.HandlerFunc {
 
 func (service *Service) HealthZ() http.HandlerFunc {
   return func (w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(http.StatusOK)
   }
 }

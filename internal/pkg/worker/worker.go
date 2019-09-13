@@ -1,4 +1,4 @@
-package logs
+package worker
 
 import (
 	"encoding/json"
@@ -52,15 +52,27 @@ func NewWorker(log *logrus.Logger, r *http.Request) *Worker {
 	}
 }*/
 
-/*func (worker *Worker) ListEntries() http.HandlerFunc {
+func (worker *Worker) ListEntries() http.HandlerFunc {
   return func (w http.ResponseWriter, r *http.Request) {
-    err := render.RenderList(w, r, NewLogListResponse(Logs))
+    /*err := render.RenderList(w, r, NewLogListResponse(Logs))
     if err != nil {
       render.Render(w, r, ErrRender(err))
       return
-	  }
+		}*/
+		
+
+		data, err := worker.db.QueryLogs(`-1`)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+
+		return
   }
-}*/
+}
 
 /*func (worker *Worker) Create() (error) {
 	// So the request body will contain the log data
@@ -83,32 +95,34 @@ func NewWorker(log *logrus.Logger, r *http.Request) *Worker {
 }*/
 
 // GetLog returns the specific Log
-func (worker *Worker) Get(w http.ResponseWriter, r *http.Request) {
-	// Assume if we've reach this far, we can access the Log
-	// context because this handler is a child of the LogCtx
-	// middleware. The worst case, the recoverer middleware will save us.
-	//Log := r.Context().Value("Log").(*Log)
-	key := r.FormValue(`key`)
-	if key == `` {
-		w.WriteHeader(http.StatusNotFound)
-    return
-	}
+func (worker *Worker) Get() http.HandlerFunc {
+	return func (w http.ResponseWriter, r *http.Request) {
+		// Assume if we've reach this far, we can access the Log
+		// context because this handler is a child of the LogCtx
+		// middleware. The worst case, the recoverer middleware will save us.
+		//Log := r.Context().Value("Log").(*Log)
+		key := r.FormValue(`key`)
+		if key == `` {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 
-	/*if err := render.Render(w, r, NewLogResponse(Log)); err != nil {
-		render.Render(w, r, ErrRender(err))
+		/*if err := render.Render(w, r, NewLogResponse(Log)); err != nil {
+			render.Render(w, r, ErrRender(err))
+			return
+		}*/
+
+		data, err := worker.db.QueryLogs(key)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+
 		return
-	}*/
-
-	data, err := worker.db.QueryLogs(key)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
-	
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
-
-	return
 }
 
 // UpdateLog updates an existing Log in our persistent store.
