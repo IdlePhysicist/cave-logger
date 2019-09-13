@@ -1,3 +1,9 @@
+
+default: api
+
+api:
+	CGO_ENABLED=0 go build main.go
+
 main: clean wasm_exec
 	tinygo build -o ./html/wasm.wasm -target wasm -no-debug ./main/main.go
 	cp ./main/index.html ./html/
