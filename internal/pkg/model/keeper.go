@@ -10,7 +10,7 @@ type Caver struct {
 	Club  string
 }
 
-type Row struct {
+type Entry struct {
 	Date 	*time.Time // REVIEW: This might not be correct examine the fmt returned from db
 	Cave 	string
 	Names []*Caver // REVIEW: Could I make this a list of pointers ?

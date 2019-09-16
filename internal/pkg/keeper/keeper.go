@@ -18,7 +18,7 @@ type Keeper struct {
 	ctx 			context.Context
 }
 
-func NewKeeper(log *logrus.Logger, dbFN string) *Keeper {
+func New(log *logrus.Logger, dbFN string) *Keeper {
 	var k Keeper
 
 	k.log = log
@@ -32,7 +32,7 @@ func NewKeeper(log *logrus.Logger, dbFN string) *Keeper {
 	return &k
 }
 
-func (k *Keeper) QueryLogs(arg string) (map[int]*model.Row, error) {
+func (k *Keeper) QueryLogs(arg string) (map[int]*model.Entry, error) {
 	var query string // Go seems to complain if something is defined in if blocks
 	if arg == `-1` {
 		query = "SELECT id, date, cave, names, notes FROM `logs`"
@@ -53,11 +53,11 @@ func (k *Keeper) QueryLogs(arg string) (map[int]*model.Row, error) {
 		return nil, err
 	}
 
-	rows := make(map[int]*model.Row) // NOTE: The int here is the db index
+	rows := make(map[int]*model.Entry) // NOTE: The int here is the db index
 	for result.Next() {
 		var id int
 		var idStr string
-		var row *model.Row
+		var row *model.Entry
 		
 		err = result.Scan(&id, &row.Date, &row.Cave, &idStr, &row.Notes)
 		if err != nil {

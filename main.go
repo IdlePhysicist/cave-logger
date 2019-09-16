@@ -5,7 +5,8 @@ import (
 
   "github.com/sirupsen/logrus"
 
-  "github.com/idlephysicist/cave-logger/internal/pkg/service"
+  "github.com/idlephysicist/cave-logger/internal/pkg/keeper"
+  "github.com/idlephysicist/cave-logger/internal/tui"
 )
 
 func main() {
@@ -22,10 +23,19 @@ func main() {
   }
   log.SetLevel(level)
 
-  port  := os.Getenv("HTTP")
+  /*port  := os.Getenv("HTTP")
   if _http == "" {
     port = ":8000"
-  }
+  }*/
 
-  service.NewService(log,  port).Run()
+  dbFileName := `xyz.db`
+
+  //service.NewService(log,  port).Run()
+  keeper.New(log, dbFileName)
+  
+  tui := tui.New()
+
+  if err := tui.Start(); err != nil {
+    log.Fatalf("main: Cannot start tui: %s", err)
+  }
 }
