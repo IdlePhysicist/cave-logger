@@ -8,7 +8,7 @@ import (
 	"github.com/bvinc/go-sqlite-lite/sqlite3"
 	"github.com/sirupsen/logrus"
 
-	"github.com/idlephysicist/cave-logger/internal/pkg/model"
+	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 const date_layout = `2006-01-02`

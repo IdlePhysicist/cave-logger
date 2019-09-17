@@ -7,9 +7,9 @@ import (
 
   "github.com/sirupsen/logrus"
 
-  "github.com/idlephysicist/cave-logger/internal/pkg/db"
+  "github.com/idlephysicist/cave-logger/internal/db"
   "github.com/idlephysicist/cave-logger/internal/gui"
-  "github.com/idlephysicist/cave-logger/internal/pkg/model"
+  "github.com/idlephysicist/cave-logger/internal/model"
 )
 
 func main() {
