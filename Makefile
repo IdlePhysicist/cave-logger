@@ -1,5 +1,5 @@
 # Environment Variables
-CGO=0
+CGO=1
 OS=darwin
 SRCDIR=cmd
 BUILDDIR=build

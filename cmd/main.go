@@ -5,8 +5,8 @@ import (
 
   "github.com/sirupsen/logrus"
 
-  "github.com/idlephysicist/cave-logger/internal/pkg/keeper"
-  "github.com/idlephysicist/cave-logger/internal/tui"
+  "github.com/idlephysicist/cave-logger/internal/pkg/db"
+  "github.com/idlephysicist/cave-logger/internal/gui"
 )
 
 func main() {
@@ -25,11 +25,11 @@ func main() {
 
   dbFileName := `xyz.db`
 
-  keeper.New(log, dbFileName)
+  db := db.New(log, dbFileName)
 
-  tui := tui.New()
+  gui := gui.New(db)
 
-  if err := tui.Start(); err != nil {
+  if err := gui.Start(); err != nil {
     log.Fatalf("main: Cannot start tui: %s", err)
   }
 }

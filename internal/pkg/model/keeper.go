@@ -1,7 +1,7 @@
 package model
 
 type Cave struct {
-	ID      int
+	ID      string
 	Name    string
 	Region  string
 	Country string
@@ -10,17 +10,28 @@ type Cave struct {
 }
 
 type Caver struct {
-	ID    int
-	First string
-	Last  string
-	Club  string
+	ID   string
+	Name string
+	Club string
 }
 
+/*type Entry struct {
+	ID     int
+	TripID int
+	CaveID int
+	CaverID int
+}
+
+type Trip struct {
+	ID    int
+	Date 	int
+	Notes string
+}*/
+
 type Entry struct {
-	ID       int
-	Date 	   string // REVIEW: This might not be correct examine the fmt returned from db
-	Cave 	   string
-	Names    string // REVIEW: Could I make this a list of pointers ?
-	CaverIDs []int
-	Notes    string
+	ID     string
+	Date   string
+	Cave   string
+	Names  string // `, ` sep
+	Notes  string
 }
