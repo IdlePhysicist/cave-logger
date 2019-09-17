@@ -5,7 +5,6 @@ import (
 
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
-	"github.com/skanehira/docui/common"
 )
 
 
@@ -43,7 +42,10 @@ func (t *trips) setKeybinding(g *Gui) {
 		switch event.Rune() {
 		case 'd':
 			g.removeTrip()
-		
+		case 'n':
+			g.addTripForm()
+		case 'm':
+			g.modifyTripForm()
 		}
 
 		return event
@@ -56,9 +58,7 @@ func (t *trips) entries(g *Gui) {
 		return
 	}
 
-	g.state.resources.trips = trips
-
-	
+	g.state.resources.trips = trips	
 }
 
 func (t *trips) setEntries(g *Gui) {
@@ -125,8 +125,8 @@ func (t *trips) setFilterWord(word string) {
 	t.filterWord = word
 }
 
-func (t *trips) monitoringtrips(g *Gui) {
-	common.Logger.Info("start monitoring trips")
+func (t *trips) monitoringTrips(g *Gui) {
+	g.log.Info("start monitoring trips")
 	ticker := time.NewTicker(5 * time.Second)
 
 LOOP:
@@ -139,5 +139,5 @@ LOOP:
 			break LOOP
 		}
 	}
-	common.Logger.Info("stop monitoring trips")
+	g.log.Info("stop monitoring trips")
 }

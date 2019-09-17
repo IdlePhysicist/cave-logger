@@ -14,10 +14,9 @@ func newNavigate() *navigate {
 	return &navigate{
 		TextView: tview.NewTextView().SetTextColor(tcell.ColorYellow),
 		keybindings: map[string]string{
-			"images":     " p: pull image, i: import image, s: save image, Ctrl+l: load image, f: search image, /: filter d: remove image,\n c: create container, Enter: inspect image, Ctrl+r: refresh images list",
-			"containers": " e: export container, c: commit container, /: filter, Ctrl+e: exec container cmd\n u: start container, s: stop container, d: remove container, Enter: inspect container, Ctrl+r: refresh container list, Ctrl+l: show container logs",
-			"networks":   " d: remove network, Enter: inspect network, /: filter",
-			"volumes":    " c: create volume, d: remove volume\n /: filter, Enter: inspect volume, Ctrl+r: refresh volume list",
+			"trips": " n: New Log Entry , m: Modify Log,  d: Remove Log\n /: filter, Enter: inspect ",
+			"caves": " n: New Cave , m: Modify Cave, d: Remove Cave\n /: filter, Enter: Inspect ",
+			"cavers": " n: New Caver , m: Modify Caver, d: Remove Caver\n /: filter, Enter: Inspect ",
 		},
 	}
 }

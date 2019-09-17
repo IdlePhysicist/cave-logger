@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/rivo/tview"
+	"github.com/sirupsen/logrus"
 	"github.com/skanehira/docui/common"
 
 	"github.com/idlephysicist/cave-logger/internal/pkg/db"
@@ -18,7 +19,7 @@ type panels struct {
 // docker resources
 type resources struct {
 	trips []*model.Entry
-	tasks      []*task
+	tasks []*task
 }
 
 type state struct {
@@ -40,14 +41,16 @@ type Gui struct {
 	pages *tview.Pages
 	state *state
 	db    *db.Database
+	log   *logrus.Logger
 }
 
 // New create new gui
-func New(db *db.Database) *Gui {
+func New(db *db.Database, log *logrus.Logger) *Gui {
 	return &Gui{
 		app:   tview.NewApplication(),
 		state: newState(),
 		db: db,
+		log: log,
 	}
 }
 
@@ -81,7 +84,7 @@ func (g *Gui) taskPanel() *tasks {
 }
 
 func (g *Gui) monitoringTask() {
-	common.Logger.Info("start monitoring task")
+	//g.log.Info("start monitoring task")
 LOOP:
 	for {
 		select {
@@ -93,7 +96,7 @@ LOOP:
 			}
 			g.updateTask(task)
 		case <-g.state.stopChans["task"]:
-			common.Logger.Info("stop monitoring task")
+			g.log.Info("stop monitoring task")
 			break LOOP
 		}
 	}
@@ -144,11 +147,13 @@ func (g *Gui) initPanels() {
 	g.state.panels.panel = append(g.state.panels.panel, trips)
 	g.state.navigate = navi
 
-	grid := tview.NewGrid().SetRows(2, 0, 0, 0, 0, 0, 2).
+	grid := tview.NewGrid().SetRows(2, 0, 2).
+		//SetRows(0).
+		//SetColumns(140).
 		//AddItem(info, 0, 0, 1, 1, 0, 0, true).
-		AddItem(tasks, 1, 0, 1, 1, 0, 0, true).
-		AddItem(trips, 3, 0, 1, 1, 0, 0, true).
-		AddItem(navi, 6, 0, 1, 1, 0, 0, true)
+		//AddItem(tasks, 1, 0, 1, 1, 0, 0, true).
+		AddItem(trips, 1, 0, 1, 1, 0, 0, true).
+		AddItem(navi, 2, 0, 1, 1, 0, 0, true)
 
 	g.pages = tview.NewPages().
 		AddAndSwitchToPage("main", grid, true)
@@ -163,12 +168,12 @@ func (g *Gui) startMonitoring() {
 	g.state.stopChans["volume"] = stop
 	g.state.stopChans["trips"] = stop
 	go g.monitoringTask()
-	go g.tripPanel().monitoringtrips(g)
+	go g.tripPanel().monitoringTrips(g)
 }
 
 func (g *Gui) stopMonitoring() {
 	g.state.stopChans["task"] <- 1
-	g.state.stopChans["volume"] <- 1
+	//g.state.stopChans["volume"] <- 1
 	g.state.stopChans["trips"] <- 1
 }
 

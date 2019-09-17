@@ -1,12 +1,15 @@
 package main
 
 import (
+  "gopkg.in/yaml.v2"
+  "io/ioutil"
   "os"
 
   "github.com/sirupsen/logrus"
 
   "github.com/idlephysicist/cave-logger/internal/pkg/db"
   "github.com/idlephysicist/cave-logger/internal/gui"
+  "github.com/idlephysicist/cave-logger/internal/pkg/model"
 )
 
 func main() {
@@ -23,11 +26,30 @@ func main() {
   }
   log.SetLevel(level)
 
-  dbFileName := `xyz.db`
+  cfg := func (_yamlFile string) *model.Config {
+    var _cfg model.Config
+    
+    if _yamlFile == `` {
+      _yamlFile = `./config/config.yml`
+    }
+		
+		yamlFile, err := ioutil.ReadFile(_yamlFile)
+		if err != nil {
+			log.Fatalf("main.readfile: %v", err)
+		}
 
-  db := db.New(log, dbFileName)
+		err = yaml.Unmarshal(yamlFile, &_cfg)
+		if err != nil {
+			log.Fatalf("main.unmarshalYAML: %v", err)
+		}
 
-  gui := gui.New(db)
+		return &_cfg
+	}(``)
+
+
+  db := db.New(log, cfg.Database.Filename)
+
+  gui := gui.New(db, log)
 
   if err := gui.Start(); err != nil {
     log.Fatalf("main: Cannot start tui: %s", err)

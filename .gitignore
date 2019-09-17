@@ -1,7 +1,10 @@
+# -- Ignore ----
+
 # Project
 *.db
 config.yml
 config/
+build/
 
 # Editor
 .vs_code/
@@ -9,3 +12,7 @@ config/
 
 # Mac
 *.DS_Store
+
+
+# -- Except ----
+!.keep

@@ -43,7 +43,7 @@ func (db *Database) Close() {
 
 
 func (db *Database) AddLog(date, cave, names, notes string) error {
-	query := `INSERT INTO logs (date, cave, names, notes) VALUES (?,?,?,?)`
+	query := `INSERT INTO entries (date, caveid, caverids, notes) VALUES (?,?,?,?)`
 
 	d, err := time.Parse(date_layout, date)
 	if err != nil {
@@ -96,28 +96,28 @@ func (db *Database) GetLogs(logID string) ([]*model.Entry, error) {
 	var query string // Go seems to complain if something is defined in if blocks
 	if logID == `-1` {
 		query = `SELECT
-			e.id AS 'id',
-			e.date AS 'date',
-			c.name AS 'cave',
-			e.caverids AS 'caverids',
-			e.notes AS 'notes'
-		FROM entries e, cavers c
-		WHERE e.caverid == c.id`
+			entries.id AS 'id',
+			date AS 'date',
+			name AS 'cave',
+			caverids AS 'caverids',
+			notes AS 'notes'
+		FROM entries JOIN caves 
+		WHERE entries.caveid == caves.id`
 		
 		//result, err := db.conn.Prepare(query)
 	} else {
 		query = `SELECT 
-			e.id AS 'id',
-			e.date AS 'date',
-			c.name AS 'cave',
-			e.caverids AS 'caverids',
-			e.notes AS 'notes'
-		FROM entries e, cavers c
-		WHERE e.caverid == c.id AND e.id = ?`
+			entries.id AS 'id',
+			date AS 'date',
+			name AS 'cave',
+			caverids AS 'caverids',
+			notes AS 'notes'
+		FROM entries JOIN caves 
+		WHERE entries.caveid == caves.id AND entries.id = ?`
 
 	}
 
-	result, err := db.conn.Prepare(query, logID)
+	result, err := db.conn.Prepare(query)
 	if err != nil {
 		db.log.Errorf("db.prepare: Failed to query database", err)
 		return nil, err
@@ -129,7 +129,7 @@ func (db *Database) GetLogs(logID string) ([]*model.Entry, error) {
 		//var caverIDs []int
 		var caverIDstr string
 		var stamp int64
-		var trip *model.Entry
+		var trip model.Entry
 
 		rowExists, err := result.Step()
 		if err != nil {
@@ -162,7 +162,7 @@ func (db *Database) GetLogs(logID string) ([]*model.Entry, error) {
 		//}
 		
 		// Add this formatted row to the rows map
-		trips = append(trips, trip)  
+		trips = append(trips, &trip)  
 	}
 
 	return trips, err
@@ -177,7 +177,7 @@ func (db *Database) GetAllCavers() ([]*model.Caver, error) {
 	cavers := make([]*model.Caver, 0)
 	for {
 		var id int
-		var c *model.Caver
+		var c model.Caver
 		
 		rowExists, err := result.Step()
 		if err != nil {
@@ -193,7 +193,7 @@ func (db *Database) GetAllCavers() ([]*model.Caver, error) {
 		if err != nil {
 			db.log.Errorf("Scan: %v", err)
 		}
-		cavers = append(cavers, c)
+		cavers = append(cavers, &c)
 		//cavers[id] = c
 	}
 	return cavers, err

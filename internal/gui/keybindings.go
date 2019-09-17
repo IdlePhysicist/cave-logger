@@ -92,30 +92,27 @@ func (g *Gui) prevPanel() {
 	g.switchPanel(g.state.panels.panel[idx].name())
 }
 
-func (g *Gui) createTripForm() {
-	
-	//image := fmt.Sprintf("%s:%s", selectedImage.Repo, selectedImage.Tag)
-
+func (g *Gui) addTripForm() {
 	form := tview.NewForm()
 	form.SetBorder(true)
-	form.SetTitle("Create container")
+	form.SetTitle("Add Log Entry")
 	form.SetTitleAlign(tview.AlignLeft)
 
 	form.AddInputField("Date", "", inputWidth, nil, nil).
 		AddInputField("Cave", "", inputWidth, nil, nil).
 		AddInputField("Names", "", inputWidth, nil, nil).
 		AddInputField("Notes", "", inputWidth, nil, nil).
-		AddButton("Create", func() {
-			g.createTrip(form )
+		AddButton("Add", func() {
+			g.addTrip(form )
 		}).
 		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "images")
+			g.closeAndSwitchPanel("form", "trips")
 		})
 
 	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true).ShowPage("main")
 }
 
-func (g *Gui) createTrip(form *tview.Form) {
+func (g *Gui) addTrip(form *tview.Form) {
 	g.startTask("create container ", func(ctx context.Context) error {
 		err := g.db.AddLog(
 			form.GetFormItemByLabel("Date").(*tview.InputField).GetText(),
@@ -124,7 +121,7 @@ func (g *Gui) createTrip(form *tview.Form) {
 			form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
 		)
 		if err != nil {
-			common.Logger.Errorf("cannot create container %s", err)
+			g.log.Errorf("cannot create entry %s", err)
 			return err
 		}
 
@@ -137,8 +134,6 @@ func (g *Gui) createTrip(form *tview.Form) {
 		return nil
 	})
 }
-
-
 
 func (g *Gui) displayInspect(data, page string) {
 	text := tview.NewTextView()
@@ -156,14 +151,12 @@ func (g *Gui) displayInspect(data, page string) {
 	g.pages.AddAndSwitchToPage("detail", text, true)
 }
 
-
-
 func (g *Gui) inspectTrip() {
 	trip := g.selectedTrip()
 
 	inspect, err := g.db.GetLogs(trip.ID)
 	if err != nil {
-		common.Logger.Errorf("cannot inspect container %s", err)
+		g.log.Errorf("cannot inspect container %s", err)
 		return
 	}
 
@@ -175,14 +168,12 @@ func (g *Gui) inspectTrip() {
 
 	inspect, err := docker.Client.InspectVolume(volume.Name)
 	if err != nil {
-		common.Logger.Errorf("cannot inspect volume %s", err)
+		g.log.Errorf("cannot inspect volume %s", err)
 		return
 	}
 
 	g.displayInspect(common.StructToJSON(inspect), "volumes")
 }*/
-
-
 
 func (g *Gui) removeTrip() {
 	trip := g.selectedTrip()
@@ -190,7 +181,7 @@ func (g *Gui) removeTrip() {
 	g.confirm("Do you want to remove the container?", "Done", "containers", func() {
 		g.startTask(fmt.Sprintf("remove container %s", trip.Cave), func(ctx context.Context) error {
 			if err := g.db.RemoveLog(trip.ID); err != nil {
-				common.Logger.Errorf("cannot remove the container %s", err)
+				g.log.Errorf("cannot remove the container %s", err)
 				return err
 			}
 			g.tripPanel().updateEntries(g)
@@ -199,13 +190,23 @@ func (g *Gui) removeTrip() {
 	})
 }
 
+func (g *Gui) modifyTrip(form *tview.Form) {
+	//trip := g.selectedTrip()
+
+	
+}
+
+func (g *Gui) modifyTripForm() {
+
+}
+
 /*func (g *Gui) removeVolume() {
 	volume := g.selectedVolume()
 
 	g.confirm("Do you want to remove the volume?", "Done", "volumes", func() {
 		g.startTask(fmt.Sprintf("remove volume %s", volume.Name), func(ctx context.Context) error {
 			if err := docker.Client.RemoveVolume(volume.Name); err != nil {
-				common.Logger.Errorf("cannot remove the volume %s", err)
+				g.log.Errorf("cannot remove the volume %s", err)
 				return err
 			}
 			g.volumePanel().updateEntries(g)
@@ -258,7 +259,7 @@ func (g *Gui) createVolume(form *tview.Form) {
 		options := docker.Client.NewCreateVolumeOptions(data)
 
 		if err := docker.Client.CreateVolume(options); err != nil {
-			common.Logger.Errorf("cannot create volume %s", err)
+			g.log.Errorf("cannot create volume %s", err)
 			return err
 		}
 
