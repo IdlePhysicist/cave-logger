@@ -1,6 +1,7 @@
 package worker
 
 import (
+  "fmt"
 	"encoding/json"
 	"net/http"
 
@@ -66,10 +67,11 @@ func (worker *Worker) ListEntries() http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		
+		// move the worker 'class' to the service 'class'
 		w.Header().Set("Content-Type", "application/json")
+    w.Header().Set("Content-Length", `100`)
 		json.NewEncoder(w).Encode(data)
-
+    fmt.Println("%v", data)
 		return
   }
 }

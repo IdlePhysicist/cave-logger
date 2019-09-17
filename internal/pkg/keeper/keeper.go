@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"strings"
 	"strconv"
-	
+
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
 
@@ -13,9 +13,9 @@ import (
 )
 
 type Keeper struct {
-	log 			*logrus.Logger
-	db 				*sql.DB
-	ctx 			context.Context
+	log			*logrus.Logger
+	db			*sql.DB
+	ctx			context.Context
 }
 
 func New(log *logrus.Logger, dbFN string) *Keeper {
@@ -32,7 +32,7 @@ func New(log *logrus.Logger, dbFN string) *Keeper {
 	return &k
 }
 
-func (k *Keeper) QueryLogs(arg string) (map[int]*model.Entry, error) {
+func (k *Keeper) QueryLogs(arg string) ([]*model.Entry, error) {
 	var query string // Go seems to complain if something is defined in if blocks
 	if arg == `-1` {
 		query = "SELECT id, date, cave, names, notes FROM `logs`"
@@ -53,26 +53,38 @@ func (k *Keeper) QueryLogs(arg string) (map[int]*model.Entry, error) {
 		return nil, err
 	}
 
-	rows := make(map[int]*model.Entry) // NOTE: The int here is the db index
+	rows := make([]*model.Entry, 0)
 	for result.Next() {
-		var id int
-		var idStr string
+		var caverIDstr string
 		var row *model.Entry
 		
-		err = result.Scan(&id, &row.Date, &row.Cave, &idStr, &row.Notes)
+		err = result.Scan(&row.ID, &row.Date, &row.Cave, &caverIDstr, &row.Notes)
 		if err != nil {
 			k.log.Error(err)
 		}
 
-		row.Names = k.getCaverNames(idStr)
+		// Break up cavers into ids.
+		brokenIDs := strings.Split(caverIDstr, `|`)
+		for _, id_str := range brokenIDs {
+			id, _ := strconv.Atoi(id_str)
+			row.CaverIDs = append(row.CaverIDs, id)
+		}
+		
+		row.Names = k.getCaverNames(caverIDstr)
+		if row.Names == `` {
+			continue
+		}
 		
 		// Add this formatted row to the rows map
-		rows[id] = row  
+		rows = append(rows, row)  
 	}
 
 	return rows, err
 }
 
+func (k *Keeper) AddLog(params []string) error {
+	return nil
+}
 // INTERNAL FUNCTIONS ----------------------------------------------------------
 
 /*func (k *Keeper) fetchCaverIDs(caverList names string) ([]string, error) {
@@ -91,16 +103,16 @@ func (k *Keeper) QueryLogs(arg string) (map[int]*model.Entry, error) {
 	return caverIDs
 }*/
 
-func (k *Keeper) getCaverNames(idStr string) []*model.Caver {
+func (k *Keeper) getCaverNames(idStr string) string {
 	// Get the IDs
 	caverList, err := k.getCaverList()
 	if err != nil {
 		k.log.Errorf("keeper.Query: Failed to fetch list of cavers")
-		return nil
+		return ``
 	}
 
-	var names []*model.Caver
-	caverIDs := strings.Split(idStr, ", ")
+	var names []string
+	caverIDs := strings.Split(idStr, "|")
 
 	for _, caver_id_str := range caverIDs {
 		caver_id, _ := strconv.Atoi(caver_id_str) // Convert the string to an int...
@@ -108,16 +120,16 @@ func (k *Keeper) getCaverNames(idStr string) []*model.Caver {
 		if keyExists(caverList, caver_id) {
 			caver, _ := caverList[caver_id]
 
-			//fullName := caver.First + ` ` + caver.Last
+			fullName := caver.First + ` ` + caver.Last
 
-			names = append(names, caver)//fullName)
+			names = append(names, fullName)
 		} else {
 			continue
 		}
 	}
 
-	//return strings.Join(names, `, `)
-	return names
+	
+	return strings.Join(names, `, `)
 }
 
 func (k *Keeper) getCaverList() (map[int]*model.Caver, error) {

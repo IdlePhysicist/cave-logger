@@ -13,11 +13,13 @@ import (
 type entries struct {
 	*tview.Table
 	filterWord string
+	db *keeper.Keeper
 }
 
-func newEntries(t *Tui) *entries {
+func newEntries(k *keeper.Keeper, t *Tui) *entries {
 	entries := &entries{
 		Table: tview.NewTable().SetSelectable(true, false).Select(0, 0).SetFixed(1, 1),
+		db: k,
 	}
 
 	entries.SetTitle(` Logs `).SetTitleAlign(tview.AlignLeft)
@@ -91,8 +93,8 @@ func (e *entries) setKeybinding(t *Tui) {
 			t.addEntryForm()
 		case 'r':
 			t.removeEntry()
-		case 'f':
-			t.searchInputField()
+		//case 'f':
+		//	t.searchInputField()
 		}
 
 		return event
@@ -100,7 +102,7 @@ func (e *entries) setKeybinding(t *Tui) {
 }
 
 func (e *entries) contents(t *Tui) {
-	rows, err := keeper.Keeper.ListEntries()
+	rows, err := e.db.QueryLogs(`-1`)
 	if err != nil {
 		return
 	}
@@ -116,7 +118,7 @@ func (e *entries) contents(t *Tui) {
 
 func (e *entries) updateContents(t *Tui) {
 	t.app.QueueUpdateDraw(func() {
-		e.setEntries(t)
+		e.setContents(t)
 	})
 }
 
@@ -141,7 +143,7 @@ func (e *entries) monitoringImages(t *Tui) {
 		for {
 			select {
 			case <-ticker.C:
-				i.updateEntries(g)
+				e.updateContents(t)
 			case <-t.state.stopChans["image"]:
 				ticker.Stop()
 				break LOOP

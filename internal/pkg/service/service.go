@@ -62,11 +62,11 @@ func (service *Service) wasm() http.HandlerFunc {
 func (service *Service) General() http.HandlerFunc {
   return func (w http.ResponseWriter, r *http.Request) {
 
-    uuid, err := uuid.NewV4()
-    if err != nil {
+    uuid := uuid.NewV4()
+    /*if err != nil {
       w.WriteHeader(http.StatusInternalServerError)
       return
-    }
+    }*/
 
     service.log.WithFields(logrus.Fields{
       "id": uuid.String(), "ip": r.RemoteAddr, "method": r.Method,
@@ -77,6 +77,7 @@ func (service *Service) General() http.HandlerFunc {
     }()
 
     wrkr.ListEntries()
+    service.log.Debugf(`got logs`)
   }
 }
 
@@ -85,11 +86,11 @@ func (service *Service) General() http.HandlerFunc {
 func (service *Service) Detail() http.HandlerFunc {
   return func (w http.ResponseWriter, r *http.Request) {
 
-    uuid, err := uuid.NewV4()
-    if err != nil {
+    uuid := uuid.NewV4()
+    /*if err != nil {
       w.WriteHeader(http.StatusInternalServerError)
       return
-    }
+    }*/
 
     service.log.WithFields(logrus.Fields{
       "id": uuid.String(), "ip": r.RemoteAddr, "method": r.Method,
