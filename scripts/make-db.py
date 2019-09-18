@@ -28,7 +28,7 @@ tables = [
   },
   {
     "name" : "cavers",
-    "cols" : ["id","name","club","freq"],
+    "cols" : ["id","first", "last","club","freq"],
     "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","TEXT","TEXT","TEXT","INTEGER"]
   }
 ]

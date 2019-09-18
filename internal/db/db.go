@@ -82,7 +82,7 @@ func (db *Database) AddCave(name, region, country string, srt bool) (int64, erro
 }
 
 func (db *Database) AddCaver(name, club string) (int64, error) {
-	query := `INSERT INTO cavers (name, club) VALUES (?,?)`
+	query := `INSERT INTO cavers (first, last, club) VALUES (?,?)`
 	params := []interface{}{name, club}
 
 	newID, err := db.insert(query, params)
@@ -134,7 +134,7 @@ func (db *Database) GetAllLogs() ([]*model.Entry, error) {
 		}
 
 		trip.Date = time.Unix(stamp, 0).Format(date)
-		trip.Names = db.getCaverNames(caverIDstr)
+		trip.Names = db.getCaverFirstNames(caverIDstr)
 		
 		// Add this formatted row to the rows map
 		trips = append(trips, &trip)  
@@ -185,7 +185,7 @@ func (db *Database) GetLog(logID string) ([]*model.Entry, error) {
 		}
 
 		trip.Date = time.Unix(stamp, 0).Format(date)
-		trip.Names = db.getCaverNames(caverIDstr)
+		trip.Names = db.getFullCaverNames(caverIDstr)
 		
 		// Add this formatted row to the rows map
 		trips = append(trips, &trip)  
@@ -195,7 +195,7 @@ func (db *Database) GetLog(logID string) ([]*model.Entry, error) {
 }
 
 func (db *Database) GetAllCavers() ([]*model.Caver, error) {
-	result, err := db.conn.Prepare("SELECT `id`,`name`,`club` FROM cavers")
+	result, err := db.conn.Prepare("SELECT `id`,`first`,`last`,`club` FROM cavers")
 	if err != nil {
 		db.log.Errorf("db.getcaverlist: Failed to get cavers", err)
 	}
@@ -214,7 +214,7 @@ func (db *Database) GetAllCavers() ([]*model.Caver, error) {
 			break
 		}
 		
-		err = result.Scan(&c.ID, &c.Name, &c.Club)
+		err = result.Scan(&c.ID, &c.First, &c.Last, &c.Club)
 		if err != nil {
 			db.log.Errorf("Scan: %v", err)
 		}
@@ -257,7 +257,7 @@ func (db *Database) getCaverIDs(names string) string {
 		namesList := strings.Split(names, ", ")
 
 		for _, fullName := range namesList {
-			if fullName == caver.Name {
+			if fullName == caver.First + `+` + caver.Last {
 				caverIDs = append(caverIDs, caver.ID)
 			}
 		}
@@ -268,7 +268,7 @@ func (db *Database) getCaverIDs(names string) string {
 
 //
 // For retrieving the names given a str of ids 
-func (db *Database) getCaverNames(idStr string) string {
+func (db *Database) getFullCaverNames(idStr string) string {
 	// Get the IDs
 	cavers, err := db.GetAllCavers()
 	if err != nil {
@@ -282,7 +282,32 @@ func (db *Database) getCaverNames(idStr string) string {
 	for _, caver_id := range caverIDs {
 		for _, caver := range cavers {
 			if caver_id == caver.ID {
-				names = append(names, caver.Name)
+				fullName := caver.First + `+` + caver.Last
+				names = append(names, fullName)
+			}
+		}	
+	}
+	
+	return strings.Join(names, `, `)
+}
+
+//
+// For retrieving the names given a str of ids 
+func (db *Database) getCaverFirstNames(idStr string) string {
+	// Get the IDs
+	cavers, err := db.GetAllCavers()
+	if err != nil {
+		db.log.Errorf("Database.Query: Failed to fetch list of cavers")
+		return ``
+	}
+
+	var names []string
+	caverIDs := strings.Split(idStr, "|")
+
+	for _, caver_id := range caverIDs {
+		for _, caver := range cavers {
+			if caver_id == caver.ID {
+				names = append(names, caver.First)
 			}
 		}	
 	}

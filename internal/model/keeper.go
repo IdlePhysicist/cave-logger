@@ -11,7 +11,8 @@ type Cave struct {
 
 type Caver struct {
 	ID   string
-	Name string
+	First string
+	Last string
 	Club string
 }
 
