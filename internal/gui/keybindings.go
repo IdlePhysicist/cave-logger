@@ -154,7 +154,7 @@ func (g *Gui) displayInspect(data, page string) {
 func (g *Gui) inspectTrip() {
 	trip := g.selectedTrip()
 
-	inspect, err := g.db.GetLogs(trip.ID)
+	inspect, err := g.db.GetLog(trip.ID)
 	if err != nil {
 		g.log.Errorf("cannot inspect container %s", err)
 		return

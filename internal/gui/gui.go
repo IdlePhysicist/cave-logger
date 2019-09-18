@@ -7,8 +7,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/skanehira/docui/common"
 
-	"github.com/idlephysicist/cave-logger/internal/pkg/db"
-	"github.com/idlephysicist/cave-logger/internal/pkg/model"
+	"github.com/idlephysicist/cave-logger/internal/db"
+	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 type panels struct {

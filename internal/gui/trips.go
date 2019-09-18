@@ -18,7 +18,7 @@ func newTrips(g *Gui) *trips {
 		Table: tview.NewTable().SetSelectable(true, false).Select(0, 0).SetFixed(1, 1),
 	}
 
-	trips.SetTitle("trip list").SetTitleAlign(tview.AlignLeft)
+	trips.SetTitle(" Logs ").SetTitleAlign(tview.AlignLeft)
 	trips.SetBorder(true)
 	trips.setEntries(g)
 	trips.setKeybinding(g)
@@ -53,7 +53,7 @@ func (t *trips) setKeybinding(g *Gui) {
 }
 
 func (t *trips) entries(g *Gui) {
-	trips, err := g.db.GetLogs(`-1`)
+	trips, err := g.db.GetAllLogs()
 	if err != nil {
 		return
 	}

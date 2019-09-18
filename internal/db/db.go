@@ -11,7 +11,8 @@ import (
 	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
-const date_layout = `2006-01-02`
+const datetime = `2006-01-02T15:04:05Z`
+const date = `2006-01-02`
 
 type Database struct {
 	log	 *logrus.Logger
@@ -45,7 +46,7 @@ func (db *Database) Close() {
 func (db *Database) AddLog(date, cave, names, notes string) error {
 	query := `INSERT INTO entries (date, caveid, caverids, notes) VALUES (?,?,?,?)`
 
-	d, err := time.Parse(date_layout, date)
+	d, err := time.Parse(datetime, strings.Join([]string{date,`12:00:00Z`},`T`))
 	if err != nil {
 		return err
 	}
@@ -91,11 +92,10 @@ func (db *Database) AddCaver(name, club string) (int64, error) {
 	return newID, nil
 }
 
-func (db *Database) GetLogs(logID string) ([]*model.Entry, error) {
+func (db *Database) GetAllLogs() ([]*model.Entry, error) {
 	// Build query
-	var query string // Go seems to complain if something is defined in if blocks
-	if logID == `-1` {
-		query = `SELECT
+	var query string
+	query = `SELECT
 			entries.id AS 'id',
 			date AS 'date',
 			name AS 'cave',
@@ -103,19 +103,6 @@ func (db *Database) GetLogs(logID string) ([]*model.Entry, error) {
 			notes AS 'notes'
 		FROM entries JOIN caves 
 		WHERE entries.caveid == caves.id`
-		
-		//result, err := db.conn.Prepare(query)
-	} else {
-		query = `SELECT 
-			entries.id AS 'id',
-			date AS 'date',
-			name AS 'cave',
-			caverids AS 'caverids',
-			notes AS 'notes'
-		FROM entries JOIN caves 
-		WHERE entries.caveid == caves.id AND entries.id = ?`
-
-	}
 
 	result, err := db.conn.Prepare(query)
 	if err != nil {
@@ -126,7 +113,6 @@ func (db *Database) GetLogs(logID string) ([]*model.Entry, error) {
 	
 	trips := make([]*model.Entry, 0)
 	for {
-		//var caverIDs []int
 		var caverIDstr string
 		var stamp int64
 		var trip model.Entry
@@ -147,19 +133,59 @@ func (db *Database) GetLogs(logID string) ([]*model.Entry, error) {
 			return trips, err
 		}
 
-		trip.Date = time.Unix(stamp, 0).Format(date_layout)
-
-		// Break up cavers into ids.
-		/*brokenIDs := strings.Split(caverIDstr, `|`)
-		for _, id_str := range brokenIDs {
-			id, _ := strconv.Atoi(id_str)
-			caverIDs = append(caverIDs, id)
-		}*/
-		
+		trip.Date = time.Unix(stamp, 0).Format(date)
 		trip.Names = db.getCaverNames(caverIDstr)
-		//if row.Names == `` {
-		//	continue
-		//}
+		
+		// Add this formatted row to the rows map
+		trips = append(trips, &trip)  
+	}
+
+	return trips, err
+}
+
+func (db *Database) GetLog(logID string) ([]*model.Entry, error) {
+	// Build query
+	var query string
+	query = `SELECT 
+			entries.id AS 'id',
+			date AS 'date',
+			name AS 'cave',
+			caverids AS 'caverids',
+			notes AS 'notes'
+		FROM entries JOIN caves 
+		WHERE entries.caveid == caves.id AND entries.id = ?`
+
+	result, err := db.conn.Prepare(query, logID)
+	if err != nil {
+		db.log.Errorf("db.prepare: Failed to query database", err)
+		return nil, err
+	}
+	defer result.Close()
+	
+	trips := make([]*model.Entry, 0)
+	for {
+		var caverIDstr string
+		var stamp int64
+		var trip model.Entry
+
+		rowExists, err := result.Step()
+		if err != nil {
+			db.log.Errorf("db.get: Step error: %s", err)
+			return trips, err
+		}
+
+		if !rowExists {
+			break
+		}
+		
+		err = result.Scan(&trip.ID, &stamp, &trip.Cave, &caverIDstr, &trip.Notes)
+		if err != nil {
+			db.log.Error(err)
+			return trips, err
+		}
+
+		trip.Date = time.Unix(stamp, 0).Format(date)
+		trip.Names = db.getCaverNames(caverIDstr)
 		
 		// Add this formatted row to the rows map
 		trips = append(trips, &trip)  
@@ -176,7 +202,6 @@ func (db *Database) GetAllCavers() ([]*model.Caver, error) {
 
 	cavers := make([]*model.Caver, 0)
 	for {
-		var id int
 		var c model.Caver
 		
 		rowExists, err := result.Step()
@@ -189,7 +214,7 @@ func (db *Database) GetAllCavers() ([]*model.Caver, error) {
 			break
 		}
 		
-		err = result.Scan(&id, &c.Name, &c.Club)
+		err = result.Scan(&c.ID, &c.Name, &c.Club)
 		if err != nil {
 			db.log.Errorf("Scan: %v", err)
 		}
@@ -251,18 +276,13 @@ func (db *Database) getCaverNames(idStr string) string {
 		return ``
 	}
 
-	// Split up the str arg we were given
 	var names []string
 	caverIDs := strings.Split(idStr, "|")
 
 	for _, caver_id := range caverIDs {
-		//caver_id, _ := strconv.Atoi(_id_str) // Convert the string to an int...
-
 		for _, caver := range cavers {
 			if caver_id == caver.ID {
 				names = append(names, caver.Name)
-			} else {
-				continue
 			}
 		}	
 	}
@@ -299,11 +319,3 @@ func (db *Database) getCaveID(cave string) (int, error) {
 	}
 	return caveID, err
 }
-
-
-/*
-func keyExists(array map[int]*model.Caver, key int) bool {
-	_, grand := array[key]
-	return grand
-}
-*/
