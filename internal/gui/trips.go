@@ -86,22 +86,22 @@ func (t *trips) setEntries(g *Gui) {
 	for i, trip := range g.state.resources.trips {
 		table.SetCell(i+1, 0, tview.NewTableCell(trip.Date).
 			SetTextColor(tcell.ColorLightGreen).
-			SetMaxWidth(1).
-			SetExpansion(1))
+			SetMaxWidth(30).
+			SetExpansion(0))
 
 		table.SetCell(i+1, 1, tview.NewTableCell(trip.Cave).
 			SetTextColor(tcell.ColorLightGreen).
-			SetMaxWidth(1).
-			SetExpansion(1))
+			SetMaxWidth(30).
+			SetExpansion(0))
 
 		table.SetCell(i+1, 2, tview.NewTableCell(trip.Names).
 			SetTextColor(tcell.ColorLightGreen).
-			SetMaxWidth(1).
-			SetExpansion(1))
+			SetMaxWidth(0).
+			SetExpansion(2))
 
 		table.SetCell(i+1, 3, tview.NewTableCell(trip.Notes).
 			SetTextColor(tcell.ColorLightGreen).
-			SetMaxWidth(1).
+			SetMaxWidth(0).
 			SetExpansion(1))
 	}
 }
