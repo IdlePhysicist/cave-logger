@@ -17,18 +17,23 @@ Alas this script will still try to run.\n"""
 sqliteFile = str(uuid.uuid4()) + '.db'
 tables = [
   {
-    'name' : 'logs',
-    'cols' : ['id','date','cave','cavers','notes'],
-    'types': ['INTEGER PRIMARY KEY AUTOINCREMENT','DATE','TEXT','TEXT','TEXT']
+    "name" : "entries",
+    "cols" : ["id","date","caveid","caverids","notes"],
+    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","INTEGER","INTEGER","INTEGER","INTEGER","TEXT"]
   },
   {
-    'name' : 'cavers',
-    'cols' : ['id','first','last','club'],
-    'types': ['INTEGER PRIMARY KEY AUTOINCREMENT','TEXT','TEXT','TEXT']
+    "name" : "caves",
+    "cols" : ["id","name","region","country","srt","visits"],
+    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","INTEGER","TEXT","TEXT","INTEGER","INTEGER"]
+  },
+  {
+    "name" : "cavers",
+    "cols" : ["id","first", "last","club","freq"],
+    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","TEXT","TEXT","TEXT","INTEGER"]
   }
 ]
 
-conn = sqlite3.connect("/".join(['./config', sqliteFile]))
+conn = sqlite3.connect("/".join(["./config", sqliteFile]))
 print("Connected to new sqlite database")
 print("Database file name: ", sqliteFile)
 

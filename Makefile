@@ -1,16 +1,16 @@
+# Environment Variables
+CGO=1
+OS=darwin
+SRC=cmd
+BUILD=build
 
-default: api
+default: main
+
+main: clean api 
 
 api:
-	CGO_ENABLED=0 go build main.go
-
-main: clean wasm_exec
-	tinygo build -o ./html/wasm.wasm -target wasm -no-debug ./main/main.go
-	cp ./main/index.html ./html/
-
-wasm_exec:
-	cp ../../../targets/wasm_exec.js ./html/
+	env CGO_ENABLED=$(CGO) GOOS=$(OS) go build -o $(BUILD)/cave-logger $(SRC)/main.go
 
 clean:
-	rm -rf ./html
-	mkdir ./html
+	rm -f $(BUILD)/*
+	touch $(BUILD)/.keep
