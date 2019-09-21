@@ -2,6 +2,7 @@
 
 # Project
 *.db
+config/config.yml
 build/
 
 # Editor
