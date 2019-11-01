@@ -49,7 +49,7 @@ func main() {
 
   db := db.New(log, cfg.Database.Filename)
 
-  gui := gui.New(db, log)
+  gui := gui.New(db)
 
   if err := gui.Start(); err != nil {
     log.Fatalf("main: Cannot start tui: %s", err)

@@ -29,7 +29,7 @@ type Trip struct {
 	Notes string
 }*/
 
-type Entry struct {
+type Log struct {
 	ID     string
 	Date   string
 	Cave   string

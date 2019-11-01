@@ -92,7 +92,7 @@ func (db *Database) AddCaver(name, club string) (int64, error) {
 	return newID, nil
 }
 
-func (db *Database) GetAllLogs() ([]*model.Entry, error) {
+func (db *Database) GetAllLogs() ([]*model.Log, error) {
 	// Build query
 	var query string
 	query = `SELECT
@@ -111,11 +111,11 @@ func (db *Database) GetAllLogs() ([]*model.Entry, error) {
 	}
 	defer result.Close()
 	
-	trips := make([]*model.Entry, 0)
+	trips := make([]*model.Log, 0)
 	for {
 		var caverIDstr string
 		var stamp int64
-		var trip model.Entry
+		var trip model.Log
 
 		rowExists, err := result.Step()
 		if err != nil {
@@ -143,7 +143,7 @@ func (db *Database) GetAllLogs() ([]*model.Entry, error) {
 	return trips, err
 }
 
-func (db *Database) GetLog(logID string) ([]*model.Entry, error) {
+func (db *Database) GetLog(logID string) ([]*model.Log, error) {
 	// Build query
 	var query string
 	query = `SELECT 
@@ -162,11 +162,11 @@ func (db *Database) GetLog(logID string) ([]*model.Entry, error) {
 	}
 	defer result.Close()
 	
-	trips := make([]*model.Entry, 0)
+	trips := make([]*model.Log, 0)
 	for {
 		var caverIDstr string
 		var stamp int64
-		var trip model.Entry
+		var trip model.Log
 
 		rowExists, err := result.Step()
 		if err != nil {
@@ -243,7 +243,7 @@ func (db *Database) insert(query string, params []interface{}) (int64, error) {
 }
 
 //
-// For formatting the ids for a new entry
+// For formatting the ids for a new Log
 func (db *Database) getCaverIDs(names string) string {
 	var caverIDs []string
 

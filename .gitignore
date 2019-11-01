@@ -4,6 +4,9 @@
 *.db
 config/config.yml
 build/
+_old
+
+*.x
 
 # Editor
 .vs_code/
