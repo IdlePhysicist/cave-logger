@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/gdamore/tcell"
@@ -39,11 +40,67 @@ func (c *caves) setKeybinding(g *Gui) {
 	})
 }
 
-func (c *caves) setEntries(g *Gui) {}
+func (c *caves) entries(g *Gui) {
+	caves, err := g.db.GetAllCaves()
+	if err != nil {
+		return
+	}
+
+	g.state.resources.caves = caves	
+}
+
+func (c *caves) setEntries(g *Gui) {
+	c.entries(g)
+	table := c.Clear()
+
+	headers := []string{
+		"Name",
+		"Region",
+		"Country",
+		"SRT",
+		"Visits",
+	}
+
+	for i, header := range headers {
+		table.SetCell(0, i, &tview.TableCell{
+			Text:            header,
+			NotSelectable:   true,
+			Align:           tview.AlignLeft,
+			Color:           tcell.ColorWhite,
+			BackgroundColor: tcell.ColorDefault,
+			Attributes:      tcell.AttrBold,
+		})
+	}
+
+	for i, cave := range g.state.resources.caves {
+		table.SetCell(i+1, 0, tview.NewTableCell(cave.Name).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(30).
+			SetExpansion(0))
+
+		table.SetCell(i+1, 1, tview.NewTableCell(cave.Region).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(30).
+			SetExpansion(0))
+
+		table.SetCell(i+1, 2, tview.NewTableCell(cave.Country).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(0).
+			SetExpansion(2))
+
+		table.SetCell(i+1, 3, tview.NewTableCell(strconv.FormatBool(cave.SRT)).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(0).
+			SetExpansion(1))
+
+		table.SetCell(i+1, 4, tview.NewTableCell(strconv.FormatInt(cave.Visits, 10)).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(0).
+			SetExpansion(1))
+	}
+}
 
 func (c *caves) updateEntries(g *Gui) {}
-
-func (c *caves) entries(g *Gui) {}
 
 func (c *caves) focus(g *Gui) {
 	c.SetSelectable(true, false)

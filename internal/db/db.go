@@ -224,6 +224,39 @@ func (db *Database) GetAllCavers() ([]*model.Caver, error) {
 	return cavers, err
 }
 
+func (db *Database) GetAllCaves() ([]*model.Cave, error) {
+	result, err := db.conn.Prepare(
+		"SELECT `id`,`name`,`region`,`country`, `srt`, `visits` FROM caves",
+	)
+	if err != nil {
+		db.log.Errorf("db.getcaverlist: Failed to get cavers", err)
+	}
+
+	caves := make([]*model.Cave, 0)
+	for {
+		var c model.Cave
+		
+		rowExists, err := result.Step()
+		if err != nil {
+			db.log.Errorf("db.get: Step error: %s", err)
+			return caves, err
+		}
+
+		if !rowExists {
+			break
+		}
+		
+		err = result.Scan(&c.ID, &c.Name, &c.Region, &c.Country, &c.SRT, &c.Visits)
+		if err != nil {
+			db.log.Errorf("Scan: %v", err)
+		}
+		caves = append(caves, &c)
+		//cavers[id] = c
+	}
+	return caves, err
+}
+ 
+
 func (db *Database) RemoveLog(logID string) error {
 	return nil
 }
@@ -315,7 +348,7 @@ func (db *Database) getCaverFirstNames(idStr string) string {
 	return strings.Join(names, `, `)
 }
 
-//
+/*//
 // For retrieving the ID of a cave
 func (db *Database) getCaveID(cave string) (int, error) {
 	result, err := db.conn.Prepare(`SELECT id FROM caves WHERE name == ?`, cave)
@@ -343,4 +376,4 @@ func (db *Database) getCaveID(cave string) (int, error) {
 		}
 	}
 	return caveID, err
-}
+}*/

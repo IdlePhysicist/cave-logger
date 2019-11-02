@@ -11,7 +11,7 @@ import (
 
 type trips struct {
 	*tview.Table
-	trips chan *model.Log
+	trips			 chan *model.Log
 	filterWord string
 }
 
@@ -41,9 +41,59 @@ func (t *trips) setKeybinding(g *Gui) {
 	})
 }
 
-func (t *trips) setEntries(g *Gui) {}
+func (t *trips) entries(g *Gui) {
+	trips, err := g.db.GetAllLogs()
+	if err != nil {
+		return
+	}
 
-func (t *trips) entries(g *Gui) {}
+	g.state.resources.trips = trips	
+}
+
+func (t *trips) setEntries(g *Gui) {
+	t.entries(g)
+	table := t.Clear()
+
+	headers := []string{
+		"Date",
+		"Cave",
+		"Names",
+		"Notes",
+	}
+
+	for i, header := range headers {
+		table.SetCell(0, i, &tview.TableCell{
+			Text:            header,
+			NotSelectable:   true,
+			Align:           tview.AlignLeft,
+			Color:           tcell.ColorWhite,
+			BackgroundColor: tcell.ColorDefault,
+			Attributes:      tcell.AttrBold,
+		})
+	}
+
+	for i, trip := range g.state.resources.trips {
+		table.SetCell(i+1, 0, tview.NewTableCell(trip.Date).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(30).
+			SetExpansion(0))
+
+		table.SetCell(i+1, 1, tview.NewTableCell(trip.Cave).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(30).
+			SetExpansion(0))
+
+		table.SetCell(i+1, 2, tview.NewTableCell(trip.Names).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(0).
+			SetExpansion(2))
+
+		table.SetCell(i+1, 3, tview.NewTableCell(trip.Notes).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(0).
+			SetExpansion(1))
+	}
+}
 
 func (t *trips) updateEntries(g *Gui) {}
 

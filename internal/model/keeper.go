@@ -6,14 +6,15 @@ type Cave struct {
 	Region  string
 	Country string
 	SRT     bool
-	Visits  int
+	Visits  int64
 }
 
 type Caver struct {
-	ID   string
+	ID    string
 	First string
-	Last string
-	Club string
+	Last  string
+	Club  string
+	Count int64
 }
 
 /*type Entry struct {

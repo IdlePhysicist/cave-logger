@@ -6,7 +6,7 @@ import (
 	"github.com/rivo/tview"
 
 	"github.com/idlephysicist/cave-logger/internal/db"
-	//"github.com/idlephysicist/cave-logger/internal/model"
+	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 type pages struct {
@@ -15,9 +15,9 @@ type pages struct {
 }
 
 type resources struct {
-	trips  []*trips
-	cavers []*cavers
-	//caves  []*caves
+	trips  []*model.Log//trips
+	cavers []*model.Caver
+	caves  []*model.Cave
 }
 
 type state struct {
@@ -124,4 +124,8 @@ func (g *Gui) initPages() {
 
 func (g *Gui) goTo(page string) {
 	g.pages.SwitchToPage(page)
+}
+
+func (g *Gui) currentPage() int {
+	return g.state.pages.currentPage
 }

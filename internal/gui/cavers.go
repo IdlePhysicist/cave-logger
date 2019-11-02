@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/gdamore/tcell"
@@ -39,11 +40,61 @@ func (c *cavers) setKeybinding(g *Gui) {
 	})
 }
 
-func (c *cavers) setEntries(g *Gui) {}
+func (c *cavers) setEntries(g *Gui) {
+	c.entries(g)
+	table := c.Clear()
+
+	headers := []string{
+		"First",
+		"Last",
+		"Club",
+		"Count",
+	}
+
+	for i, header := range headers {
+		table.SetCell(0, i, &tview.TableCell{
+			Text:            header,
+			NotSelectable:   true,
+			Align:           tview.AlignLeft,
+			Color:           tcell.ColorWhite,
+			BackgroundColor: tcell.ColorDefault,
+			Attributes:      tcell.AttrBold,
+		})
+	}
+
+	for i, caver := range g.state.resources.cavers {
+		table.SetCell(i+1, 0, tview.NewTableCell(caver.First).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(30).
+			SetExpansion(0))
+
+		table.SetCell(i+1, 1, tview.NewTableCell(caver.Last).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(30).
+			SetExpansion(0))
+
+		table.SetCell(i+1, 2, tview.NewTableCell(caver.Club).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(0).
+			SetExpansion(2))
+
+		table.SetCell(i+1, 3, tview.NewTableCell(strconv.FormatInt(caver.Count, 10)).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(0).
+			SetExpansion(1))
+	}
+}
 
 func (c *cavers) updateEntries(g *Gui) {}
 
-func (c *cavers) entries(g *Gui) {}
+func (c *cavers) entries(g *Gui) {
+	cavers, err := g.db.GetAllCavers()
+	if err != nil {
+		return
+	}
+
+	g.state.resources.cavers = cavers	
+}
 
 func (c *cavers) focus(g *Gui) {
 	c.SetSelectable(true, false)
