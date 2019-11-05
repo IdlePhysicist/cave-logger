@@ -1,15 +1,30 @@
 package gui
 
 import (
-	//"context"
-//	"fmt"
-	//"strconv"
-
+	"fmt"
 
 	"github.com/gdamore/tcell"
 	//"github.com/rivo/tview"
-//	"github.com/skanehira/docui/common"
+	"github.com/idlephysicist/cave-logger/internal/model"
 )
+
+var fmts = map[string]string{`trips`:`
+Date: %s
+Cave: %s
+Cavers: %s
+Notes: %s`,
+`cavers`:`
+First: %s
+Last: %s
+Club: %s
+Count: %d`,
+`caves`:`
+Name: %s
+Region: %s
+Country: %s
+SRT: %v
+Visits: %d`}
+
 
 var inputWidth = 70
 
@@ -27,7 +42,6 @@ func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 	//	g.filter()
 	}
 	
-	
 	/*switch event.Key() {
 	case tcell.KeyTab:
 		g.nextPage()
@@ -40,33 +54,36 @@ func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 	}*/
 }
 
-func (g *Gui) nextPage() {
-	//idx := (g.state.pages.currentPage + 1) % len(g.state.pages.page)
-	//g.switchPage(g.state.pages.page[idx].name())
-	currentSlide := (g.state.pages.currentPage + 1) % 3//len(slides)
-	//info.Highlight(strconv.Itoa(currentSlide)).ScrollToHighlight()
-	g.pages.SwitchToPage(g.state.pages.page[currentSlide].name())
-}
+func (g *Gui) inspectTrip() {
+	selected := g.selectedTrip()
 
-func (g *Gui) prevPage() {
-	g.state.pages.currentPage--
-
-	if g.state.pages.currentPage < 0 {
-		g.state.pages.currentPage = len(g.state.pages.page) - 1
+	trip, err := g.db.GetLog(selected.ID)
+	if err != nil {
+		return
 	}
 
-	idx := (g.state.pages.currentPage) % len(g.state.pages.page)
-	g.switchPage(g.state.pages.page[idx].name())
+	g.inspectorPanel().setEntry(g.formatTrip(trip))
 }
 
-func (g *Gui) switchPage(pageName string) {
-	for i, page := range g.state.pages.page {
-		if page.name() == pageName {
-			//g.state.navigate.update(pageName)
-			page.focus(g)
-			g.state.pages.currentPage = i
-		} else {
-			page.unfocus()
-		}
+func (g *Gui) inspectCave() {
+	selected := g.selectedCave()
+
+	cave, err := g.db.GetCave(selected.ID)
+	if err != nil {
+		return
 	}
+
+	g.inspectorPanel().setEntry(g.formatCave(cave))
+}
+
+
+//
+// Formatting Functions
+//
+func (g *Gui) formatTrip(trip *model.Log) string {
+	return fmt.Sprintf(fmts[`trips`], trip.Date, trip.Cave, trip.Names, trip.Notes)
+}
+
+func (g *Gui) formatCave(cave *model.Cave) string {
+	return fmt.Sprintf(fmts[`caves`], cave.Name, cave.Region, cave.Country, cave.SRT, cave.Visits)
 }

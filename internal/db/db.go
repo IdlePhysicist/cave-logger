@@ -143,7 +143,7 @@ func (db *Database) GetAllLogs() ([]*model.Log, error) {
 	return trips, err
 }
 
-func (db *Database) GetLog(logID string) ([]*model.Log, error) {
+func (db *Database) GetLog(logID string) (*model.Log, error) { //FIXME: 
 	// Build query
 	var query string
 	query = `SELECT 
@@ -171,7 +171,7 @@ func (db *Database) GetLog(logID string) ([]*model.Log, error) {
 		rowExists, err := result.Step()
 		if err != nil {
 			db.log.Errorf("db.get: Step error: %s", err)
-			return trips, err
+			return trips[0], err
 		}
 
 		if !rowExists {
@@ -181,7 +181,7 @@ func (db *Database) GetLog(logID string) ([]*model.Log, error) {
 		err = result.Scan(&trip.ID, &stamp, &trip.Cave, &caverIDstr, &trip.Notes)
 		if err != nil {
 			db.log.Error(err)
-			return trips, err
+			return trips[0], err
 		}
 
 		trip.Date = time.Unix(stamp, 0).Format(date)
@@ -191,7 +191,7 @@ func (db *Database) GetLog(logID string) ([]*model.Log, error) {
 		trips = append(trips, &trip)  
 	}
 
-	return trips, err
+	return trips[0], err
 }
 
 func (db *Database) GetAllCavers() ([]*model.Caver, error) {
@@ -255,7 +255,47 @@ func (db *Database) GetAllCaves() ([]*model.Cave, error) {
 	}
 	return caves, err
 }
- 
+
+func (db *Database) GetCave(caveID string) (*model.Cave, error) {
+	// Build query
+	var query string
+	query = "SELECT `id`,`name`,`region`,`country`,`srt`,`visits` FROM caves WHERE id = ?"
+
+	result, err := db.conn.Prepare(query, caveID)
+	if err != nil {
+		db.log.Errorf("db.prepare: Failed to query database", err)
+		return nil, err
+	}
+	defer result.Close()
+	
+	caves := make([]*model.Cave, 0)
+	for {
+		//var caverIDstr string
+		//var stamp int64
+		var cave model.Cave
+
+		rowExists, err := result.Step()
+		if err != nil {
+			db.log.Errorf("db.get: Step error: %s", err)
+			return caves[0], err
+		}
+
+		if !rowExists {
+			break
+		}
+		
+		err = result.Scan(&cave.ID, &cave.Name, &cave.Region, &cave.Country, &cave.SRT, &cave.Visits)
+		if err != nil {
+			db.log.Error(err)
+			return caves[0], err
+		}
+
+		// Add this formatted row to the rows map
+		caves = append(caves, &cave)  
+	}
+
+	return caves[0], err
+}
 
 func (db *Database) RemoveLog(logID string) error {
 	return nil

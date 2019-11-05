@@ -2,6 +2,7 @@ package gui
 
 import (
 	//"context"
+	//"fmt"
 
 	"github.com/rivo/tview"
 
@@ -9,20 +10,22 @@ import (
 	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
-type pages struct {
-	currentPage int
-	page 				[]panel
+type panels struct {
+	currentPanel int
+	panel 			 []panel
 }
 
 type resources struct {
-	trips  []*model.Log//trips
+	trips  []*model.Log //trips
 	cavers []*model.Caver
 	caves  []*model.Cave
+	//inspector *inspector
+	//sidebar *sidebar
 }
 
 type state struct {
-	pages 	 	pages
-	//navigate 	*navigate
+	panels 	 	panels
+	//insp      *inspector
 	resources resources
 	stopChans map[string]chan int
 }
@@ -51,7 +54,7 @@ func New(db *db.Database) *Gui {
 
 // Start start application
 func (g *Gui) Start() error {
-	g.initPages()
+	g.initPanels()
 	g.startMonitoring()
 	if err := g.app.Run(); err != nil {
 		g.app.Stop()
@@ -69,53 +72,71 @@ func (g *Gui) Stop() {
 // Page "definitions"
 
 func (g *Gui) tripsPanel() *trips {
-	for _, page := range g.state.pages.page {
-		if page.name() == `trips` {
-			return page.(*trips)
+	for _, panel := range g.state.panels.panel {
+		if panel.name() == `trips` {
+			return panel.(*trips)
 		}
 	}
 	return nil
 }
 
 func (g *Gui) cavesPanel() *caves {
-	for _, page := range g.state.pages.page {
-		if page.name() == `caves` {
-			return page.(*caves)
+	for _, panel := range g.state.panels.panel {
+		if panel.name() == `caves` {
+			return panel.(*caves)
 		}
 	}
 	return nil
 }
 
 func (g *Gui) caversPanel() *cavers {
-	for _, page := range g.state.pages.page {
-		if page.name() == `cavers` {
-			return page.(*cavers)
+	for _, panel := range g.state.panels.panel {
+		if panel.name() == `cavers` {
+			return panel.(*cavers)
 		}
 	}
 	return nil
 }
 
-func (g *Gui) initPages() {
-	info := tview.NewTextView().
-		SetDynamicColors(true).
-		SetRegions(true).
-		SetWrap(false)
+func (g *Gui) inspectorPanel() *inspector {
+	for _, panel := range g.state.panels.panel {
+		if panel.name() == `inspector` {
+			return panel.(*inspector)
+		}
+	}
+	return nil
+}
 
-	trips := newTrips(g)
+
+func (g *Gui) initPanels() {
+	// Page definitions
+	trips  := newTrips(g)
 	cavers := newCavers(g)
 	caves  := newCaves(g)
-	//navi  := newNavigate(g)
-	//help  := newHelp(g)
 
+	// Add pages to the "book"
 	g.pages.AddPage(`trips`, trips, true, true)
 	g.pages.AddPage(`cavers`, cavers, true, true)
 	g.pages.AddPage(`caves`, caves, true, true)
 	
+	// Panels
+	sidebar := newSidebar(g)
+	inspector := newInspector(g)
 
-	layout := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(g.pages, 0, 1, true).
-		AddItem(info, 1, 1, false)
+	g.state.panels.panel = append(g.state.panels.panel, trips)
+	g.state.panels.panel = append(g.state.panels.panel, cavers)
+	g.state.panels.panel = append(g.state.panels.panel, caves)
+	g.state.panels.panel = append(g.state.panels.panel, sidebar)
+	g.state.panels.panel = append(g.state.panels.panel, inspector)
+
+	// Arange the windows / tiles
+	layout := tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(sidebar, 0, 2, false).
+		AddItem(tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(g.pages, 0, 3, true).
+			AddItem(inspector, 0, 2, false),
+			0, 5, true)
 
 
 	g.app.SetRoot(layout, true)
@@ -126,6 +147,47 @@ func (g *Gui) goTo(page string) {
 	g.pages.SwitchToPage(page)
 }
 
+func (g *Gui) switchPanel(panelName string) {
+	for i, panel := range g.state.panels.panel {
+		if panel.name() == panelName {
+			//g.state.navigate.update(panelName)
+			panel.focus(g)
+			g.state.panels.currentPanel = i
+		} else {
+			panel.unfocus()
+		}
+	}
+}
+
+func (g *Gui) closeAndSwitchPanel(removePanel, switchPanel string) {
+	g.pages.RemovePage(removePanel).ShowPage("main")
+	g.switchPanel(switchPanel)
+}
+
 func (g *Gui) currentPage() int {
-	return g.state.pages.currentPage
+	return g.state.panels.currentPanel
+}
+
+func (g *Gui) selectedTrip() *model.Log {
+	row, _ := g.tripsPanel().GetSelection()
+	if len(g.state.resources.trips) == 0 {
+		return nil
+	}
+	if row-1 < 0 {
+		return nil
+	}
+
+	return g.state.resources.trips[row-1]
+}
+
+func (g *Gui) selectedCave() *model.Cave {
+	row, _ := g.cavesPanel().GetSelection()
+	if len(g.state.resources.caves) == 0 {
+		return nil
+	}
+	if row-1 < 0 {
+		return nil
+	}
+
+	return g.state.resources.caves[row-1]
 }

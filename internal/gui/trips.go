@@ -36,6 +36,12 @@ func (t *trips) setKeybinding(g *Gui) {
 	t.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		g.setGlobalKeybinding(event)
 
+		switch event.Key() {
+		case tcell.KeyEnter:
+			g.inspectTrip()
+		//case tcell.KeyCtrlR:
+		//	t.setEntries(g)
+		}
 
 		return event
 	})
@@ -58,7 +64,7 @@ func (t *trips) setEntries(g *Gui) {
 		"Date",
 		"Cave",
 		"Names",
-		"Notes",
+		//"Notes",
 	}
 
 	for i, header := range headers {
@@ -87,15 +93,17 @@ func (t *trips) setEntries(g *Gui) {
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(0).
 			SetExpansion(2))
-
+		/*
 		table.SetCell(i+1, 3, tview.NewTableCell(trip.Notes).
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(0).
 			SetExpansion(1))
+		*/
 	}
 }
 
-func (t *trips) updateEntries(g *Gui) {}
+func (t *trips) updateEntries(g *Gui) {
+}
 
 func (t *trips) focus(g *Gui) {
 	t.SetSelectable(true, false)
@@ -109,6 +117,7 @@ func (t *trips) unfocus() {
 func (t *trips) setFilterWord(word string) {
 	t.filterWord = word
 }
+
 
 func (t *trips) monitoringTrips(g *Gui) {
 	ticker := time.NewTicker(5 * time.Second)
