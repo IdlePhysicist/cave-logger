@@ -191,3 +191,15 @@ func (g *Gui) selectedCave() *model.Cave {
 
 	return g.state.resources.caves[row-1]
 }
+
+func (g *Gui) selectedPerson() *model.Caver {
+	row, _ := g.caversPanel().GetSelection()
+	if len(g.state.resources.cavers) == 0 {
+		return nil
+	}
+	if row-1 < 0 {
+		return nil
+	}
+
+	return g.state.resources.cavers[row-1]
+}

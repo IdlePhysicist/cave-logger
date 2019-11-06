@@ -8,23 +8,11 @@ import (
 	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
-var fmts = map[string]string{`trips`:`
-Date: %s
-Cave: %s
-Cavers: %s
-Notes: %s`,
-`cavers`:`
-First: %s
-Last: %s
-Club: %s
-Count: %d`,
-`caves`:`
-Name: %s
-Region: %s
-Country: %s
-SRT: %v
-Visits: %d`}
-
+var inspectorFormat = map[string]string{
+	`trips`   : "Date: %s\nCave: %s\nCavers: %s\nNotes: %s",
+	`people`  : "First: %s\nLast: %s\nClub: %s\nCount: %d",
+	`locations`: "Name: %s\nRegion: %s\nCountry: %s\nSRT: %v\nVisits: %d",
+}
 
 var inputWidth = 70
 
@@ -76,14 +64,28 @@ func (g *Gui) inspectCave() {
 	g.inspectorPanel().setEntry(g.formatCave(cave))
 }
 
+func (g *Gui) inspectPerson() {
+	selected := g.selectedPerson()
+
+	caver, err := g.db.GetCaver(selected.ID)
+	if err != nil {
+		return
+	}
+
+	g.inspectorPanel().setEntry(g.formatPerson(caver))
+}
 
 //
 // Formatting Functions
 //
 func (g *Gui) formatTrip(trip *model.Log) string {
-	return fmt.Sprintf(fmts[`trips`], trip.Date, trip.Cave, trip.Names, trip.Notes)
+	return fmt.Sprintf(inspectorFormat[`trips`], trip.Date, trip.Cave, trip.Names, trip.Notes)
 }
 
-func (g *Gui) formatCave(cave *model.Cave) string {
-	return fmt.Sprintf(fmts[`caves`], cave.Name, cave.Region, cave.Country, cave.SRT, cave.Visits)
+func (g *Gui) formatCave(l *model.Cave) string {
+	return fmt.Sprintf(inspectorFormat[`locations`], l.Name, l.Region, l.Country, l.SRT, l.Visits)
+}
+
+func (g *Gui) formatPerson(p *model.Caver) string {
+	return fmt.Sprintf(inspectorFormat[`people`], p.First, p.Last, p.Club, p.Count)
 }

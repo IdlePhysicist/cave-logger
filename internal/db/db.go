@@ -42,6 +42,8 @@ func (db *Database) Close() {
 // MAIN FUNCTIONS --------------------------------------------------------------
 //
 
+//
+// ADD FUNCS
 
 func (db *Database) AddLog(date, cave, names, notes string) error {
 	query := `INSERT INTO entries (date, caveid, caverids, notes) VALUES (?,?,?,?)`
@@ -91,6 +93,9 @@ func (db *Database) AddCaver(name, club string) (int64, error) {
 	}
 	return newID, nil
 }
+
+//
+// GET FUNCS
 
 func (db *Database) GetAllLogs() ([]*model.Log, error) {
 	// Build query
@@ -195,7 +200,7 @@ func (db *Database) GetLog(logID string) (*model.Log, error) { //FIXME:
 }
 
 func (db *Database) GetAllCavers() ([]*model.Caver, error) {
-	result, err := db.conn.Prepare("SELECT `id`,`first`,`last`,`club` FROM cavers")
+	result, err := db.conn.Prepare("SELECT `id`,`first`,`last`,`club`, `count` FROM cavers")
 	if err != nil {
 		db.log.Errorf("db.getcaverlist: Failed to get cavers", err)
 	}
@@ -222,6 +227,45 @@ func (db *Database) GetAllCavers() ([]*model.Caver, error) {
 		//cavers[id] = c
 	}
 	return cavers, err
+}
+
+func (db *Database) GetCaver(personID string) (*model.Caver, error) {
+	// Build query
+	var query string
+	query = "SELECT `id`,`first`,`last`,`club`, `count` FROM cavers WHERE id = ?"
+
+	result, err := db.conn.Prepare(query, personID)
+	if err != nil {
+		db.log.Errorf("db.prepare: Failed to query database", err)
+		return nil, err
+	}
+	defer result.Close()
+	
+	people := make([]*model.Caver, 0)
+	for {
+		var person model.Caver
+
+		rowExists, err := result.Step()
+		if err != nil {
+			db.log.Errorf("db.get: Step error: %s", err)
+			return people[0], err
+		}
+
+		if !rowExists {
+			break
+		}
+		
+		err = result.Scan(&person.ID, &person.First, &person.Last, &person.Club, &person.Count)
+		if err != nil {
+			db.log.Error(err)
+			return people[0], err
+		}
+
+		// Add this formatted row to the rows map
+		people = append(people, &person)  
+	}
+
+	return people[0], err
 }
 
 func (db *Database) GetAllCaves() ([]*model.Cave, error) {
@@ -296,6 +340,10 @@ func (db *Database) GetCave(caveID string) (*model.Cave, error) {
 
 	return caves[0], err
 }
+
+
+//
+// DELETE FUNCS
 
 func (db *Database) RemoveLog(logID string) error {
 	return nil
