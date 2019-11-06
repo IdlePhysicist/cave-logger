@@ -131,12 +131,12 @@ func (g *Gui) initPanels() {
 
 	// Arange the windows / tiles
 	layout := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(sidebar, 0, 2, false).
+		AddItem(sidebar, 0, 1, false).
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
-			AddItem(g.pages, 0, 3, true).
+			AddItem(g.pages, 0, 5, true).
 			AddItem(inspector, 0, 2, false),
-			0, 5, true)
+			0, 6, true)
 
 
 	g.app.SetRoot(layout, true)

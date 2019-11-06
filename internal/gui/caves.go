@@ -81,27 +81,27 @@ func (c *caves) setEntries(g *Gui) {
 		table.SetCell(i+1, 0, tview.NewTableCell(cave.Name).
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(30).
-			SetExpansion(0))
+			SetExpansion(1))
 
 		table.SetCell(i+1, 1, tview.NewTableCell(cave.Region).
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(30).
-			SetExpansion(0))
+			SetExpansion(1))
 
 		table.SetCell(i+1, 2, tview.NewTableCell(cave.Country).
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(0).
-			SetExpansion(0))
+			SetExpansion(1))
 
 		table.SetCell(i+1, 3, tview.NewTableCell(strconv.FormatBool(cave.SRT)).
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(0).
-			SetExpansion(0))
+			SetExpansion(1))
 
 		table.SetCell(i+1, 4, tview.NewTableCell(strconv.FormatInt(cave.Visits, 10)).
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(0).
-			SetExpansion(0))
+			SetExpansion(1))
 	}
 }
 
