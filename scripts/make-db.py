@@ -17,19 +17,24 @@ Alas this script will still try to run.\n"""
 sqliteFile = str(uuid.uuid4()) + '.db'
 tables = [
   {
-    "name" : "entries",
-    "cols" : ["id","date","caveid","caverids","notes"],
-    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","INTEGER","INTEGER","INTEGER","INTEGER","TEXT"]
+    "name" : "trips",
+    "cols" : ["id","date","caveid","notes"],
+    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","INTEGER","INTEGER","INTEGER","TEXT"]
   },
   {
-    "name" : "caves",
-    "cols" : ["id","name","region","country","srt","visits"],
-    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","INTEGER","TEXT","TEXT","INTEGER","INTEGER"]
+    "name" : "locations",
+    "cols" : ["id","name","region","country","srt"],
+    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","INTEGER","TEXT","TEXT","INTEGER"]
   },
   {
-    "name" : "cavers",
-    "cols" : ["id","first", "last","club","freq"],
-    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","TEXT","TEXT","TEXT","INTEGER"]
+    "name" : "people",
+    "cols" : ["id","name","club"],
+    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","TEXT","TEXT"]
+  },
+  {
+    "name" : "trip_groups",
+    "cols" : ["tripid","caverid"],
+    "types": ["INTEGER","INTEGER"]
   }
 ]
 
