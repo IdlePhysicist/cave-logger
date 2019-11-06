@@ -82,12 +82,12 @@ func (t *trips) setEntries(g *Gui) {
 		table.SetCell(i+1, 0, tview.NewTableCell(trip.Date).
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(30).
-			SetExpansion(0))
+			SetExpansion(1))
 
 		table.SetCell(i+1, 1, tview.NewTableCell(trip.Cave).
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(30).
-			SetExpansion(0))
+			SetExpansion(1))
 
 		table.SetCell(i+1, 2, tview.NewTableCell(trip.Names).
 			SetTextColor(tcell.ColorLightGreen).
