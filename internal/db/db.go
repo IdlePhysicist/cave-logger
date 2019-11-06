@@ -46,7 +46,7 @@ func (db *Database) Close() {
 // ADD FUNCS
 
 func (db *Database) AddLog(date, cave, names, notes string) error {
-	query := `INSERT INTO entries (date, caveid, caverids, notes) VALUES (?,?,?,?)`
+	query := `INSERT INTO trips (date, caveid, caverids, notes) VALUES (?,?,?,?)`
 
 	d, err := time.Parse(datetime, strings.Join([]string{date,`12:00:00Z`},`T`))
 	if err != nil {
@@ -61,7 +61,7 @@ func (db *Database) AddLog(date, cave, names, notes string) error {
 		// return err prompting dialog.
 	}
 
-	caverIDs := db.getCaverIDs(names)
+	caverIDs := `x`//db.getCaverIDs(names)
 
 	params := []interface{}{dateStamp, caveID, caverIDs, notes}
 
@@ -100,15 +100,21 @@ func (db *Database) AddCaver(name, club string) (int64, error) {
 func (db *Database) GetAllLogs() ([]*model.Log, error) {
 	// Build query
 	var query string
-	query = `SELECT
-			entries.id AS 'id',
-			date AS 'date',
-			name AS 'cave',
-			caverids AS 'caverids',
-			notes AS 'notes'
-		FROM entries JOIN caves 
-		WHERE entries.caveid == caves.id`
-
+	query = `
+	SELECT
+		trips.id AS 'id',
+		trips.date AS 'date',
+		locations.name AS 'cave',
+		(
+			SELECT GROUP_CONCAT(people.name, ', ')
+			FROM trip_groups, people
+			WHERE trip_groups.caverid = people.id
+				AND trip_groups.tripid = trips.id
+		) AS 'names',
+		trips.notes AS 'notes'
+	FROM trips, locations
+	WHERE trips.caveid = locations.id`
+	
 	result, err := db.conn.Prepare(query)
 	if err != nil {
 		db.log.Errorf("db.prepare: Failed to query database", err)
@@ -118,7 +124,6 @@ func (db *Database) GetAllLogs() ([]*model.Log, error) {
 	
 	trips := make([]*model.Log, 0)
 	for {
-		var caverIDstr string
 		var stamp int64
 		var trip model.Log
 
@@ -132,14 +137,13 @@ func (db *Database) GetAllLogs() ([]*model.Log, error) {
 			break
 		}
 		
-		err = result.Scan(&trip.ID, &stamp, &trip.Cave, &caverIDstr, &trip.Notes)
+		err = result.Scan(&trip.ID, &stamp, &trip.Cave, &trip.Names, &trip.Notes)
 		if err != nil {
 			db.log.Error(err)
 			return trips, err
 		}
 
 		trip.Date = time.Unix(stamp, 0).Format(date)
-		trip.Names = db.getCaverFirstNames(caverIDstr)
 		
 		// Add this formatted row to the rows map
 		trips = append(trips, &trip)  
@@ -151,14 +155,20 @@ func (db *Database) GetAllLogs() ([]*model.Log, error) {
 func (db *Database) GetLog(logID string) (*model.Log, error) { //FIXME: 
 	// Build query
 	var query string
-	query = `SELECT 
-			entries.id AS 'id',
-			date AS 'date',
-			name AS 'cave',
-			caverids AS 'caverids',
-			notes AS 'notes'
-		FROM entries JOIN caves 
-		WHERE entries.caveid == caves.id AND entries.id = ?`
+	query = `
+	SELECT trips.id AS 'id',
+		trips.date AS 'date',
+		locations.name AS 'cave',
+		(
+			SELECT GROUP_CONCAT(people.name, ', ')
+			FROM trip_groups, people
+			WHERE trip_groups.caverid = people.id
+				AND trip_groups.tripid = trips.id
+		) AS 'names',
+		trips.notes AS 'notes'
+	FROM trips, locations
+	WHERE trips.caveid = locations.id
+		AND trips.id = ?`
 
 	result, err := db.conn.Prepare(query, logID)
 	if err != nil {
@@ -169,7 +179,6 @@ func (db *Database) GetLog(logID string) (*model.Log, error) { //FIXME:
 	
 	trips := make([]*model.Log, 0)
 	for {
-		var caverIDstr string
 		var stamp int64
 		var trip model.Log
 
@@ -183,14 +192,13 @@ func (db *Database) GetLog(logID string) (*model.Log, error) { //FIXME:
 			break
 		}
 		
-		err = result.Scan(&trip.ID, &stamp, &trip.Cave, &caverIDstr, &trip.Notes)
+		err = result.Scan(&trip.ID, &stamp, &trip.Cave, &trip.Names, &trip.Notes)
 		if err != nil {
 			db.log.Error(err)
 			return trips[0], err
 		}
 
 		trip.Date = time.Unix(stamp, 0).Format(date)
-		trip.Names = db.getFullCaverNames(caverIDstr)
 		
 		// Add this formatted row to the rows map
 		trips = append(trips, &trip)  
@@ -200,7 +208,19 @@ func (db *Database) GetLog(logID string) (*model.Log, error) { //FIXME:
 }
 
 func (db *Database) GetAllCavers() ([]*model.Caver, error) {
-	result, err := db.conn.Prepare("SELECT `id`,`first`,`last`,`club`, `count` FROM cavers")
+	var query string
+	query = `
+	SELECT 
+		people.id AS 'id',
+		people.name AS 'name',
+		people.club AS 'club',
+		(
+			SELECT COUNT(1)
+				FROM trip_groups
+			 WHERE trip_groups.caverid = people.id
+		)
+	FROM people`
+	result, err := db.conn.Prepare(query)
 	if err != nil {
 		db.log.Errorf("db.getcaverlist: Failed to get cavers", err)
 	}
@@ -219,7 +239,7 @@ func (db *Database) GetAllCavers() ([]*model.Caver, error) {
 			break
 		}
 		
-		err = result.Scan(&c.ID, &c.First, &c.Last, &c.Club)
+		err = result.Scan(&c.ID, &c.Name, &c.Club, &c.Count)
 		if err != nil {
 			db.log.Errorf("Scan: %v", err)
 		}
@@ -232,7 +252,18 @@ func (db *Database) GetAllCavers() ([]*model.Caver, error) {
 func (db *Database) GetCaver(personID string) (*model.Caver, error) {
 	// Build query
 	var query string
-	query = "SELECT `id`,`first`,`last`,`club`, `count` FROM cavers WHERE id = ?"
+	query = `
+	SELECT 
+		people.id AS 'id',
+		people.name AS 'name',
+		people.club AS 'club',
+		(
+			SELECT COUNT(1)
+				FROM trip_groups
+			WHERE trip_groups.caverid = people.id
+		) AS 'count'
+	FROM people
+	WHERE people.id = ?`
 
 	result, err := db.conn.Prepare(query, personID)
 	if err != nil {
@@ -255,7 +286,7 @@ func (db *Database) GetCaver(personID string) (*model.Caver, error) {
 			break
 		}
 		
-		err = result.Scan(&person.ID, &person.First, &person.Last, &person.Club, &person.Count)
+		err = result.Scan(&person.ID, &person.Name, &person.Club, &person.Count)
 		if err != nil {
 			db.log.Error(err)
 			return people[0], err
@@ -269,9 +300,21 @@ func (db *Database) GetCaver(personID string) (*model.Caver, error) {
 }
 
 func (db *Database) GetAllCaves() ([]*model.Cave, error) {
-	result, err := db.conn.Prepare(
-		"SELECT `id`,`name`,`region`,`country`, `srt`, `visits` FROM caves",
-	)
+	var query string
+	query = `
+	SELECT
+		locations.id AS 'id',
+		locations.name AS 'name',
+		locations.region AS 'region',
+		locations.country AS 'country',
+		locations.srt AS 'srt',
+		(
+			SELECT COUNT(1)
+			FROM trips
+			WHERE trips.caveid = locations.id
+		) AS 'visits'
+	FROM locations`
+	result, err := db.conn.Prepare(query)
 	if err != nil {
 		db.log.Errorf("db.getcaverlist: Failed to get cavers", err)
 	}
@@ -295,16 +338,26 @@ func (db *Database) GetAllCaves() ([]*model.Cave, error) {
 			db.log.Errorf("Scan: %v", err)
 		}
 		caves = append(caves, &c)
-		//cavers[id] = c
 	}
 	return caves, err
 }
 
 func (db *Database) GetCave(caveID string) (*model.Cave, error) {
 	// Build query
-	var query string
-	query = "SELECT `id`,`name`,`region`,`country`,`srt`,`visits` FROM caves WHERE id = ?"
-
+	query := `
+	SELECT
+		locations.id AS 'id',
+		locations.name AS 'name',
+		locations.region AS 'region',
+		locations.country AS 'country',
+		locations.srt AS 'srt',
+		(
+			SELECT COUNT(1)
+			FROM trips
+			WHERE trips.caveid = locations.id
+		) AS 'visits'
+	FROM locations
+	WHERE id = ?`
 	result, err := db.conn.Prepare(query, caveID)
 	if err != nil {
 		db.log.Errorf("db.prepare: Failed to query database", err)
@@ -365,7 +418,7 @@ func (db *Database) insert(query string, params []interface{}) (int64, error) {
 
 //
 // For formatting the ids for a new Log
-func (db *Database) getCaverIDs(names string) string {
+/*func (db *Database) getCaverIDs(names string) string {
 	var caverIDs []string
 
 	cavers, err := db.GetAllCavers()
@@ -385,56 +438,7 @@ func (db *Database) getCaverIDs(names string) string {
 	}
 
 	return strings.Join(caverIDs, `|`)
-}
-
-//
-// For retrieving the names given a str of ids 
-func (db *Database) getFullCaverNames(idStr string) string {
-	// Get the IDs
-	cavers, err := db.GetAllCavers()
-	if err != nil {
-		db.log.Errorf("Database.Query: Failed to fetch list of cavers")
-		return ``
-	}
-
-	var names []string
-	caverIDs := strings.Split(idStr, "|")
-
-	for _, caver_id := range caverIDs {
-		for _, caver := range cavers {
-			if caver_id == caver.ID {
-				fullName := caver.First + `+` + caver.Last
-				names = append(names, fullName)
-			}
-		}	
-	}
-	
-	return strings.Join(names, `, `)
-}
-
-//
-// For retrieving the names given a str of ids 
-func (db *Database) getCaverFirstNames(idStr string) string {
-	// Get the IDs
-	cavers, err := db.GetAllCavers()
-	if err != nil {
-		db.log.Errorf("Database.Query: Failed to fetch list of cavers")
-		return ``
-	}
-
-	var names []string
-	caverIDs := strings.Split(idStr, "|")
-
-	for _, caver_id := range caverIDs {
-		for _, caver := range cavers {
-			if caver_id == caver.ID {
-				names = append(names, caver.First)
-			}
-		}	
-	}
-	
-	return strings.Join(names, `, `)
-}
+}*/
 
 /*//
 // For retrieving the ID of a cave

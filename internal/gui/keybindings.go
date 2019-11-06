@@ -10,7 +10,7 @@ import (
 
 var inspectorFormat = map[string]string{
 	`trips`   : "Date: %s\nCave: %s\nCavers: %s\nNotes: %s",
-	`people`  : "First: %s\nLast: %s\nClub: %s\nCount: %d",
+	`people`  : "Name: %s\nClub: %s\nCount: %d",
 	`locations`: "Name: %s\nRegion: %s\nCountry: %s\nSRT: %v\nVisits: %d",
 }
 
@@ -87,5 +87,5 @@ func (g *Gui) formatCave(l *model.Cave) string {
 }
 
 func (g *Gui) formatPerson(p *model.Caver) string {
-	return fmt.Sprintf(inspectorFormat[`people`], p.First, p.Last, p.Club, p.Count)
+	return fmt.Sprintf(inspectorFormat[`people`], p.Name, p.Club, p.Count)
 }

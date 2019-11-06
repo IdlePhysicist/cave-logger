@@ -50,8 +50,7 @@ func (c *cavers) setEntries(g *Gui) {
 	table := c.Clear()
 
 	headers := []string{
-		"First",
-		"Last",
+		"Name",
 		"Club",
 		"Count",
 	}
@@ -68,22 +67,17 @@ func (c *cavers) setEntries(g *Gui) {
 	}
 
 	for i, caver := range g.state.resources.cavers {
-		table.SetCell(i+1, 0, tview.NewTableCell(caver.First).
+		table.SetCell(i+1, 0, tview.NewTableCell(caver.Name).
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(30).
 			SetExpansion(1))
 
-		table.SetCell(i+1, 1, tview.NewTableCell(caver.Last).
-			SetTextColor(tcell.ColorLightGreen).
-			SetMaxWidth(30).
-			SetExpansion(1))
-
-		table.SetCell(i+1, 2, tview.NewTableCell(caver.Club).
+		table.SetCell(i+1, 1, tview.NewTableCell(caver.Club).
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(0).
 			SetExpansion(1))
 
-		table.SetCell(i+1, 3, tview.NewTableCell(strconv.FormatInt(caver.Count, 10)).
+		table.SetCell(i+1, 2, tview.NewTableCell(strconv.FormatInt(caver.Count, 10)).
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(0).
 			SetExpansion(1))
