@@ -20,7 +20,7 @@ type resources struct {
 	cavers []*model.Caver
 	caves  []*model.Cave
 	//inspector *inspector
-	//sidebar *sidebar
+	menu []string
 }
 
 type state struct {
@@ -120,18 +120,24 @@ func (g *Gui) initPanels() {
 	g.pages.AddPage(`caves`, caves, true, true)
 	
 	// Panels
-	sidebar := newSidebar(g)
+	menu := newMenu(g)
+	stats := newStats(g)
 	inspector := newInspector(g)
 
 	g.state.panels.panel = append(g.state.panels.panel, trips)
 	g.state.panels.panel = append(g.state.panels.panel, cavers)
 	g.state.panels.panel = append(g.state.panels.panel, caves)
-	g.state.panels.panel = append(g.state.panels.panel, sidebar)
+	g.state.panels.panel = append(g.state.panels.panel, menu)
+	g.state.panels.panel = append(g.state.panels.panel, stats)
 	g.state.panels.panel = append(g.state.panels.panel, inspector)
 
 	// Arange the windows / tiles
 	layout := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(sidebar, 0, 1, false).
+		//AddItem(tview.NewFlex().
+		//	SetDirection(tview.FlexRow).
+			AddItem(menu, 0, 1, false).
+			//AddItem(stats, 0, 1, false),
+		//	0, 1, true).
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
 			AddItem(g.pages, 0, 5, true).

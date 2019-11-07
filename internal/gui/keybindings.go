@@ -89,3 +89,9 @@ func (g *Gui) formatCave(l *model.Cave) string {
 func (g *Gui) formatPerson(p *model.Caver) string {
 	return fmt.Sprintf(inspectorFormat[`people`], p.Name, p.Club, p.Count)
 }
+
+//
+// MISC
+//
+
+func (g *Gui) selectPage() {}
