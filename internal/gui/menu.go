@@ -3,8 +3,6 @@ package gui
 import (
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
-
-	//"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 type menu struct {
@@ -45,11 +43,11 @@ func (m *menu) setKeybinding(g *Gui) {
 
 		switch event.Key() {
 		case tcell.KeyEnter:
-			g.selectPage(m.GetSelection())
+			g.goTo(g.selectPage(m.GetSelection()))
 		//case tcell.KeyCtrlR:
 		//	t.setEntries(g)
-		//case tcell.KeyTAB:
-		//	g.app.SetFocus(g.pages)
+		case tcell.KeyTAB:
+			g.goTo(g.selectPage(m.GetSelection()))
 		}
 
 		return event
@@ -58,7 +56,6 @@ func (m *menu) setKeybinding(g *Gui) {
 
 func (m *menu) entries(g *Gui) {
 	options := []string{`Trips`, `People`, `Locations`}
-	//for _, page := range g.pages
 	g.state.resources.menu = options
 }
 

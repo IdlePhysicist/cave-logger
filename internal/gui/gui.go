@@ -133,11 +133,11 @@ func (g *Gui) initPanels() {
 
 	// Arange the windows / tiles
 	layout := tview.NewFlex().SetDirection(tview.FlexColumn).
-		//AddItem(tview.NewFlex().
-		//	SetDirection(tview.FlexRow).
-			AddItem(menu, 0, 1, false).
+		AddItem(tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(menu, 0, 1, false),
 			//AddItem(stats, 0, 1, false),
-		//	0, 1, true).
+			0, 1, false).
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
 			AddItem(g.pages, 0, 5, true).
@@ -151,6 +151,7 @@ func (g *Gui) initPanels() {
 
 func (g *Gui) goTo(page string) {
 	g.pages.SwitchToPage(page)
+	g.switchPanel(page)
 }
 
 func (g *Gui) switchPanel(panelName string) {
