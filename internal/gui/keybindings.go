@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/gdamore/tcell"
-	//"github.com/rivo/tview"
 	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
@@ -20,20 +19,7 @@ func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 	switch event.Rune() {
 	case 'q':
 		g.Stop()
-	//case '/':
-	//	g.filter()
 	}
-	
-	/*switch event.Key() {
-	case tcell.KeyTab:
-		g.nextPage()
-	case tcell.KeyBacktab:
-		g.prevPage()
-	case tcell.KeyRight:
-		g.nextPage()
-	case tcell.KeyLeft:
-		g.prevPage()
-	}*/
 }
 
 //

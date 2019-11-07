@@ -3,8 +3,6 @@ package gui
 import (
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
-
-	//"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 type statsPeople struct {
@@ -48,29 +46,11 @@ func (s *statsPeople) setKeybinding(g *Gui) {
 	s.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		g.setGlobalKeybinding(event)
 
-		/*switch event.Key() {
-		case tcell.KeyEnter:
-			g.inspectTrip()
-		//case tcell.KeyCtrlR:
-		//	t.setEntries(g)
-		}*/
-
 		return event
 	})
 }
 
 func (s *statsPeople) entries(g *Gui) {
-	/*switch g.selectPage(s.active.GetSelection()) {
-	case `trips`:
-		statSlice := make([]*model.Statistic, 0)
-		statSlice = append(
-			statSlice,
-			&model.Statistic{Name: `Today`, Value: time.Now().Format(`2006-01-02`)},
-		)
-		g.state.resources.stats = statSlice
-	case `caves`:
-		g.state.resources.stats, _ = g.db.GetTopCaves()
-	case `cavers`:*/
 	stats, err := g.db.GetTopCavers()
 	if err != nil {
 		return

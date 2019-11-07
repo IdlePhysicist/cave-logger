@@ -16,19 +16,6 @@ type Caver struct {
 	Count int64
 }
 
-/*type Entry struct {
-	ID     int
-	TripID int
-	CaveID int
-	CaverID int
-}
-
-type Trip struct {
-	ID    int
-	Date 	int
-	Notes string
-}*/
-
 type Log struct {
 	ID     string
 	Date   string

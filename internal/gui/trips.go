@@ -66,7 +66,6 @@ func (t *trips) setEntries(g *Gui) {
 		"Date",
 		"Cave",
 		"Names",
-		//"Notes",
 	}
 
 	for i, header := range headers {
@@ -95,12 +94,6 @@ func (t *trips) setEntries(g *Gui) {
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(0).
 			SetExpansion(2))
-		/*
-		table.SetCell(i+1, 3, tview.NewTableCell(trip.Notes).
-			SetTextColor(tcell.ColorLightGreen).
-			SetMaxWidth(0).
-			SetExpansion(1))
-		*/
 	}
 }
 

@@ -18,7 +18,6 @@ func newTimeWindow(g *Gui) (t *timeWindow) {
 		Table: tview.NewTable().SetSelectable(false, false).SetFixed(3,1),
 	}
 
-	//t.SetTitle(` Cavers `).SetTitleAlign(tview.AlignLeft)
 	t.SetBorder(true)
 	t.setEntries(g)
 	t.setKeybinding(g)

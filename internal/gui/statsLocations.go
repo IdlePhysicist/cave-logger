@@ -3,8 +3,6 @@ package gui
 import (
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
-
-	//"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 type statsLocations struct {
