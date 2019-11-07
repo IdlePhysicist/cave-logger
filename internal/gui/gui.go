@@ -28,6 +28,7 @@ type resources struct {
 type state struct {
 	panels 	 	panels
 	//insp      *inspector
+	navigate *navigate
 	resources resources
 	stopChans map[string]chan int
 }
@@ -147,6 +148,7 @@ func (g *Gui) initPanels() {
 	statsLocations := newStatsLocations(g)
 	timeWindow := newTimeWindow(g)
 	inspector := newInspector(g)
+	navigate := newNavigate()
 
 	g.state.panels.panel = append(g.state.panels.panel, trips)
 	g.state.panels.panel = append(g.state.panels.panel, cavers)
@@ -156,6 +158,8 @@ func (g *Gui) initPanels() {
 	g.state.panels.panel = append(g.state.panels.panel, statsLocations)
 	g.state.panels.panel = append(g.state.panels.panel, timeWindow)
 	g.state.panels.panel = append(g.state.panels.panel, inspector)
+
+	g.state.navigate = navigate
 
 	// Arange the windows / tiles
 	layout := tview.NewFlex().SetDirection(tview.FlexColumn).
@@ -168,8 +172,9 @@ func (g *Gui) initPanels() {
 			0, 1, false).
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
-			AddItem(g.pages, 0, 5, true).
-			AddItem(inspector, 0, 2, false),
+			AddItem(g.pages, 0, 16, true).
+			AddItem(inspector, 0, 8, false).
+			AddItem(navigate, 0, 1, false),
 			0, 6, true)
 
 	g.statsPeople = statsPeople
@@ -187,6 +192,7 @@ func (g *Gui) goTo(page string) {
 func (g *Gui) switchPanel(panelName string) {
 	for i, panel := range g.state.panels.panel {
 		if panel.name() == panelName {
+			g.state.navigate.update(panelName)
 			panel.focus(g)
 			g.state.panels.currentPanel = i
 		} else {
