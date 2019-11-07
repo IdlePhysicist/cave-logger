@@ -41,6 +41,8 @@ func (t *trips) setKeybinding(g *Gui) {
 			g.inspectTrip()
 		//case tcell.KeyCtrlR:
 		//	t.setEntries(g)
+		case tcell.KeyTAB:
+			g.switchPanel(`menu`)
 		}
 
 		return event

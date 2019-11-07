@@ -45,9 +45,11 @@ func (m *menu) setKeybinding(g *Gui) {
 
 		switch event.Key() {
 		case tcell.KeyEnter:
-			g.selectPage()
+			g.selectPage(m.GetSelection())
 		//case tcell.KeyCtrlR:
 		//	t.setEntries(g)
+		//case tcell.KeyTAB:
+		//	g.app.SetFocus(g.pages)
 		}
 
 		return event

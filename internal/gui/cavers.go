@@ -39,6 +39,8 @@ func (c *cavers) setKeybinding(g *Gui) {
 		switch event.Key() {
 		case tcell.KeyEnter:
 			g.inspectPerson()
+		case tcell.KeyTAB:
+			g.switchPanel(`menu`)
 		}
 
 		return event

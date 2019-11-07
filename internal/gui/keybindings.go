@@ -42,6 +42,10 @@ func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 	}*/
 }
 
+//
+// INSPECTION FUNCS
+//
+
 func (g *Gui) inspectTrip() {
 	selected := g.selectedTrip()
 
@@ -94,4 +98,15 @@ func (g *Gui) formatPerson(p *model.Caver) string {
 // MISC
 //
 
-func (g *Gui) selectPage() {}
+func (g *Gui) selectPage(row, col int) {
+	var p string
+	switch row {
+	case 0:
+		p = `logs`
+	case 1:
+		p = `caves`
+	case 2:
+		p = `cavers`
+	}
+	g.switchPanel(p)
+}
