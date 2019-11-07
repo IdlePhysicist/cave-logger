@@ -1,41 +1,37 @@
 package gui
 
 import (
-	"time"
-
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
 
-	"github.com/idlephysicist/cave-logger/internal/model"
+	//"github.com/idlephysicist/cave-logger/internal/model"
 )
 
-type stats struct {
+type statsPeople struct {
 	*tview.Table
-	active *menu
 }
 
-func newStats(g *Gui, menu *menu) (s *stats) {
-	s = &stats{
+func newStatsPeople(g *Gui) (s *statsPeople) {
+	s = &statsPeople{
 		Table: tview.NewTable().SetSelectable(false, false).SetFixed(3,1),
-		active: menu,
 	}
 
-	s.SetTitle(` Stats `).SetTitleAlign(tview.AlignLeft)
+	s.SetTitle(` Cavers `).SetTitleAlign(tview.AlignLeft)
 	s.SetBorder(true)
 	s.setEntries(g)
 	s.setKeybinding(g)
 	return
 }
 
-func (s *stats) name() string {
-	return `stats`
+func (s *statsPeople) name() string {
+	return `statsPeople`
 }
 
-func (s *stats) setEntries(g *Gui) {
+func (s *statsPeople) setEntries(g *Gui) {
 	s.entries(g)
 	table := s.Clear()
 
-	for i, stat := range g.state.resources.stats {
+	for i, stat := range g.state.resources.statsPeople {
 		table.SetCell(i, 0, tview.NewTableCell(stat.Name).
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(30).
@@ -48,7 +44,7 @@ func (s *stats) setEntries(g *Gui) {
 	}
 }
 
-func (s *stats) setKeybinding(g *Gui) {
+func (s *statsPeople) setKeybinding(g *Gui) {
 	s.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		g.setGlobalKeybinding(event)
 
@@ -63,8 +59,8 @@ func (s *stats) setKeybinding(g *Gui) {
 	})
 }
 
-func (s *stats) entries(g *Gui) {
-	switch g.selectPage(s.active.GetSelection()) {
+func (s *statsPeople) entries(g *Gui) {
+	/*switch g.selectPage(s.active.GetSelection()) {
 	case `trips`:
 		statSlice := make([]*model.Statistic, 0)
 		statSlice = append(
@@ -74,20 +70,23 @@ func (s *stats) entries(g *Gui) {
 		g.state.resources.stats = statSlice
 	case `caves`:
 		g.state.resources.stats, _ = g.db.GetTopCaves()
-	case `cavers`:
-		g.state.resources.stats, _ = g.db.GetTopCavers()
+	case `cavers`:*/
+	stats, err := g.db.GetTopCavers()
+	if err != nil {
+		return
 	}
+	g.state.resources.statsPeople = stats
 }
 
-func (s *stats) updateEntries(g *Gui) {}
+func (s *statsPeople) updateEntries(g *Gui) {}
 
-func (s *stats) focus(g *Gui) {
+func (s *statsPeople) focus(g *Gui) {
 	s.SetSelectable(true, false)
 	g.app.SetFocus(s)
 }
 
-func (s *stats) unfocus() {
+func (s *statsPeople) unfocus() {
 	s.SetSelectable(false, false)
 }
 
-func (s *stats) setFilterWord(word string) {}
+func (s *statsPeople) setFilterWord(word string) {}
