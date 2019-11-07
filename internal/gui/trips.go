@@ -21,7 +21,7 @@ func newTrips(g *Gui) *trips {
 		trips: make(chan *model.Log),
 	}
 
-	trips.SetTitle(` Logs `).SetTitleAlign(tview.AlignLeft)
+	trips.SetTitle(` Trips `).SetTitleAlign(tview.AlignLeft)
 	trips.SetBorder(true)
 	trips.setEntries(g)
 	trips.setKeybinding(g)
@@ -41,6 +41,8 @@ func (t *trips) setKeybinding(g *Gui) {
 			g.inspectTrip()
 		//case tcell.KeyCtrlR:
 		//	t.setEntries(g)
+		case tcell.KeyTAB:
+			g.switchPanel(`menu`)
 		}
 
 		return event

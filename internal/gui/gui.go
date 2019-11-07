@@ -19,8 +19,10 @@ type resources struct {
 	trips  []*model.Log //trips
 	cavers []*model.Caver
 	caves  []*model.Cave
-	//inspector *inspector
-	//sidebar *sidebar
+	menu 	 []string
+	statsLocations  []*model.Statistic
+	statsPeople  		[]*model.Statistic
+	timeWindow      []*model.Statistic
 }
 
 type state struct {
@@ -41,6 +43,8 @@ type Gui struct {
 	pages *tview.Pages
 	state *state
 	db    *db.Database
+	statsLocations *statsLocations
+	statsPeople 	 *statsPeople
 }
 
 func New(db *db.Database) *Gui {
@@ -107,6 +111,24 @@ func (g *Gui) inspectorPanel() *inspector {
 	return nil
 }
 
+func (g *Gui) statsLocationsPanel() *statsLocations {
+	for _, panel := range g.state.panels.panel {
+		if panel.name() == `statsLocations` {
+			return panel.(*statsLocations)
+		}
+	}
+	return nil
+}
+
+func (g *Gui) statsPeoplePanel() *statsPeople {
+	for _, panel := range g.state.panels.panel {
+		if panel.name() == `statsPeople` {
+			return panel.(*statsPeople)
+		}
+	}
+	return nil
+}
+
 
 func (g *Gui) initPanels() {
 	// Page definitions
@@ -120,24 +142,38 @@ func (g *Gui) initPanels() {
 	g.pages.AddPage(`caves`, caves, true, true)
 	
 	// Panels
-	sidebar := newSidebar(g)
+	menu := newMenu(g)
+	statsPeople := newStatsPeople(g)
+	statsLocations := newStatsLocations(g)
+	timeWindow := newTimeWindow(g)
 	inspector := newInspector(g)
 
 	g.state.panels.panel = append(g.state.panels.panel, trips)
 	g.state.panels.panel = append(g.state.panels.panel, cavers)
 	g.state.panels.panel = append(g.state.panels.panel, caves)
-	g.state.panels.panel = append(g.state.panels.panel, sidebar)
+	g.state.panels.panel = append(g.state.panels.panel, menu)
+	g.state.panels.panel = append(g.state.panels.panel, statsPeople)
+	g.state.panels.panel = append(g.state.panels.panel, statsLocations)
+	g.state.panels.panel = append(g.state.panels.panel, timeWindow)
 	g.state.panels.panel = append(g.state.panels.panel, inspector)
 
 	// Arange the windows / tiles
 	layout := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(sidebar, 0, 1, false).
+		AddItem(tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(menu, 0, 5, false).
+			AddItem(statsPeople, 0, 20, false).
+			AddItem(statsLocations, 0, 20, false).
+			AddItem(timeWindow, 0, 2, false),
+			0, 1, false).
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
 			AddItem(g.pages, 0, 5, true).
 			AddItem(inspector, 0, 2, false),
 			0, 6, true)
 
+	g.statsPeople = statsPeople
+	g.statsLocations = statsLocations
 
 	g.app.SetRoot(layout, true)
 	g.goTo(`trips`)
@@ -145,6 +181,7 @@ func (g *Gui) initPanels() {
 
 func (g *Gui) goTo(page string) {
 	g.pages.SwitchToPage(page)
+	g.switchPanel(page)
 }
 
 func (g *Gui) switchPanel(panelName string) {

@@ -9,8 +9,8 @@ import (
 )
 
 var inspectorFormat = map[string]string{
-	`trips`   : "Date: %s\nCave: %s\nCavers: %s\nNotes: %s",
-	`people`  : "Name: %s\nClub: %s\nCount: %d",
+	`trips`    : "Date: %s\nCave: %s\nCavers: %s\nNotes: %s",
+	`people`   : "Name: %s\nClub: %s\nCount: %d",
 	`locations`: "Name: %s\nRegion: %s\nCountry: %s\nSRT: %v\nVisits: %d",
 }
 
@@ -18,12 +18,6 @@ var inputWidth = 70
 
 func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 	switch event.Rune() {
-	case 'l':
-		g.goTo(`trips`)
-	case 'o':
-		g.goTo(`caves`)
-	case 'p':
-		g.goTo(`cavers`)
 	case 'q':
 		g.Stop()
 	//case '/':
@@ -41,6 +35,10 @@ func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 		g.prevPage()
 	}*/
 }
+
+//
+// INSPECTION FUNCS
+//
 
 func (g *Gui) inspectTrip() {
 	selected := g.selectedTrip()
@@ -88,4 +86,21 @@ func (g *Gui) formatCave(l *model.Cave) string {
 
 func (g *Gui) formatPerson(p *model.Caver) string {
 	return fmt.Sprintf(inspectorFormat[`people`], p.Name, p.Club, p.Count)
+}
+
+//
+// MISC
+//
+
+func (g *Gui) selectPage(row, col int) string {
+	var p string
+	switch row {
+	case 0:
+		p = `trips`
+	case 1:
+		p = `cavers`
+	case 2:
+		p = `caves`
+	}
+	return p
 }

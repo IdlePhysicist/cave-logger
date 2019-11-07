@@ -97,6 +97,9 @@ func (db *Database) AddCaver(name, club string) (int64, error) {
 //
 // GET FUNCS
 
+//
+// TRIPS FUNCS
+
 func (db *Database) GetAllLogs() ([]*model.Log, error) {
 	// Build query
 	var query string
@@ -207,6 +210,9 @@ func (db *Database) GetLog(logID string) (*model.Log, error) { //FIXME:
 	return trips[0], err
 }
 
+//
+// PEOPLE FUNCS
+
 func (db *Database) GetAllCavers() ([]*model.Caver, error) {
 	var query string
 	query = `
@@ -219,7 +225,8 @@ func (db *Database) GetAllCavers() ([]*model.Caver, error) {
 				FROM trip_groups
 			 WHERE trip_groups.caverid = people.id
 		)
-	FROM people`
+	FROM people
+	ORDER BY name`
 	result, err := db.conn.Prepare(query)
 	if err != nil {
 		db.log.Errorf("db.getcaverlist: Failed to get cavers", err)
@@ -244,7 +251,46 @@ func (db *Database) GetAllCavers() ([]*model.Caver, error) {
 			db.log.Errorf("Scan: %v", err)
 		}
 		cavers = append(cavers, &c)
-		//cavers[id] = c
+	}
+	return cavers, err
+}
+
+func (db *Database) GetTopCavers() ([]*model.Statistic, error) {
+	var query string
+	query = `
+	SELECT 
+		people.name AS 'name',
+		(
+			SELECT COUNT(1)
+				FROM trip_groups
+			 WHERE trip_groups.caverid = people.id
+		) AS count
+	FROM people
+	ORDER BY count DESC LIMIT 15`
+	result, err := db.conn.Prepare(query)
+	if err != nil {
+		db.log.Errorf("db.gettopcavers: Failed to get cavers", err)
+	}
+
+	cavers := make([]*model.Statistic, 0)
+	for {
+		var c model.Statistic
+		
+		rowExists, err := result.Step()
+		if err != nil {
+			db.log.Errorf("db.get: Step error: %s", err)
+			return cavers, err
+		}
+
+		if !rowExists {
+			break
+		}
+		
+		err = result.Scan(&c.Name, &c.Value)
+		if err != nil {
+			db.log.Errorf("Scan: %v", err)
+		}
+		cavers = append(cavers, &c)
 	}
 	return cavers, err
 }
@@ -299,6 +345,9 @@ func (db *Database) GetCaver(personID string) (*model.Caver, error) {
 	return people[0], err
 }
 
+//
+// LOCATION FUNCS
+
 func (db *Database) GetAllCaves() ([]*model.Cave, error) {
 	var query string
 	query = `
@@ -313,7 +362,8 @@ func (db *Database) GetAllCaves() ([]*model.Cave, error) {
 			FROM trips
 			WHERE trips.caveid = locations.id
 		) AS 'visits'
-	FROM locations`
+	FROM locations
+	ORDER BY name`
 	result, err := db.conn.Prepare(query)
 	if err != nil {
 		db.log.Errorf("db.getcaverlist: Failed to get cavers", err)
@@ -340,6 +390,46 @@ func (db *Database) GetAllCaves() ([]*model.Cave, error) {
 		caves = append(caves, &c)
 	}
 	return caves, err
+}
+
+func (db *Database) GetTopCaves() ([]*model.Statistic, error) {
+	var query string
+	query = `
+	SELECT
+		locations.name AS 'name',
+		(
+			SELECT COUNT(1)
+			FROM trips
+			WHERE trips.caveid = locations.id
+		) AS visits
+	FROM locations
+	ORDER BY visits DESC LIMIT 15`
+	result, err := db.conn.Prepare(query)
+	if err != nil {
+		db.log.Errorf("db.gettopcaves: Failed to get caves", err)
+	}
+
+	stats := make([]*model.Statistic, 0)
+	for {
+		var s model.Statistic
+		
+		rowExists, err := result.Step()
+		if err != nil {
+			db.log.Errorf("db.get: Step error: %s", err)
+			return stats, err
+		}
+
+		if !rowExists {
+			break
+		}
+		
+		err = result.Scan(&s.Name, &s.Value)
+		if err != nil {
+			db.log.Errorf("Scan: %v", err)
+		}
+		stats = append(stats, &s)
+	}
+	return stats, err
 }
 
 func (db *Database) GetCave(caveID string) (*model.Cave, error) {
