@@ -16,7 +16,7 @@ func newStatsPeople(g *Gui) (s *statsPeople) {
 		Table: tview.NewTable().SetSelectable(false, false).SetFixed(3,1),
 	}
 
-	s.SetTitle(` Cavers `).SetTitleAlign(tview.AlignLeft)
+	s.SetTitle(` Top Cavers `).SetTitleAlign(tview.AlignLeft)
 	s.SetBorder(true)
 	s.setEntries(g)
 	s.setKeybinding(g)

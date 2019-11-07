@@ -266,7 +266,7 @@ func (db *Database) GetTopCavers() ([]*model.Statistic, error) {
 			 WHERE trip_groups.caverid = people.id
 		) AS count
 	FROM people
-	ORDER BY count DESC LIMIT 5 `
+	ORDER BY count DESC LIMIT 15`
 	result, err := db.conn.Prepare(query)
 	if err != nil {
 		db.log.Errorf("db.gettopcavers: Failed to get cavers", err)
@@ -403,7 +403,7 @@ func (db *Database) GetTopCaves() ([]*model.Statistic, error) {
 			WHERE trips.caveid = locations.id
 		) AS visits
 	FROM locations
-	ORDER BY visits DESC LIMIT 5 `
+	ORDER BY visits DESC LIMIT 15`
 	result, err := db.conn.Prepare(query)
 	if err != nil {
 		db.log.Errorf("db.gettopcaves: Failed to get caves", err)
