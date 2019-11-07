@@ -1,6 +1,8 @@
 package gui
 
 import (
+	"time"
+
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
 
@@ -65,7 +67,10 @@ func (s *stats) entries(g *Gui) {
 	switch g.selectPage(s.active.GetSelection()) {
 	case `trips`:
 		statSlice := make([]*model.Statistic, 0)
-		statSlice = append(statSlice, &model.Statistic{Name: `test`, Value: `1`})
+		statSlice = append(
+			statSlice,
+			&model.Statistic{Name: `Today`, Value: time.Now().Format(`2006-01-02`)},
+		)
 		g.state.resources.stats = statSlice
 	case `caves`:
 		g.state.resources.stats, _ = g.db.GetTopCaves()

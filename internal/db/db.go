@@ -97,6 +97,9 @@ func (db *Database) AddCaver(name, club string) (int64, error) {
 //
 // GET FUNCS
 
+//
+// TRIPS FUNCS
+
 func (db *Database) GetAllLogs() ([]*model.Log, error) {
 	// Build query
 	var query string
@@ -206,6 +209,9 @@ func (db *Database) GetLog(logID string) (*model.Log, error) { //FIXME:
 
 	return trips[0], err
 }
+
+//
+// PEOPLE FUNCS
 
 func (db *Database) GetAllCavers() ([]*model.Caver, error) {
 	var query string
@@ -338,6 +344,9 @@ func (db *Database) GetCaver(personID string) (*model.Caver, error) {
 
 	return people[0], err
 }
+
+//
+// LOCATION FUNCS
 
 func (db *Database) GetAllCaves() ([]*model.Cave, error) {
 	var query string
