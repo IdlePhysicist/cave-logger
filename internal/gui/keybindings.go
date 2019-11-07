@@ -98,9 +98,9 @@ func (g *Gui) selectPage(row, col int) string {
 	case 0:
 		p = `trips`
 	case 1:
-		p = `caves`
-	case 2:
 		p = `cavers`
+	case 2:
+		p = `caves`
 	}
 	return p
 }

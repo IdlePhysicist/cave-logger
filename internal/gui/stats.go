@@ -4,16 +4,18 @@ import (
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
 
-	//"github.com/idlephysicist/cave-logger/internal/model"
+	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 type stats struct {
 	*tview.Table
+	active *menu
 }
 
-func newStats(g *Gui) (s *stats) {
+func newStats(g *Gui, menu *menu) (s *stats) {
 	s = &stats{
-		Table: tview.NewTable().SetSelectable(true, false).Select(0,0).SetFixed(1,1),
+		Table: tview.NewTable().SetSelectable(false, false).SetFixed(3,1),
+		active: menu,
 	}
 
 	s.SetTitle(` Stats `).SetTitleAlign(tview.AlignLeft)
@@ -28,7 +30,20 @@ func (s *stats) name() string {
 }
 
 func (s *stats) setEntries(g *Gui) {
+	s.entries(g)
+	table := s.Clear()
 
+	for i, stat := range g.state.resources.stats {
+		table.SetCell(i, 0, tview.NewTableCell(stat.Name).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(30).
+			SetExpansion(2))
+
+		table.SetCell(i, 1, tview.NewTableCell(stat.Value).
+			SetTextColor(tcell.ColorLightGreen).
+			SetMaxWidth(30).
+			SetExpansion(1))
+	}
 }
 
 func (s *stats) setKeybinding(g *Gui) {
@@ -46,7 +61,18 @@ func (s *stats) setKeybinding(g *Gui) {
 	})
 }
 
-func (s *stats) entries(g *Gui) {}
+func (s *stats) entries(g *Gui) {
+	switch g.selectPage(s.active.GetSelection()) {
+	case `trips`:
+		statSlice := make([]*model.Statistic, 0)
+		statSlice = append(statSlice, &model.Statistic{Name: `test`, Value: `1`})
+		g.state.resources.stats = statSlice
+	case `caves`:
+		g.state.resources.stats, _ = g.db.GetTopCaves()
+	case `cavers`:
+		g.state.resources.stats, _ = g.db.GetTopCavers()
+	}
+}
 
 func (s *stats) updateEntries(g *Gui) {}
 

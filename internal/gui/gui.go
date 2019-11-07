@@ -19,8 +19,8 @@ type resources struct {
 	trips  []*model.Log //trips
 	cavers []*model.Caver
 	caves  []*model.Cave
-	//inspector *inspector
-	menu []string
+	menu 	 []string
+	stats  []*model.Statistic
 }
 
 type state struct {
@@ -41,6 +41,7 @@ type Gui struct {
 	pages *tview.Pages
 	state *state
 	db    *db.Database
+	stats *stats
 }
 
 func New(db *db.Database) *Gui {
@@ -107,6 +108,15 @@ func (g *Gui) inspectorPanel() *inspector {
 	return nil
 }
 
+func (g *Gui) statsPanel() *stats {
+	for _, panel := range g.state.panels.panel {
+		if panel.name() == `stats` {
+			return panel.(*stats)
+		}
+	}
+	return nil
+}
+
 
 func (g *Gui) initPanels() {
 	// Page definitions
@@ -121,7 +131,7 @@ func (g *Gui) initPanels() {
 	
 	// Panels
 	menu := newMenu(g)
-	stats := newStats(g)
+	stats := newStats(g, menu)
 	inspector := newInspector(g)
 
 	g.state.panels.panel = append(g.state.panels.panel, trips)
@@ -135,8 +145,8 @@ func (g *Gui) initPanels() {
 	layout := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
-			AddItem(menu, 0, 1, false),
-			//AddItem(stats, 0, 1, false),
+			AddItem(menu, 0, 1, false).
+			AddItem(stats, 0, 1, false),
 			0, 1, false).
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
@@ -144,6 +154,7 @@ func (g *Gui) initPanels() {
 			AddItem(inspector, 0, 2, false),
 			0, 6, true)
 
+	g.stats = stats
 
 	g.app.SetRoot(layout, true)
 	g.goTo(`trips`)
