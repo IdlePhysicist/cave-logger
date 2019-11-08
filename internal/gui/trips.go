@@ -47,7 +47,7 @@ func (t *trips) setKeybinding(g *Gui) {
 
 		switch event.Rune() {
 		case 'n':
-			g.createTrip()
+			g.createTripForm()
 		}
 
 		return event

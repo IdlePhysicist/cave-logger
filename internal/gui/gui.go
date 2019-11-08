@@ -210,6 +210,14 @@ func (g *Gui) currentPage() int {
 	return g.state.panels.currentPanel
 }
 
+func (g *Gui) modal(p tview.Primitive, width, height int) tview.Primitive {
+	return tview.NewGrid().
+		SetColumns(0, width, 0).
+		SetRows(0, height, 0).
+		AddItem(p, 1, 1, 1, 1, 0, 0, true)
+}
+
+
 func (g *Gui) selectedTrip() *model.Log {
 	row, _ := g.tripsPanel().GetSelection()
 	if len(g.state.resources.trips) == 0 {

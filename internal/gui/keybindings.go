@@ -13,8 +13,6 @@ var inspectorFormat = map[string]string{
 	`locations`: "Name: %s\nRegion: %s\nCountry: %s\nSRT: %v\nVisits: %d",
 }
 
-var inputWidth = 70
-
 func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 	switch event.Rune() {
 	case 'q':
