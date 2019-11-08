@@ -54,7 +54,7 @@ func (db *Database) getCaveID(cave string) (int, error) {
 	for {
 		rowExists, err := result.Step()
 		if err != nil {
-			db.log.Errorf("db.get: Step error: %s", err)
+			//db.log.Errorf("db.get: Step error: %s", err)
 			return 0, err
 		}
 
@@ -64,7 +64,7 @@ func (db *Database) getCaveID(cave string) (int, error) {
 
 		err = result.Scan(&caveID)
 		if err != nil {
-			db.log.Errorf("Scan: %v", err)
+			//db.log.Errorf("Scan: %v", err)
 			return caveID, err
 		}
 	}
@@ -94,7 +94,7 @@ func (db *Database) getCaverIDs(names string) ([]string, error) {
 	}
 
 	if len(caverIDs) != len(namesList) {
-		return caverIDs, errors.New(`length mismatch`)
+		return caverIDs, errors.New(`≥1 unknown cavers`)
 	}
 
 	return caverIDs, nil

@@ -36,7 +36,7 @@ func (g *Gui) inspectTrip() {
 }
 
 func (g *Gui) inspectCave() {
-	selected := g.selectedCave()
+	selected := g.selectedLocation()
 
 	cave, err := g.db.GetCave(selected.ID)
 	if err != nil {
@@ -82,9 +82,9 @@ func (g *Gui) selectPage(row, col int) string {
 	case 0:
 		p = `trips`
 	case 1:
-		p = `cavers`
+		p = `people`
 	case 2:
-		p = `caves`
+		p = `locations`
 	}
 	return p
 }

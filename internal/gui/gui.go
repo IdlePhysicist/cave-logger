@@ -85,18 +85,18 @@ func (g *Gui) tripsPanel() *trips {
 	return nil
 }
 
-func (g *Gui) cavesPanel() *caves {
+func (g *Gui) locationsPanel() *caves {
 	for _, panel := range g.state.panels.panel {
-		if panel.name() == `caves` {
+		if panel.name() == `locations` {
 			return panel.(*caves)
 		}
 	}
 	return nil
 }
 
-func (g *Gui) caversPanel() *cavers {
+func (g *Gui) peoplePanel() *cavers {
 	for _, panel := range g.state.panels.panel {
-		if panel.name() == `cavers` {
+		if panel.name() == `people` {
 			return panel.(*cavers)
 		}
 	}
@@ -139,8 +139,8 @@ func (g *Gui) initPanels() {
 
 	// Add pages to the "book"
 	g.pages.AddPage(`trips`, trips, true, true)
-	g.pages.AddPage(`cavers`, cavers, true, true)
-	g.pages.AddPage(`caves`, caves, true, true)
+	g.pages.AddPage(`people`, cavers, true, true)
+	g.pages.AddPage(`locations`, caves, true, true)
 	
 	// Panels
 	menu := newMenu(g)
@@ -217,20 +217,19 @@ func (g *Gui) modal(p tview.Primitive, width, height int) tview.Primitive {
 		AddItem(p, 1, 1, 1, 1, 0, 0, true)
 }
 
-func (g *Gui) warning(message, doneLabel, page string, doneFunc func()) {
+func (g *Gui) warning(message, page string, labels []string, doneFunc func()) {
 	modal := tview.NewModal().
 		SetText(message).
-		AddButtons([]string{doneLabel}).
+		AddButtons(labels).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 			g.closeAndSwitchPanel("modal", page)
-			if buttonLabel == doneLabel {
+			if buttonLabel == labels[0] {
 				doneFunc()
 			}
 		})
 
 	g.pages.AddAndSwitchToPage("modal", g.modal(modal, 80, 29), true)
 }
-
 
 func (g *Gui) selectedTrip() *model.Log {
 	row, _ := g.tripsPanel().GetSelection()
@@ -244,8 +243,8 @@ func (g *Gui) selectedTrip() *model.Log {
 	return g.state.resources.trips[row-1]
 }
 
-func (g *Gui) selectedCave() *model.Cave {
-	row, _ := g.cavesPanel().GetSelection()
+func (g *Gui) selectedLocation() *model.Cave {
+	row, _ := g.locationsPanel().GetSelection()
 	if len(g.state.resources.caves) == 0 {
 		return nil
 	}
@@ -257,7 +256,7 @@ func (g *Gui) selectedCave() *model.Cave {
 }
 
 func (g *Gui) selectedPerson() *model.Caver {
-	row, _ := g.caversPanel().GetSelection()
+	row, _ := g.peoplePanel().GetSelection()
 	if len(g.state.resources.cavers) == 0 {
 		return nil
 	}

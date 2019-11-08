@@ -29,7 +29,7 @@ func newCaves(g *Gui) *caves {
 }
 
 func (c *caves) name() string {
-	return `caves`
+	return `locations`
 }
 
 func (c *caves) setKeybinding(g *Gui) {
@@ -41,6 +41,13 @@ func (c *caves) setKeybinding(g *Gui) {
 			g.inspectCave()
 		case tcell.KeyTAB:
 			g.switchPanel(`menu`)
+		}
+
+		switch event.Rune() {
+		case 'n':
+			g.createLocationForm()
+		case 'd':
+			g.deleteLocation()
 		}
 
 		return event

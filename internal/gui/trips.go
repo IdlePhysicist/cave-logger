@@ -48,6 +48,8 @@ func (t *trips) setKeybinding(g *Gui) {
 		switch event.Rune() {
 		case 'n':
 			g.createTripForm()
+		case 'd':
+			g.deleteTrip()
 		}
 
 		return event
@@ -103,6 +105,9 @@ func (t *trips) setEntries(g *Gui) {
 }
 
 func (t *trips) updateEntries(g *Gui) {
+	g.app.QueueUpdateDraw(func() {
+		t.setEntries(g)
+	})
 }
 
 func (t *trips) focus(g *Gui) {
