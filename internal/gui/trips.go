@@ -45,6 +45,11 @@ func (t *trips) setKeybinding(g *Gui) {
 			g.switchPanel(`menu`)
 		}
 
+		switch event.Rune() {
+		case 'n':
+			g.createTrip()
+		}
+
 		return event
 	})
 }
@@ -112,7 +117,6 @@ func (t *trips) unfocus() {
 func (t *trips) setFilterWord(word string) {
 	t.filterWord = word
 }
-
 
 func (t *trips) monitoringTrips(g *Gui) {
 	ticker := time.NewTicker(5 * time.Second)
