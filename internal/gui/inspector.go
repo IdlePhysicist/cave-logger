@@ -14,6 +14,8 @@ func newInspector(g *Gui) (insp *inspector) {
 		TextView: tview.NewTextView(),
 	}
 
+	insp.SetTitle(` Inspector `).SetTitleAlign(tview.AlignLeft)
+	insp.SetBorder(true)
 	insp.setInitEntry()
 	return
 }
