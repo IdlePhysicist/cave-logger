@@ -26,23 +26,23 @@ func (g *Gui) createTripForm() {
 			g.closeAndSwitchPanel("form", "trips")
 		})
 
-	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true).ShowPage("main")
+	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)//.ShowPage("main")
 	//REVIEW: main or trips ? ^^
 }
 
 func (g *Gui) createTrip(form *tview.Form) {
-	//g.startTask("create container ", func(ctx context.Context) error {
 	err := g.db.AddLog(
 		form.GetFormItemByLabel("Date").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Cave").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Names").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
 	)
-	if err != nil {
+	if err != nil { // NOTE: Needs fixing
+		g.warning(err.Error(), `OK`, `form`, func() {return})
 		return
 	}
 
-	g.closeAndSwitchPanel("form", "trips")
+	g.closeAndSwitchPanel(`form`, `trips`)
 	g.app.QueueUpdateDraw(func() {
 		g.tripsPanel().setEntries(g)
 	})
@@ -53,3 +53,4 @@ func (g *Gui) createTrip(form *tview.Form) {
 
 //
 // DELETE FUNCS
+func (g *Gui) deleteTrip() {}

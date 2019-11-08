@@ -46,7 +46,7 @@ func (db *Database) Close() {
 // ADD FUNCS
 
 func (db *Database) AddLog(date, cave, names, notes string) error {
-	query := `INSERT INTO trips (date, caveid, caverids, notes) VALUES (?,?,?,?)`
+	query := `INSERT INTO trips (date, caveid, notes) VALUES (?,?,?)`
 
 	d, err := time.Parse(datetime, strings.Join([]string{date,`12:00:00Z`},`T`))
 	if err != nil {
@@ -57,18 +57,39 @@ func (db *Database) AddLog(date, cave, names, notes string) error {
 	caveID, err := db.getCaveID(cave)
 	if err != nil {
 		return err
-	} else if caveID == 0 {
-		// return err prompting dialog.
 	}
 
-	caverIDs := `x`//db.getCaverIDs(names)
-
-	params := []interface{}{dateStamp, caveID, caverIDs, notes}
-
-	_, err = db.insert(query, params)
+	caverIDs, err := db.getCaverIDs(names)
 	if err != nil {
 		return err
 	}
+
+	params := []interface{}{dateStamp, caveID, notes}
+	
+	if err = db.conn.Begin(); err != nil {
+		return err
+	}
+	
+	// Insert the trip itself
+	tripID, err := db.insert(query, params)
+	if err != nil {
+		_ = db.rollback()
+		return err
+	}
+
+	// Insert the group of people
+	_, err = db.insert(db.addTripGroups(tripID, caverIDs))
+	if err != nil {
+		_ = db.rollback()
+		return err
+	}
+
+	// If there are no errors commit changes
+	if err = db.conn.Commit(); err != nil {
+		_ = db.rollback()
+		return err
+	}
+
 	return nil
 }
 
@@ -496,6 +517,31 @@ func (db *Database) RemoveLog(logID string) error {
 // INTERNAL FUNCTIONS ----------------------------------------------------------
 //
 
+func (db *Database) addTripGroups(tripID int64, caverIDs []string) (string, []interface{}) {
+	// Build the query
+	paramPlaceholderTemplate := `(?,?)`
+	var paramPlaceholderGroup []string
+
+	for i := 0; i < len(caverIDs); i++ {
+		paramPlaceholderGroup = append(paramPlaceholderGroup, paramPlaceholderTemplate)
+	}
+	paramPlaceholder := strings.Join(paramPlaceholderGroup, `,`)
+
+	query := `INSERT INTO trip_groups (tripid, caverid) VALUES x`
+	query = strings.Replace(query, `x`, paramPlaceholder, 1)
+
+	// Build the parameters
+	var params []interface{}
+	for _, caverID := range caverIDs {
+		params = append(params, tripID, caverID)
+	}
+
+	return query, params
+}
+
+func (db *Database) rollback() error {
+	return db.conn.Rollback()
+}
 
 func (db *Database) insert(query string, params []interface{}) (int64, error) {
 	err := db.conn.Exec(query, params...)
@@ -505,30 +551,6 @@ func (db *Database) insert(query string, params []interface{}) (int64, error) {
 
 	return db.conn.LastInsertRowID(), nil
 }
-
-//
-// For formatting the ids for a new Log
-/*func (db *Database) getCaverIDs(names string) string {
-	var caverIDs []string
-
-	cavers, err := db.GetAllCavers()
-	if err != nil {
-		db.log.Errorf(`db.getcaverids: `)
-		return ``
-	}
-
-	for _, caver := range cavers {
-		namesList := strings.Split(names, ", ")
-
-		for _, fullName := range namesList {
-			if fullName == caver.First + `+` + caver.Last {
-				caverIDs = append(caverIDs, caver.ID)
-			}
-		}
-	}
-
-	return strings.Join(caverIDs, `|`)
-}*/
 
 /*//
 // For retrieving the ID of a cave

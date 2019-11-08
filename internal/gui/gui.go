@@ -217,6 +217,20 @@ func (g *Gui) modal(p tview.Primitive, width, height int) tview.Primitive {
 		AddItem(p, 1, 1, 1, 1, 0, 0, true)
 }
 
+func (g *Gui) warning(message, doneLabel, page string, doneFunc func()) {
+	modal := tview.NewModal().
+		SetText(message).
+		AddButtons([]string{doneLabel}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			g.closeAndSwitchPanel("modal", page)
+			if buttonLabel == doneLabel {
+				doneFunc()
+			}
+		})
+
+	g.pages.AddAndSwitchToPage("modal", g.modal(modal, 80, 29), true)
+}
+
 
 func (g *Gui) selectedTrip() *model.Log {
 	row, _ := g.tripsPanel().GetSelection()
