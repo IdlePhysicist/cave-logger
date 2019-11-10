@@ -3,6 +3,7 @@ package db
 import (
 	"errors"
 	"strings"
+	"time"
 )
 
 func (db *Database) CheckCave(inputText string) ([]string, error) {
@@ -77,7 +78,7 @@ func (db *Database) getCaveID(cave string) (int, error) {
 func (db *Database) getCaverIDs(names string) ([]string, error) {
 	var caverIDs []string
 
-	cavers, err := db.GetAllCavers()
+	cavers, err := db.GetAllPeople()
 	if err != nil {
 		//db.log.Errorf(`db.getcaverids: `)
 		return caverIDs, err
@@ -98,4 +99,41 @@ func (db *Database) getCaverIDs(names string) ([]string, error) {
 	}
 
 	return caverIDs, nil
+}
+
+//
+// For processing dates into UNIX timestamps
+func unixTimestamp(date string) (int64, error) {
+	d, err := time.Parse(datetime, strings.Join([]string{date,`12:00:00Z`},`T`))
+	if err != nil {
+		return -1, err
+	}
+	
+	return d.Unix(), nil
+}
+
+func (db *Database) verifyTrip(date, location, names, notes string) ([]interface{}, []string, error) {
+	var params []interface{}
+	var peopleIDs []string
+
+	// Conv the date to unix time
+	dateStamp, err := unixTimestamp(date)
+	if err != nil {
+		return params, peopleIDs, nil
+	}
+
+	locationID, err := db.getCaveID(location)
+	if err != nil {
+		return params, peopleIDs, nil
+	} else if locationID == 0 {
+		return params, peopleIDs, errors.New(`verifyTrip: Cave not known`)
+	}
+
+	peopleIDs, err = db.getCaverIDs(names)
+	if err != nil {
+		return params, peopleIDs, nil
+	}
+
+	params = append(params, dateStamp, locationID, notes)
+	return params, peopleIDs, nil
 }
