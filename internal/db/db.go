@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	//"errors"
+	"log"
 	"strings"
 	"time"
 
@@ -624,7 +625,7 @@ func (db *Database) RemoveLocation(id string) error {
 func (db *Database) ModifyTrip(id, date, location, names, notes string) error {
 	query := `
 		UPDATE trips
-		SET date = ?, cave = ?, names = ?, notes = ?
+		SET date = ?, caveid = ?, notes = ?
 		WHERE id = ?`
 
 	params, caverIDs, err := db.verifyTrip(date, location, names, notes)
@@ -642,13 +643,43 @@ func (db *Database) ModifyTrip(id, date, location, names, notes string) error {
 	tripID, err := db.execute(query, params)
 	if err != nil {
 		if rb_err := db.rollback(); err != nil {
-			panic(rb_err)
+			//panic(rb_err)
+			log.Fatal(rb_err, err)
 		}
 		return err
 	}
 
 	// Update the group of people
 	err = db.modifyTripGroups(tripID, caverIDs)
+	if err != nil {
+		if rb_err := db.rollback(); err != nil {
+			//panic(rb_err)
+			log.Fatal(rb_err, err)
+		}
+		return err
+	}
+
+	// If there are no errors commit changes
+	if err = db.conn.Commit(); err != nil {
+		if rb_err := db.rollback(); err != nil {
+			//panic(rb_err)
+			log.Fatal(rb_err, err)
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) ModifyPerson(id, name, club string) error {
+	query := `UPDATE people SET name = ?, club = ? WHERE id = ?`
+	params := []interface{}{name, club, id}
+
+	if err := db.conn.Begin(); err != nil {
+		return err
+	}
+
+	_, err := db.execute(query, params)
 	if err != nil {
 		if rb_err := db.rollback(); err != nil {
 			panic(rb_err)
@@ -693,34 +724,6 @@ func (db *Database) ModifyLocation(id, name, region, country string, srt bool) e
 
 	return nil
 }
-
-func (db *Database) ModifyPeople(id, name, club string) error {
-	query := `UPDATE people SET name = ?, club = ? WHERE id = ?`
-	params := []interface{}{name, club, id}
-
-	if err := db.conn.Begin(); err != nil {
-		return err
-	}
-
-	_, err := db.execute(query, params)
-	if err != nil {
-		if rb_err := db.rollback(); err != nil {
-			panic(rb_err)
-		}
-		return err
-	}
-
-	// If there are no errors commit changes
-	if err = db.conn.Commit(); err != nil {
-		if rb_err := db.rollback(); err != nil {
-			panic(rb_err)
-		}
-		return err
-	}
-
-	return nil
-}
-
 //
 // INTERNAL FUNCTIONS ----------------------------------------------------------
 //
@@ -750,14 +753,14 @@ func (db *Database) addTripGroups(tripID int64, caverIDs []string) (string, []in
 
 func (db *Database) modifyTripGroups(tripID int64, caverIDs []string) error {
 	// Build the query
-	query := `UPDATE trip_groups SET caverid = ? WHERE tripid = ?`
+	query := `UPDATE trip_groups SET caverid = ? WHERE tripid = ? AND caverid = ?`
 
 	// Build the parameters
 	var params []interface{}
 
 	// Execute
 	for _, caverID := range caverIDs {
-		params = []interface{}{params, tripID, caverID}
+		params = []interface{}{caverID, tripID, caverID}
 
 		_, err := db.execute(query, params)
 		if err != nil {

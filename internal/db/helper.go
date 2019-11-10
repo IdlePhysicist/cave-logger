@@ -119,21 +119,21 @@ func (db *Database) verifyTrip(date, location, names, notes string) ([]interface
 	// Conv the date to unix time
 	dateStamp, err := unixTimestamp(date)
 	if err != nil {
-		return params, peopleIDs, nil
+		return params, peopleIDs, err
 	}
 
 	locationID, err := db.getCaveID(location)
 	if err != nil {
-		return params, peopleIDs, nil
+		return params, peopleIDs, err
 	} else if locationID == 0 {
 		return params, peopleIDs, errors.New(`verifyTrip: Cave not known`)
 	}
 
 	peopleIDs, err = db.getCaverIDs(names)
 	if err != nil {
-		return params, peopleIDs, nil
+		return params, peopleIDs, err
 	}
 
-	params = append(params, dateStamp, locationID, notes)
+	params = []interface{}{dateStamp, locationID, notes}
 	return params, peopleIDs, nil
 }
