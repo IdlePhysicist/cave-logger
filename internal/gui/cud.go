@@ -34,7 +34,7 @@ func (g *Gui) createTripForm() {
 }
 
 func (g *Gui) createTrip(form *tview.Form) {
-	err := g.db.AddLog(
+	err := g.db.AddTrip(
 		form.GetFormItemByLabel("Date").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Cave").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Names").(*tview.InputField).GetText(),
@@ -74,7 +74,7 @@ func (g *Gui) createLocationForm() {
 }
 
 func (g *Gui) createLocation(form *tview.Form) {
-	err := g.db.AddCave(
+	err := g.db.AddLocation(
 		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Region").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Country").(*tview.InputField).GetText(),
@@ -112,7 +112,7 @@ func (g *Gui) createPersonForm() {
 }
 
 func (g *Gui) createPerson(form *tview.Form) {
-	err := g.db.AddCaver(
+	err := g.db.AddPerson(
 		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Club").(*tview.InputField).GetText(),
 	)
@@ -128,7 +128,137 @@ func (g *Gui) createPerson(form *tview.Form) {
 }
 
 //
-// UPDATE FUNCS
+// MODIFY FUNCS
+func (g *Gui) modifyTripForm() {
+	// First - what trip is selected?
+	selectedTrip := g.selectedTrip()
+
+	// Populate the form
+	form := tview.NewForm()
+	form.SetBorder(true)
+	form.SetTitle(" Modify Trip ")
+	form.SetTitleAlign(tview.AlignLeft)
+
+	form.
+		AddInputField("Date", selectedTrip.Date, inputWidth, nil, nil).
+		AddInputField("Cave", selectedTrip.Cave, inputWidth, nil, nil).
+		AddInputField("Names", selectedTrip.Names, inputWidth, nil, nil).
+		AddInputField("Notes",  selectedTrip.Notes, inputWidth, nil, nil).
+		AddButton("Apply", func() {
+			g.modifyTrip(selectedTrip.ID, form)
+		}).
+		AddButton("Cancel", func() {
+			g.closeAndSwitchPanel("form", "trips")
+		})
+
+	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
+}
+
+func (g *Gui) modifyTrip(id string, form *tview.Form) {
+	err := g.db.ModifyTrip(
+		id,
+		form.GetFormItemByLabel("Date").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("Cave").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("Names").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
+	)
+	if err != nil {
+		g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
+		return
+	}
+
+	g.closeAndSwitchPanel(`form`, `trips`)
+	g.app.QueueUpdateDraw(func() {
+		g.tripsPanel().setEntries(g)
+	})
+}
+
+
+func (g *Gui) modifyPersonForm() {
+	// First - what trip is selected?
+	selectedPerson := g.selectedPerson()
+
+	// Populate the form
+	form := tview.NewForm()
+	form.SetBorder(true)
+	form.SetTitle(" Modify Person ")
+	form.SetTitleAlign(tview.AlignLeft)
+
+	form.
+		AddInputField("Name", selectedPerson.Name, inputWidth, nil, nil).
+		AddInputField("Club", selectedPerson.Club, inputWidth, nil, nil).
+		AddButton("Apply", func() {
+			g.modifyPerson(selectedPerson.ID, form)
+		}).
+		AddButton("Cancel", func() {
+			g.closeAndSwitchPanel("form", "people")
+		})
+
+	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
+}
+
+func (g *Gui) modifyPerson(id string, form *tview.Form) {
+	err := g.db.ModifyPerson(
+		id,
+		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("Club").(*tview.InputField).GetText(),
+	)
+	if err != nil {
+		g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
+		return
+	}
+
+	g.closeAndSwitchPanel(`form`, `people`)
+	g.app.QueueUpdateDraw(func() {
+		g.peoplePanel().setEntries(g)
+	})
+}
+
+
+func (g *Gui) modifyLocationForm() {
+	// First - what trip is selected?
+	selectedLocation := g.selectedLocation()
+
+	// Populate the form
+	form := tview.NewForm()
+	form.SetBorder(true)
+	form.SetTitle(" Modify Location ")
+	form.SetTitleAlign(tview.AlignLeft)
+
+	form.
+		AddInputField("Name", selectedLocation.Name, inputWidth, nil, nil).
+		AddInputField("Region", selectedLocation.Region, inputWidth, nil, nil).
+		AddInputField("Country", selectedLocation.Country, inputWidth, nil, nil).
+		AddCheckbox("SRT", selectedLocation.SRT, nil).
+		AddButton("Apply", func() {
+			g.modifyLocation(selectedLocation.ID, form)
+		}).
+		AddButton("Cancel", func() {
+			g.closeAndSwitchPanel("form", "locations")
+		})
+
+	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
+}
+
+func (g *Gui) modifyLocation(id string, form *tview.Form) {
+	err := g.db.ModifyLocation(
+		id,
+		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("Region").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("Country").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("SRT").(*tview.Checkbox).IsChecked(),
+	)
+	if err != nil {
+		g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
+		return
+	}
+
+	g.closeAndSwitchPanel(`form`, `locations`)
+	g.app.QueueUpdateDraw(func() {
+		g.locationsPanel().setEntries(g)
+	})
+}
+
 
 //
 // DELETE FUNCS
@@ -141,7 +271,7 @@ func (g *Gui) deleteTrip() {
 	)
 
 	g.warning(message, `trips`, []string{`Yes`, `No`}, func() {
-		if err := g.db.RemoveLog(selectedTrip.ID); err != nil {
+		if err := g.db.RemoveTrip(selectedTrip.ID); err != nil {
 			g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
 			return
 		}
@@ -158,7 +288,7 @@ func (g *Gui) deleteLocation() {
 	)
 
 	g.warning(message, `locations`, []string{`Yes`, `No`}, func() {
-		if err := g.db.RemoveLog(selectedLocation.ID); err != nil {
+		if err := g.db.RemoveLocation(selectedLocation.ID); err != nil {
 			g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
 			return
 		}
@@ -175,7 +305,7 @@ func (g *Gui) deletePerson() {
 	)
 
 	g.warning(message, `people`, []string{`Yes`, `No`}, func() {
-		if err := g.db.RemoveLog(selectedPerson.ID); err != nil {
+		if err := g.db.RemovePerson(selectedPerson.ID); err != nil {
 			g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
 			return
 		}

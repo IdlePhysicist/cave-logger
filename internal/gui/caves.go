@@ -46,6 +46,8 @@ func (c *caves) setKeybinding(g *Gui) {
 		switch event.Rune() {
 		case 'n':
 			g.createLocationForm()
+		case 'u':
+			g.modifyLocationForm()
 		case 'd':
 			g.deleteLocation()
 		}
@@ -55,7 +57,7 @@ func (c *caves) setKeybinding(g *Gui) {
 }
 
 func (c *caves) entries(g *Gui) {
-	caves, err := g.db.GetAllCaves()
+	caves, err := g.db.GetAllLocations()
 	if err != nil {
 		return
 	}

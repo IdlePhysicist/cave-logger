@@ -48,6 +48,8 @@ func (t *trips) setKeybinding(g *Gui) {
 		switch event.Rune() {
 		case 'n':
 			g.createTripForm()
+		case 'u':
+			g.modifyTripForm()
 		case 'd':
 			g.deleteTrip()
 		}
@@ -57,7 +59,7 @@ func (t *trips) setKeybinding(g *Gui) {
 }
 
 func (t *trips) entries(g *Gui) {
-	trips, err := g.db.GetAllLogs()
+	trips, err := g.db.GetAllTrips()
 	if err != nil {
 		return
 	}

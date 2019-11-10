@@ -46,6 +46,8 @@ func (c *cavers) setKeybinding(g *Gui) {
 		switch event.Rune() {
 		case 'n':
 			g.createPersonForm()
+		case 'u':
+			g.modifyPersonForm()
 		case 'd':
 			g.deletePerson()
 		}
@@ -96,7 +98,7 @@ func (c *cavers) setEntries(g *Gui) {
 func (c *cavers) updateEntries(g *Gui) {}
 
 func (c *cavers) entries(g *Gui) {
-	cavers, err := g.db.GetAllCavers()
+	cavers, err := g.db.GetAllPeople()
 	if err != nil {
 		return
 	}

@@ -27,7 +27,7 @@ func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 func (g *Gui) inspectTrip() {
 	selected := g.selectedTrip()
 
-	trip, err := g.db.GetLog(selected.ID)
+	trip, err := g.db.GetTrip(selected.ID)
 	if err != nil {
 		return
 	}
@@ -38,7 +38,7 @@ func (g *Gui) inspectTrip() {
 func (g *Gui) inspectCave() {
 	selected := g.selectedLocation()
 
-	cave, err := g.db.GetCave(selected.ID)
+	cave, err := g.db.GetLocation(selected.ID)
 	if err != nil {
 		return
 	}
@@ -49,7 +49,7 @@ func (g *Gui) inspectCave() {
 func (g *Gui) inspectPerson() {
 	selected := g.selectedPerson()
 
-	caver, err := g.db.GetCaver(selected.ID)
+	caver, err := g.db.GetPerson(selected.ID)
 	if err != nil {
 		return
 	}

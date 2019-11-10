@@ -51,7 +51,7 @@ func (s *statsPeople) setKeybinding(g *Gui) {
 }
 
 func (s *statsPeople) entries(g *Gui) {
-	stats, err := g.db.GetTopCavers()
+	stats, err := g.db.GetTopPeople()
 	if err != nil {
 		return
 	}
