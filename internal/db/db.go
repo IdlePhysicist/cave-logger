@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	//"errors"
-	"log"
 	"strings"
 	"time"
 
