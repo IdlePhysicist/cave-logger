@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+  // Set up logger
   log := logrus.New()
   log.SetFormatter(&logrus.TextFormatter{})
 
@@ -26,6 +27,8 @@ func main() {
   }
   log.SetLevel(level)
 
+
+  // Read config file
   cfg := func (_yamlFile string) *model.Config {
     var _cfg model.Config
     
@@ -46,9 +49,10 @@ func main() {
 		return &_cfg
 	}(``)
 
-
+  // Initialise the database connection and handler
   db := db.New(log, cfg.Database.Filename)
-
+  
+  // Initialise the Gui / Tui
   gui := gui.New(db)
 
   if err := gui.Start(); err != nil {
