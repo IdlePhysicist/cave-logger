@@ -62,7 +62,7 @@ func (db *Database) AddTrip(date, location, names, notes string) error {
 	// Insert the trip itself
 	tripID, err := db.execute(query, params)
 	if err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -71,7 +71,7 @@ func (db *Database) AddTrip(date, location, names, notes string) error {
 	// Insert the group of people
 	_, err = db.execute(db.addTripGroups(tripID, caverIDs))
 	if err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -79,7 +79,7 @@ func (db *Database) AddTrip(date, location, names, notes string) error {
 
 	// If there are no errors commit changes
 	if err = db.conn.Commit(); err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -98,7 +98,7 @@ func (db *Database) AddLocation(name, region, country string, srt bool) error {
 
 	_, err := db.execute(query, params)
 	if err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -106,7 +106,7 @@ func (db *Database) AddLocation(name, region, country string, srt bool) error {
 
 	// If there are no errors commit changes
 	if err = db.conn.Commit(); err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -125,7 +125,7 @@ func (db *Database) AddPerson(name, club string) error {
 
 	_, err := db.execute(query, params)
 	if err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -133,7 +133,7 @@ func (db *Database) AddPerson(name, club string) error {
 
 	// If there are no errors commit changes
 	if err = db.conn.Commit(); err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -544,7 +544,7 @@ func (db *Database) RemoveTrip(id string) error {
 	// Delete trip entry
 	err := db.conn.Exec(`DELETE FROM trips WHERE id = ?`, id)
 	if err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -552,7 +552,7 @@ func (db *Database) RemoveTrip(id string) error {
 
 	err = db.conn.Exec(`DELETE FROM trip_groups WHERE tripid = ?`, id)
 	if err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -560,7 +560,7 @@ func (db *Database) RemoveTrip(id string) error {
 
 	// If there are no errors commit changes
 	if err = db.conn.Commit(); err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -577,7 +577,7 @@ func (db *Database) RemovePerson(id string) error {
 	// Delete trip entry
 	err := db.conn.Exec(`DELETE FROM people WHERE id = ?`, id)
 	if err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -585,7 +585,7 @@ func (db *Database) RemovePerson(id string) error {
 
 	// If there are no errors commit changes
 	if err = db.conn.Commit(); err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -602,7 +602,7 @@ func (db *Database) RemoveLocation(id string) error {
 	// Delete trip entry
 	err := db.conn.Exec(`DELETE FROM locations WHERE id = ?`, id)
 	if err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -610,7 +610,7 @@ func (db *Database) RemoveLocation(id string) error {
 
 	// If there are no errors commit changes
 	if err = db.conn.Commit(); err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -623,10 +623,7 @@ func (db *Database) RemoveLocation(id string) error {
 // MODIFY FUNCS ---- ----
 
 func (db *Database) ModifyTrip(id, date, location, names, notes string) error {
-	query := `
-		UPDATE trips
-		SET date = ?, caveid = ?, notes = ?
-		WHERE id = ?`
+	query := `UPDATE trips SET date = ?, caveid = ?, notes = ? WHERE id = ?`
 
 	params, caverIDs, err := db.verifyTrip(date, location, names, notes)
 	if err != nil {
@@ -640,30 +637,35 @@ func (db *Database) ModifyTrip(id, date, location, names, notes string) error {
 	}
 	
 	// Update the trip itself
-	tripID, err := db.execute(query, params)
+	_, err = db.execute(query, params)
 	if err != nil {
-		if rb_err := db.rollback(); err != nil {
-			//panic(rb_err)
-			log.Fatal(rb_err, err)
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
 		}
 		return err
 	}
 
 	// Update the group of people
-	err = db.modifyTripGroups(tripID, caverIDs)
+	_, err = db.execute(`DELETE FROM trip_groups WHERE tripid = ?`, []interface{}{id})
 	if err != nil {
-		if rb_err := db.rollback(); err != nil {
-			//panic(rb_err)
-			log.Fatal(rb_err, err)
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}	
+
+	_, err = db.execute(db.addTripGroups(id, caverIDs))
+	if err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
 		}
 		return err
 	}
 
 	// If there are no errors commit changes
 	if err = db.conn.Commit(); err != nil {
-		if rb_err := db.rollback(); err != nil {
-			//panic(rb_err)
-			log.Fatal(rb_err, err)
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
 		}
 		return err
 	}
@@ -681,7 +683,7 @@ func (db *Database) ModifyPerson(id, name, club string) error {
 
 	_, err := db.execute(query, params)
 	if err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -689,7 +691,7 @@ func (db *Database) ModifyPerson(id, name, club string) error {
 
 	// If there are no errors commit changes
 	if err = db.conn.Commit(); err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -708,7 +710,7 @@ func (db *Database) ModifyLocation(id, name, region, country string, srt bool) e
 
 	_, err := db.execute(query, params)
 	if err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -716,7 +718,7 @@ func (db *Database) ModifyLocation(id, name, region, country string, srt bool) e
 
 	// If there are no errors commit changes
 	if err = db.conn.Commit(); err != nil {
-		if rb_err := db.rollback(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
 			panic(rb_err)
 		}
 		return err
@@ -728,7 +730,7 @@ func (db *Database) ModifyLocation(id, name, region, country string, srt bool) e
 // INTERNAL FUNCTIONS ----------------------------------------------------------
 //
 
-func (db *Database) addTripGroups(tripID int64, caverIDs []string) (string, []interface{}) {
+func (db *Database) addTripGroups(tripID interface{}, caverIDs []string) (string, []interface{}) {
 	// Build the query
 	paramPlaceholderTemplate := `(?,?)`
 	var paramPlaceholderGroup []string
@@ -748,27 +750,6 @@ func (db *Database) addTripGroups(tripID int64, caverIDs []string) (string, []in
 	}
 
 	return query, params
-}
-
-
-func (db *Database) modifyTripGroups(tripID int64, caverIDs []string) error {
-	// Build the query
-	query := `UPDATE trip_groups SET caverid = ? WHERE tripid = ? AND caverid = ?`
-
-	// Build the parameters
-	var params []interface{}
-
-	// Execute
-	for _, caverID := range caverIDs {
-		params = []interface{}{caverID, tripID, caverID}
-
-		_, err := db.execute(query, params)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 //
