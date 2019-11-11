@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	//"errors"
+	"log"
 	"strings"
 	"time"
 
@@ -43,64 +45,110 @@ func (db *Database) Close() {
 //
 
 //
-// ADD FUNCS
+// ADD FUNCS ---- ----
 
-func (db *Database) AddLog(date, cave, names, notes string) error {
-	query := `INSERT INTO trips (date, caveid, caverids, notes) VALUES (?,?,?,?)`
+func (db *Database) AddTrip(date, location, names, notes string) error {
+	query := `INSERT INTO trips (date, caveid, notes) VALUES (?,?,?)`
 
-	d, err := time.Parse(datetime, strings.Join([]string{date,`12:00:00Z`},`T`))
+	params, caverIDs, err := db.verifyTrip(date, location, names, notes)
 	if err != nil {
 		return err
 	}
-	dateStamp := d.Unix()
-
-	caveID, err := db.getCaveID(cave)
-	if err != nil {
-		return err
-	} else if caveID == 0 {
-		// return err prompting dialog.
-	}
-
-	caverIDs := `x`//db.getCaverIDs(names)
-
-	params := []interface{}{dateStamp, caveID, caverIDs, notes}
-
-	_, err = db.insert(query, params)
-	if err != nil {
+	
+	if err = db.conn.Begin(); err != nil {
 		return err
 	}
+	
+	// Insert the trip itself
+	tripID, err := db.execute(query, params)
+	if err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	// Insert the group of people
+	_, err = db.execute(db.addTripGroups(tripID, caverIDs))
+	if err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	// If there are no errors commit changes
+	if err = db.conn.Commit(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
 	return nil
 }
 
-func (db *Database) AddCave(name, region, country string, srt bool) (int64, error) {
-	query := `INSERT INTO caves (name, region, country, srt) VALUES (?,?,?,?)`
+func (db *Database) AddLocation(name, region, country string, srt bool) error {
+	query := `INSERT INTO locations (name, region, country, srt) VALUES (?,?,?,?)`
 	params := []interface{}{name, region, country, srt}
 
-	newID, err := db.insert(query, params)
-	if err != nil {
-		return -1, err
+	if err := db.conn.Begin(); err != nil {
+		return err
 	}
-	return newID, nil
+
+	_, err := db.execute(query, params)
+	if err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	// If there are no errors commit changes
+	if err = db.conn.Commit(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	return nil
 }
 
-func (db *Database) AddCaver(name, club string) (int64, error) {
-	query := `INSERT INTO cavers (first, last, club) VALUES (?,?)`
+func (db *Database) AddPerson(name, club string) error {
+	query := `INSERT INTO people (name, club) VALUES (?,?)`
 	params := []interface{}{name, club}
 
-	newID, err := db.insert(query, params)
-	if err != nil {
-		return -1, err
+	if err := db.conn.Begin(); err != nil {
+		return err
 	}
-	return newID, nil
+
+	_, err := db.execute(query, params)
+	if err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	// If there are no errors commit changes
+	if err = db.conn.Commit(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	return nil
 }
 
 //
-// GET FUNCS
+// GET FUNCS ---- ----
 
 //
-// TRIPS FUNCS
+// ---- TRIPS FUNCS
 
-func (db *Database) GetAllLogs() ([]*model.Log, error) {
+func (db *Database) GetAllTrips() ([]*model.Log, error) {
 	// Build query
 	var query string
 	query = `
@@ -155,7 +203,7 @@ func (db *Database) GetAllLogs() ([]*model.Log, error) {
 	return trips, err
 }
 
-func (db *Database) GetLog(logID string) (*model.Log, error) { //FIXME: 
+func (db *Database) GetTrip(logID string) (*model.Log, error) { //FIXME: 
 	// Build query
 	var query string
 	query = `
@@ -211,9 +259,9 @@ func (db *Database) GetLog(logID string) (*model.Log, error) { //FIXME:
 }
 
 //
-// PEOPLE FUNCS
+// ---- PEOPLE FUNCS
 
-func (db *Database) GetAllCavers() ([]*model.Caver, error) {
+func (db *Database) GetAllPeople() ([]*model.Caver, error) {
 	var query string
 	query = `
 	SELECT 
@@ -255,7 +303,7 @@ func (db *Database) GetAllCavers() ([]*model.Caver, error) {
 	return cavers, err
 }
 
-func (db *Database) GetTopCavers() ([]*model.Statistic, error) {
+func (db *Database) GetTopPeople() ([]*model.Statistic, error) {
 	var query string
 	query = `
 	SELECT 
@@ -269,7 +317,7 @@ func (db *Database) GetTopCavers() ([]*model.Statistic, error) {
 	ORDER BY count DESC LIMIT 15`
 	result, err := db.conn.Prepare(query)
 	if err != nil {
-		db.log.Errorf("db.gettopcavers: Failed to get cavers", err)
+		db.log.Errorf("db.GetTopPeople: Failed to get cavers", err)
 	}
 
 	cavers := make([]*model.Statistic, 0)
@@ -295,7 +343,7 @@ func (db *Database) GetTopCavers() ([]*model.Statistic, error) {
 	return cavers, err
 }
 
-func (db *Database) GetCaver(personID string) (*model.Caver, error) {
+func (db *Database) GetPerson(personID string) (*model.Caver, error) {
 	// Build query
 	var query string
 	query = `
@@ -346,9 +394,9 @@ func (db *Database) GetCaver(personID string) (*model.Caver, error) {
 }
 
 //
-// LOCATION FUNCS
+// ---- LOCATION FUNCS
 
-func (db *Database) GetAllCaves() ([]*model.Cave, error) {
+func (db *Database) GetAllLocations() ([]*model.Cave, error) {
 	var query string
 	query = `
 	SELECT
@@ -392,7 +440,7 @@ func (db *Database) GetAllCaves() ([]*model.Cave, error) {
 	return caves, err
 }
 
-func (db *Database) GetTopCaves() ([]*model.Statistic, error) {
+func (db *Database) GetTopLocations() ([]*model.Statistic, error) {
 	var query string
 	query = `
 	SELECT
@@ -406,7 +454,7 @@ func (db *Database) GetTopCaves() ([]*model.Statistic, error) {
 	ORDER BY visits DESC LIMIT 15`
 	result, err := db.conn.Prepare(query)
 	if err != nil {
-		db.log.Errorf("db.gettopcaves: Failed to get caves", err)
+		db.log.Errorf("db.GetTopLocations: Failed to get caves", err)
 	}
 
 	stats := make([]*model.Statistic, 0)
@@ -432,7 +480,7 @@ func (db *Database) GetTopCaves() ([]*model.Statistic, error) {
 	return stats, err
 }
 
-func (db *Database) GetCave(caveID string) (*model.Cave, error) {
+func (db *Database) GetLocation(caveID string) (*model.Cave, error) {
 	// Build query
 	query := `
 	SELECT
@@ -486,18 +534,233 @@ func (db *Database) GetCave(caveID string) (*model.Cave, error) {
 
 
 //
-// DELETE FUNCS
+// DELETE FUNCS ---- ----
 
-func (db *Database) RemoveLog(logID string) error {
+func (db *Database) RemoveTrip(id string) error {
+	if err := db.conn.Begin(); err != nil {
+		return err
+	}
+	
+	// Delete trip entry
+	err := db.conn.Exec(`DELETE FROM trips WHERE id = ?`, id)
+	if err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	err = db.conn.Exec(`DELETE FROM trip_groups WHERE tripid = ?`, id)
+	if err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	// If there are no errors commit changes
+	if err = db.conn.Commit(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) RemovePerson(id string) error {
+	if err := db.conn.Begin(); err != nil {
+		return err
+	}
+	
+	// Delete trip entry
+	err := db.conn.Exec(`DELETE FROM people WHERE id = ?`, id)
+	if err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	// If there are no errors commit changes
+	if err = db.conn.Commit(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) RemoveLocation(id string) error {
+	if err := db.conn.Begin(); err != nil {
+		return err
+	}
+	
+	// Delete trip entry
+	err := db.conn.Exec(`DELETE FROM locations WHERE id = ?`, id)
+	if err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	// If there are no errors commit changes
+	if err = db.conn.Commit(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
 	return nil
 }
 
 //
+// MODIFY FUNCS ---- ----
+
+func (db *Database) ModifyTrip(id, date, location, names, notes string) error {
+	query := `UPDATE trips SET date = ?, caveid = ?, notes = ? WHERE id = ?`
+
+	params, caverIDs, err := db.verifyTrip(date, location, names, notes)
+	if err != nil {
+		return err
+	}
+	
+	params = append(params, id)
+
+	if err = db.conn.Begin(); err != nil {
+		return err
+	}
+	
+	// Update the trip itself
+	_, err = db.execute(query, params)
+	if err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	// Update the group of people
+	_, err = db.execute(`DELETE FROM trip_groups WHERE tripid = ?`, []interface{}{id})
+	if err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}	
+
+	_, err = db.execute(db.addTripGroups(id, caverIDs))
+	if err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	// If there are no errors commit changes
+	if err = db.conn.Commit(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) ModifyPerson(id, name, club string) error {
+	query := `UPDATE people SET name = ?, club = ? WHERE id = ?`
+	params := []interface{}{name, club, id}
+
+	if err := db.conn.Begin(); err != nil {
+		return err
+	}
+
+	_, err := db.execute(query, params)
+	if err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	// If there are no errors commit changes
+	if err = db.conn.Commit(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) ModifyLocation(id, name, region, country string, srt bool) error {
+	query := `UPDATE locations SET name = ?, region = ?, country = ?, srt = ? WHERE id = ?`
+	params := []interface{}{name, region, country, srt, id}
+
+	if err := db.conn.Begin(); err != nil {
+		return err
+	}
+
+	_, err := db.execute(query, params)
+	if err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	// If there are no errors commit changes
+	if err = db.conn.Commit(); err != nil {
+		if rb_err := db.rollback(); rb_err != nil {
+			panic(rb_err)
+		}
+		return err
+	}
+
+	return nil
+}
+//
 // INTERNAL FUNCTIONS ----------------------------------------------------------
 //
 
+func (db *Database) addTripGroups(tripID interface{}, caverIDs []string) (string, []interface{}) {
+	// Build the query
+	paramPlaceholderTemplate := `(?,?)`
+	var paramPlaceholderGroup []string
 
-func (db *Database) insert(query string, params []interface{}) (int64, error) {
+	for i := 0; i < len(caverIDs); i++ {
+		paramPlaceholderGroup = append(paramPlaceholderGroup, paramPlaceholderTemplate)
+	}
+	paramPlaceholder := strings.Join(paramPlaceholderGroup, `,`)
+
+	query := `INSERT INTO trip_groups (tripid, caverid) VALUES x`
+	query = strings.Replace(query, `x`, paramPlaceholder, 1)
+
+	// Build the parameters
+	var params []interface{}
+	for _, caverID := range caverIDs {
+		params = append(params, tripID, caverID)
+	}
+
+	return query, params
+}
+
+//
+// Rollback database changes
+func (db *Database) rollback() error {
+	return db.conn.Rollback()
+}
+
+//
+// Execute database query
+func (db *Database) execute(query string, params []interface{}) (int64, error) {
 	err := db.conn.Exec(query, params...)
 	if err != nil {
 		return -1, err
@@ -505,57 +768,3 @@ func (db *Database) insert(query string, params []interface{}) (int64, error) {
 
 	return db.conn.LastInsertRowID(), nil
 }
-
-//
-// For formatting the ids for a new Log
-/*func (db *Database) getCaverIDs(names string) string {
-	var caverIDs []string
-
-	cavers, err := db.GetAllCavers()
-	if err != nil {
-		db.log.Errorf(`db.getcaverids: `)
-		return ``
-	}
-
-	for _, caver := range cavers {
-		namesList := strings.Split(names, ", ")
-
-		for _, fullName := range namesList {
-			if fullName == caver.First + `+` + caver.Last {
-				caverIDs = append(caverIDs, caver.ID)
-			}
-		}
-	}
-
-	return strings.Join(caverIDs, `|`)
-}*/
-
-/*//
-// For retrieving the ID of a cave
-func (db *Database) getCaveID(cave string) (int, error) {
-	result, err := db.conn.Prepare(`SELECT id FROM caves WHERE name == ?`, cave)
-	if err != nil {
-		db.log.Errorf("db.getcaverlist: Failed to get cavers", err)
-	}
-	defer result.Close()
-
-	var caveID int
-	for {
-		rowExists, err := result.Step()
-		if err != nil {
-			db.log.Errorf("db.get: Step error: %s", err)
-			return 0, err
-		}
-
-		if !rowExists {
-			break
-		}
-		
-		err = result.Scan(&caveID)
-		if err != nil {
-			db.log.Errorf("Scan: %v", err)
-			return caveID, err
-		}
-	}
-	return caveID, err
-}*/

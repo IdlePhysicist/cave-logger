@@ -50,7 +50,7 @@ func (s *statsLocations) setKeybinding(g *Gui) {
 }
 
 func (s *statsLocations) entries(g *Gui) {
-	stats, err := g.db.GetTopCaves()
+	stats, err := g.db.GetTopLocations()
 	if err != nil {
 		return
 	}

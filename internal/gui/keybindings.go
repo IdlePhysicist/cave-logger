@@ -13,8 +13,6 @@ var inspectorFormat = map[string]string{
 	`locations`: "Name: %s\nRegion: %s\nCountry: %s\nSRT: %v\nVisits: %d",
 }
 
-var inputWidth = 70
-
 func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 	switch event.Rune() {
 	case 'q':
@@ -29,7 +27,7 @@ func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 func (g *Gui) inspectTrip() {
 	selected := g.selectedTrip()
 
-	trip, err := g.db.GetLog(selected.ID)
+	trip, err := g.db.GetTrip(selected.ID)
 	if err != nil {
 		return
 	}
@@ -38,9 +36,9 @@ func (g *Gui) inspectTrip() {
 }
 
 func (g *Gui) inspectCave() {
-	selected := g.selectedCave()
+	selected := g.selectedLocation()
 
-	cave, err := g.db.GetCave(selected.ID)
+	cave, err := g.db.GetLocation(selected.ID)
 	if err != nil {
 		return
 	}
@@ -51,7 +49,7 @@ func (g *Gui) inspectCave() {
 func (g *Gui) inspectPerson() {
 	selected := g.selectedPerson()
 
-	caver, err := g.db.GetCaver(selected.ID)
+	caver, err := g.db.GetPerson(selected.ID)
 	if err != nil {
 		return
 	}
@@ -84,9 +82,9 @@ func (g *Gui) selectPage(row, col int) string {
 	case 0:
 		p = `trips`
 	case 1:
-		p = `cavers`
+		p = `people`
 	case 2:
-		p = `caves`
+		p = `locations`
 	}
 	return p
 }

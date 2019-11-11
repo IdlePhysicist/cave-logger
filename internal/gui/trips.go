@@ -45,12 +45,21 @@ func (t *trips) setKeybinding(g *Gui) {
 			g.switchPanel(`menu`)
 		}
 
+		switch event.Rune() {
+		case 'n':
+			g.createTripForm()
+		case 'u':
+			g.modifyTripForm()
+		case 'd':
+			g.deleteTrip()
+		}
+
 		return event
 	})
 }
 
 func (t *trips) entries(g *Gui) {
-	trips, err := g.db.GetAllLogs()
+	trips, err := g.db.GetAllTrips()
 	if err != nil {
 		return
 	}
@@ -98,6 +107,9 @@ func (t *trips) setEntries(g *Gui) {
 }
 
 func (t *trips) updateEntries(g *Gui) {
+	g.app.QueueUpdateDraw(func() {
+		t.setEntries(g)
+	})
 }
 
 func (t *trips) focus(g *Gui) {
@@ -112,7 +124,6 @@ func (t *trips) unfocus() {
 func (t *trips) setFilterWord(word string) {
 	t.filterWord = word
 }
-
 
 func (t *trips) monitoringTrips(g *Gui) {
 	ticker := time.NewTicker(5 * time.Second)

@@ -6,8 +6,8 @@ func (g *Gui) startMonitoring() {
 	g.state.stopChans["caves"] = stop
 	g.state.stopChans["cavers"] = stop
 	go g.tripsPanel().monitoringTrips(g)
-	go g.cavesPanel().monitoringCaves(g)
-	go g.caversPanel().monitoringCavers(g)
+	go g.locationsPanel().monitoringCaves(g)
+	go g.peoplePanel().monitoringCavers(g)
 }
 
 func (g *Gui) stopMonitoring() {
@@ -18,6 +18,6 @@ func (g *Gui) stopMonitoring() {
 
 func (g *Gui) updateTask() {
 	g.app.QueueUpdateDraw(func() {
-		g.caversPanel().setEntries(g)
+		g.peoplePanel().setEntries(g)
 	})
 }
