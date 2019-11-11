@@ -95,7 +95,11 @@ func (c *cavers) setEntries(g *Gui) {
 	}
 }
 
-func (c *cavers) updateEntries(g *Gui) {}
+func (c *cavers) updateEntries(g *Gui) {
+	g.app.QueueUpdateDraw(func() {
+		c.setEntries(g)
+	})
+}
 
 func (c *cavers) entries(g *Gui) {
 	cavers, err := g.db.GetAllPeople()

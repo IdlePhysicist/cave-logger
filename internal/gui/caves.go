@@ -116,7 +116,11 @@ func (c *caves) setEntries(g *Gui) {
 	}
 }
 
-func (c *caves) updateEntries(g *Gui) {}
+func (c *caves) updateEntries(g *Gui) {
+	g.app.QueueUpdateDraw(func() {
+		c.setEntries(g)
+	})
+}
 
 func (c *caves) focus(g *Gui) {
 	c.SetSelectable(true, false)

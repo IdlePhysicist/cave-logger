@@ -210,7 +210,7 @@ func (g *Gui) modifyPerson(id string, form *tview.Form) {
 
 	g.closeAndSwitchPanel(`form`, `people`)
 	g.app.QueueUpdateDraw(func() {
-		g.peoplePanel().setEntries(g)
+		g.peoplePanel().updateEntries(g)//setEntries(g)
 	})
 }
 
