@@ -24,7 +24,7 @@ tables = [
   {
     "name" : "locations",
     "cols" : ["id","name","region","country","srt"],
-    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","INTEGER","TEXT","TEXT","INTEGER"]
+    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","TEXT","TEXT","TEXT","INTEGER"]
   },
   {
     "name" : "people",

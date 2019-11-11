@@ -6,12 +6,13 @@ import subprocess
 import sqlite3
 import yaml
 import os
+import sys
 
 from datetime import datetime
 
 HOME = os.environ['HOME']
-NAMES = f"{HOME}/Desktop/names.json"
-CSV = f"{HOME}/Desktop/CaveLog.csv"
+#NAMES = f"{HOME}/Desktop/names.json"
+CSV = sys.argv[1]
 
 INITSCRIPT = "./scripts/make-db.py"
 CFG = "./config/config.yml"
@@ -19,11 +20,6 @@ CFG = "./config/config.yml"
 class App(object):
   def __init__(self):
     out = subprocess.run(INITSCRIPT, capture_output=True)
-    print(out)
-
-    # Open JSON & CSV
-    with open(NAMES, 'r') as n:
-      self.nameDict = json.load(n)
     
     with open(CFG, 'r') as c:
       self.config = yaml.safe_load(c)
@@ -62,9 +58,6 @@ class App(object):
 
     for row in rows:
       code = self.process(row)
-      if not code:
-        print(f"FAILURE {row}")
-        continue
       print("SUCCESS")
 
     print("DONE")
@@ -87,58 +80,57 @@ class App(object):
     # Cavers
     knownCavers = self.getAllCavers()
     caverIDs = []
-    for caver in row['names']:
-      if caver in self.nameDict.keys():
-        fullCaver = '+'.join([self.nameDict[caver][0], self.nameDict[caver][1]])
-      else:
-        fullCaver = caver+'+'
-      
-      if fullCaver in knownCavers.keys():
-        caverIDs.append(str(knownCavers[fullCaver]))
+    for name in row['names']:
+      if name in knownCavers.keys():
+        caverIDs.append(str(knownCavers[name]))
       else:
         # Create a new one
-        if caver in self.nameDict.keys(): 
-          first = self.nameDict[caver][0]
-          last  = self.nameDict[caver][1]
-        else:
-          first = caver
-          last = ''
-        
-        newCaverID = self.createCaver({
-          'first': first,
-          'last' : last
-        })
+        newCaverID = self.createCaver({'name': name})
         caverIDs.append(str(newCaverID))
-    
-    entry.update({'caverids': '|'.join(caverIDs)})
-    
+
     # Notes
     entry.update({'notes': row['notes']})
 
-    rowid = self.createEntry(entry)
-    if not rowid:
-      return False
-    return True
+    tripID = self.createEntry(entry)
+
+    result = self.createTripGroup(tripID, caverIDs)
 
   #
   # -- Creator Methods
   #
   def createCave(self, cave):
-    query = "INSERT INTO caves (name) VALUES (?)"
+    query = "INSERT INTO locations (name) VALUES (?)"
     return self.insert(query, [ cave['name'] ])
 
   def createCaver(self, caver):
-    query = "INSERT INTO cavers (first, last) VALUES (?,?)"
-    return self.insert(query, [ caver['first'], caver['last'] ])
+    query = "INSERT INTO people (name) VALUES (?)"
+    return self.insert(query, [ caver['name'] ])
 
-  def createEntry(self, entry):
+  def createEntry(self, trip):
     query = """
-      INSERT INTO entries (date, caveid, caverids, notes)
-      VALUES (?,?,?,?)"""
+      INSERT INTO trips (date, caveid, notes)
+      VALUES (?,?,?)"""
     return self.insert(
         query,
-        [ entry['date'], entry['caveid'], entry['caverids'], entry['notes'] ]
+        [ trip['date'], trip['caveid'], trip['notes'] ]
       )
+
+  def createTripGroup(self, trip, group):
+    placeholders = []
+    params = []
+    for person in group:
+      # Add to the placeholder list
+      placeholders.append("(?,?)")
+
+      # Add to the params list
+      params.extend([trip, person])
+
+    placeholder = ",".join(placeholders)
+    query = f"""
+      INSERT INTO trip_groups (tripid, caverid)
+      VALUES {placeholder}"""
+
+    return self.insert(query, params)
 
   #
   # -- Direct DB Methods
@@ -156,13 +148,13 @@ class App(object):
   def getAllCavers(self):
     try:
       c = self.conn.cursor()
-      query = "SELECT id, first, last FROM cavers"
+      query = "SELECT id, name FROM people"
       c.execute(query)
       rows = c.fetchall()
       if not rows:
         print(f"sqlite.get: Query returned empty")
         return {}
-      return { '+'.join([r['first'],r['last']]): r['id'] for r in rows }
+      return { r['name']: r['id'] for r in rows }
 
     except sqlite3.Error as e:
       print(f"sqlite.get: An error occured {e}")
@@ -171,7 +163,7 @@ class App(object):
   def getAllCaves(self):
     try:
       c = self.conn.cursor()
-      query = "SELECT id, name FROM caves"
+      query = "SELECT id, name FROM locations"
       c.execute(query)
       rows = c.fetchall()
       if not rows:
