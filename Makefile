@@ -14,3 +14,6 @@ api:
 clean:
 	rm -f $(BUILD)/*
 	touch $(BUILD)/.keep
+
+install: api
+	mv $(BUILD)/cave-logger $(GOPATH)/bin/.
