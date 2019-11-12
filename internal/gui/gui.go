@@ -16,13 +16,13 @@ type panels struct {
 }
 
 type resources struct {
-	trips  []*model.Log //trips
-	cavers []*model.Caver
-	caves  []*model.Cave
-	menu 	 []string
-	statsLocations  []*model.Statistic
-	statsPeople  		[]*model.Statistic
-	timeWindow      []*model.Statistic
+	trips 				 []*model.Log
+	people 				 []*model.Caver
+	locations 		 []*model.Cave
+	statsLocations []*model.Statistic
+	statsPeople  	 []*model.Statistic
+	timeWindow     []*model.Statistic
+	menu 	 				 []string
 }
 
 type state struct {
@@ -206,10 +206,6 @@ func (g *Gui) closeAndSwitchPanel(removePanel, switchPanel string) {
 	g.switchPanel(switchPanel)
 }
 
-func (g *Gui) currentPage() int {
-	return g.state.panels.currentPanel
-}
-
 func (g *Gui) modal(p tview.Primitive, width, height int) tview.Primitive {
 	return tview.NewGrid().
 		SetColumns(0, width, 0).
@@ -245,24 +241,24 @@ func (g *Gui) selectedTrip() *model.Log {
 
 func (g *Gui) selectedLocation() *model.Cave {
 	row, _ := g.locationsPanel().GetSelection()
-	if len(g.state.resources.caves) == 0 {
+	if len(g.state.resources.locations) == 0 {
 		return nil
 	}
 	if row-1 < 0 {
 		return nil
 	}
 
-	return g.state.resources.caves[row-1]
+	return g.state.resources.locations[row-1]
 }
 
 func (g *Gui) selectedPerson() *model.Caver {
 	row, _ := g.peoplePanel().GetSelection()
-	if len(g.state.resources.cavers) == 0 {
+	if len(g.state.resources.people) == 0 {
 		return nil
 	}
 	if row-1 < 0 {
 		return nil
 	}
 
-	return g.state.resources.cavers[row-1]
+	return g.state.resources.people[row-1]
 }

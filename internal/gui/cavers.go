@@ -46,7 +46,7 @@ func (c *cavers) setKeybinding(g *Gui) {
 		switch event.Rune() {
 		case 'n':
 			g.createPersonForm()
-		case 'u':
+		case 'm':
 			g.modifyPersonForm()
 		case 'd':
 			g.deletePerson()
@@ -77,7 +77,7 @@ func (c *cavers) setEntries(g *Gui) {
 		})
 	}
 
-	for i, caver := range g.state.resources.cavers {
+	for i, caver := range g.state.resources.people {
 		table.SetCell(i+1, 0, tview.NewTableCell(caver.Name).
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(30).
@@ -107,7 +107,7 @@ func (c *cavers) entries(g *Gui) {
 		return
 	}
 
-	g.state.resources.cavers = cavers	
+	g.state.resources.people = cavers	
 }
 
 func (c *cavers) focus(g *Gui) {
@@ -136,4 +136,18 @@ LOOP:
 			break LOOP
 		}
 	}
+}
+
+func (g *Gui) uniqueClubs(input []*model.Caver) []string {
+	keys := make(map[string]bool)
+	uniq := []string{}
+
+	for _, person := range input {
+		if _, value := keys[person.Club]; !value {
+			keys[person.Club] = true
+			uniq = append(uniq, person.Club)
+		}
+	}
+
+	return uniq
 }

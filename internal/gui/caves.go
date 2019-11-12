@@ -46,7 +46,7 @@ func (c *caves) setKeybinding(g *Gui) {
 		switch event.Rune() {
 		case 'n':
 			g.createLocationForm()
-		case 'u':
+		case 'm':
 			g.modifyLocationForm()
 		case 'd':
 			g.deleteLocation()
@@ -62,7 +62,7 @@ func (c *caves) entries(g *Gui) {
 		return
 	}
 
-	g.state.resources.caves = caves	
+	g.state.resources.locations = caves	
 }
 
 func (c *caves) setEntries(g *Gui) {
@@ -88,7 +88,7 @@ func (c *caves) setEntries(g *Gui) {
 		})
 	}
 
-	for i, cave := range g.state.resources.caves {
+	for i, cave := range g.state.resources.locations {
 		table.SetCell(i+1, 0, tview.NewTableCell(cave.Name).
 			SetTextColor(tcell.ColorLightGreen).
 			SetMaxWidth(30).
@@ -148,4 +148,32 @@ LOOP:
 			break LOOP
 		}
 	}
+}
+
+func (g *Gui) uniqueRegion(input []*model.Cave) []string {
+	keys := make(map[string]bool)
+	uniq := []string{}
+
+	for _, location := range input {
+		if _, value := keys[location.Region]; !value {
+			keys[location.Region] = true
+			uniq = append(uniq, location.Region)
+		}
+	}
+
+	return uniq
+}
+
+func (g *Gui) uniqueCountry(input []*model.Cave) []string {
+	keys := make(map[string]bool)
+	uniq := []string{}
+
+	for _, location := range input {
+		if _, value := keys[location.Country]; !value {
+			keys[location.Country] = true
+			uniq = append(uniq, location.Country)
+		}
+	}
+
+	return uniq
 }
