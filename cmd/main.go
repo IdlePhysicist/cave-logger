@@ -1,11 +1,13 @@
 package main
 
 import (
+  "fmt"
   "gopkg.in/yaml.v2"
   "io/ioutil"
   "os"
 
   "github.com/sirupsen/logrus"
+  flag "github.com/spf13/pflag"
 
   "github.com/idlephysicist/cave-logger/internal/db"
   "github.com/idlephysicist/cave-logger/internal/gui"
@@ -13,6 +15,10 @@ import (
 )
 
 func main() {
+  // Parse cfg override
+  var cfgOverride string
+  flag.StringVarP(&cfgOverride, `config`, `c`, ``, `Config file override`)
+
   // Set up logger
   log := logrus.New()
   log.SetFormatter(&logrus.TextFormatter{})
@@ -33,7 +39,7 @@ func main() {
     var _cfg model.Config
     
     if _yamlFile == `` {
-      _yamlFile = `./config/config.yml`
+      _yamlFile = fmt.Sprintf("%s/config/cave-logger/config.yml", os.Getenv("HOME"))
     }
 		
 		yamlFile, err := ioutil.ReadFile(_yamlFile)
@@ -47,7 +53,7 @@ func main() {
 		}
 
 		return &_cfg
-	}(``)
+	}(cfgOverride)
 
   // Initialise the database connection and handler
   db := db.New(log, cfg.Database.Filename)
