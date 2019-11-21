@@ -7,7 +7,7 @@ import shutil
 HOME = os.environ["HOME"]
 CFGFILE = "./config/config.yml"
 
-NEWPATH = f"{HOME}/config/cave-logger"
+NEWPATH = f"{HOME}/.config/cave-logger"
 
 try:
   os.makedirs(NEWPATH, 0o755)
