@@ -37,11 +37,11 @@ func main() {
   // Read config file
   cfg := func (_yamlFile string) *model.Config {
     var _cfg model.Config
-    
+
     if _yamlFile == `` {
-      _yamlFile = fmt.Sprintf("%s/config/cave-logger/config.yml", os.Getenv("HOME"))
+      _yamlFile = fmt.Sprintf("%s/.config/cave-logger/config.yml", os.Getenv("HOME"))
     }
-		
+
 		yamlFile, err := ioutil.ReadFile(_yamlFile)
 		if err != nil {
 			log.Fatalf("main.readfile: %v", err)
@@ -57,7 +57,7 @@ func main() {
 
   // Initialise the database connection and handler
   db := db.New(log, cfg.Database.Filename)
-  
+
   // Initialise the Gui / Tui
   gui := gui.New(db)
 
