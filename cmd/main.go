@@ -5,6 +5,7 @@ import (
   "gopkg.in/yaml.v2"
   "io/ioutil"
   "os"
+  "strings"
 
   "github.com/sirupsen/logrus"
   flag "github.com/spf13/pflag"
@@ -18,6 +19,7 @@ func main() {
   // Parse cfg override
   var cfgOverride string
   flag.StringVarP(&cfgOverride, `config`, `c`, ``, `Config file override`)
+  flag.Parse()
 
   // Set up logger
   log := logrus.New()
@@ -54,6 +56,11 @@ func main() {
 
 		return &_cfg
 	}(cfgOverride)
+
+  cfg.Database.Filename = strings.Join(
+    []string{os.Getenv("HOME"), cfg.Database.Filename},
+    "/",
+  )
 
   // Initialise the database connection and handler
   db := db.New(log, cfg.Database.Filename)

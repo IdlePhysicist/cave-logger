@@ -7,7 +7,7 @@ import shutil
 HOME = os.environ["HOME"]
 CFGFILE = "./config/config.yml"
 
-NEWPATH = f"{HOME}/.config/cave-logger"
+NEWPATH = ".config/cave-logger"
 
 try:
   os.makedirs(NEWPATH, 0o755)
@@ -17,10 +17,13 @@ except FileExistsError:
 with open(CFGFILE, 'r') as c:
   cfg = yaml.safe_load(c)
 
-shutil.copy(cfg['database']['filename'], f"{NEWPATH}/")
-shutil.copy(CFGFILE, f"{NEWPATH}/")
+shutil.copy(
+  '/'.join([HOME,cfg['database']['filename']]),
+  f"{HOME}/{NEWPATH}/"
+)
+shutil.copy(CFGFILE, f"{HOME}/{NEWPATH}/")
 
-cfg['database']['filename'] = f"{NEWPATH}/{cfg['database']['filename'].split('/')[-1]}"
+cfg['database']['filename'] = f"{HOME}/{NEWPATH}/{cfg['database']['filename'].split('/')[-1]}"
 
-with open(f"{NEWPATH}/config.yml", 'w') as c:
+with open(f"{HOME}/{NEWPATH}/config.yml", 'w') as c:
   yaml.dump(cfg, c)
