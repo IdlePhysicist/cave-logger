@@ -29,7 +29,7 @@ To run in docker:
 
 1. Clone or download the repo, and naviagte to the repo directory
 2. Follow steps 3 & 4 from above
-3. ./run-in-docker
+3. `./run-in-docker`
 
 ## Help
 
