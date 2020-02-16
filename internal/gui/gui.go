@@ -201,9 +201,18 @@ func (g *Gui) switchPanel(panelName string) {
 	}
 }
 
-func (g *Gui) closeAndSwitchPanel(removePanel, switchPanel string) {
+func (g *Gui) closeAndSwitchPanel(removePanel, switchTo string) {
 	g.pages.RemovePage(removePanel).ShowPage("main")
-	g.switchPanel(switchPanel)
+  num := 0
+  switch switchTo {
+  case `people`:
+    num = 1
+  case `locations`:
+    num = 2
+  default:
+    num = 0
+  }
+  g.goTo(g.selectPage(num, 0))
 }
 
 func (g *Gui) currentPage() int {
@@ -266,3 +275,4 @@ func (g *Gui) selectedPerson() *model.Caver {
 
 	return g.state.resources.cavers[row-1]
 }
+
