@@ -44,18 +44,18 @@ func main() {
       _yamlFile = fmt.Sprintf("%s/.config/cave-logger/config.yml", os.Getenv("HOME"))
     }
 
-		yamlFile, err := ioutil.ReadFile(_yamlFile)
-		if err != nil {
-			log.Fatalf("main.readfile: %v", err)
-		}
+    yamlFile, err := ioutil.ReadFile(_yamlFile)
+    if err != nil {
+      log.Fatalf("main.readfile: %v", err)
+    }
 
-		err = yaml.Unmarshal(yamlFile, &_cfg)
-		if err != nil {
-			log.Fatalf("main.unmarshalYAML: %v", err)
-		}
+    err = yaml.Unmarshal(yamlFile, &_cfg)
+    if err != nil {
+      log.Fatalf("main.unmarshalYAML: %v", err)
+    }
 
-		return &_cfg
-	}(cfgOverride)
+    return &_cfg
+  }(cfgOverride)
 
   cfg.Database.Filename = strings.Join(
     []string{os.Getenv("HOME"), cfg.Database.Filename},

@@ -1,141 +1,141 @@
 package gui
 
 import (
-	"time"
+  "time"
 
-	"github.com/gdamore/tcell"
-	"github.com/rivo/tview"
+  "github.com/gdamore/tcell"
+  "github.com/rivo/tview"
 
-	"github.com/idlephysicist/cave-logger/internal/model"
+  "github.com/idlephysicist/cave-logger/internal/model"
 )
 
 type trips struct {
-	*tview.Table
-	trips			 chan *model.Log
-	filterWord string
+  *tview.Table
+  trips			 chan *model.Log
+  filterWord string
 }
 
 func newTrips(g *Gui) *trips {
-	trips := &trips{
-		Table: tview.NewTable().SetSelectable(true, false).Select(0,0).SetFixed(1,1),
-		trips: make(chan *model.Log),
-	}
+  trips := &trips{
+    Table: tview.NewTable().SetSelectable(true, false).Select(0,0).SetFixed(1,1),
+    trips: make(chan *model.Log),
+  }
 
-	trips.SetTitle(` Trips `).SetTitleAlign(tview.AlignLeft)
-	trips.SetBorder(true)
-	trips.setEntries(g)
-	trips.setKeybinding(g)
-	return trips
+  trips.SetTitle(` Trips `).SetTitleAlign(tview.AlignLeft)
+  trips.SetBorder(true)
+  trips.setEntries(g)
+  trips.setKeybinding(g)
+  return trips
 }
 
 func (t *trips) name() string {
-	return `trips`
+  return `trips`
 }
 
 func (t *trips) setKeybinding(g *Gui) {
-	t.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		g.setGlobalKeybinding(event)
+  t.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+    g.setGlobalKeybinding(event)
 
-		switch event.Key() {
-		case tcell.KeyEnter:
-			g.inspectTrip()
-		//case tcell.KeyCtrlR:
-		//	t.setEntries(g)
-		case tcell.KeyTAB:
-			g.switchPanel(`menu`)
-		}
+    switch event.Key() {
+    case tcell.KeyEnter:
+      g.inspectTrip()
+    //case tcell.KeyCtrlR:
+    //	t.setEntries(g)
+    case tcell.KeyTAB:
+      g.switchPanel(`menu`)
+    }
 
-		switch event.Rune() {
-		case 'n':
-			g.createTripForm()
-		case 'm':
-			g.modifyTripForm()
-		case 'd':
-			g.deleteTrip()
-		}
+    switch event.Rune() {
+    case 'n':
+      g.createTripForm()
+    case 'm':
+      g.modifyTripForm()
+    case 'd':
+      g.deleteTrip()
+    }
 
-		return event
-	})
+    return event
+  })
 }
 
 func (t *trips) entries(g *Gui) {
-	trips, err := g.db.GetAllTrips()
-	if err != nil {
-		return
-	}
+  trips, err := g.db.GetAllTrips()
+  if err != nil {
+    return
+  }
 
-	g.state.resources.trips = trips	
+  g.state.resources.trips = trips	
 }
 
 func (t *trips) setEntries(g *Gui) {
-	t.entries(g)
-	table := t.Clear()
+  t.entries(g)
+  table := t.Clear()
 
-	headers := []string{
-		"Date",
-		"Cave",
-		"Names",
-	}
+  headers := []string{
+    "Date",
+    "Cave",
+    "Names",
+  }
 
-	for i, header := range headers {
-		table.SetCell(0, i, &tview.TableCell{
-			Text:            header,
-			NotSelectable:   true,
-			Align:           tview.AlignLeft,
-			Color:           tcell.ColorWhite,
-			BackgroundColor: tcell.ColorDefault,
-			Attributes:      tcell.AttrBold,
-		})
-	}
+  for i, header := range headers {
+    table.SetCell(0, i, &tview.TableCell{
+      Text:            header,
+      NotSelectable:   true,
+      Align:           tview.AlignLeft,
+      Color:           tcell.ColorWhite,
+      BackgroundColor: tcell.ColorDefault,
+      Attributes:      tcell.AttrBold,
+    })
+  }
 
-	for i, trip := range g.state.resources.trips {
-		table.SetCell(i+1, 0, tview.NewTableCell(trip.Date).
-			SetTextColor(tcell.ColorLightGreen).
-			SetMaxWidth(30).
-			SetExpansion(1))
+  for i, trip := range g.state.resources.trips {
+    table.SetCell(i+1, 0, tview.NewTableCell(trip.Date).
+      SetTextColor(tcell.ColorLightGreen).
+      SetMaxWidth(30).
+      SetExpansion(1))
 
-		table.SetCell(i+1, 1, tview.NewTableCell(trip.Cave).
-			SetTextColor(tcell.ColorLightGreen).
-			SetMaxWidth(30).
-			SetExpansion(1))
+    table.SetCell(i+1, 1, tview.NewTableCell(trip.Cave).
+      SetTextColor(tcell.ColorLightGreen).
+      SetMaxWidth(30).
+      SetExpansion(1))
 
-		table.SetCell(i+1, 2, tview.NewTableCell(trip.Names).
-			SetTextColor(tcell.ColorLightGreen).
-			SetMaxWidth(0).
-			SetExpansion(2))
-	}
+    table.SetCell(i+1, 2, tview.NewTableCell(trip.Names).
+      SetTextColor(tcell.ColorLightGreen).
+      SetMaxWidth(0).
+      SetExpansion(2))
+  }
 }
 
 func (t *trips) updateEntries(g *Gui) {
-	g.app.QueueUpdateDraw(func() {
-		t.setEntries(g)
-	})
+  g.app.QueueUpdateDraw(func() {
+    t.setEntries(g)
+  })
 }
 
 func (t *trips) focus(g *Gui) {
-	t.SetSelectable(true, false)
-	g.app.SetFocus(t)
+  t.SetSelectable(true, false)
+  g.app.SetFocus(t)
 }
 
 func (t *trips) unfocus() {
-	t.SetSelectable(false, false)
+  t.SetSelectable(false, false)
 }
 
 func (t *trips) setFilterWord(word string) {
-	t.filterWord = word
+  t.filterWord = word
 }
 
 func (t *trips) monitoringTrips(g *Gui) {
-	ticker := time.NewTicker(5 * time.Second)
+  ticker := time.NewTicker(5 * time.Second)
 
 LOOP:
-	for {
-		select {
-		case <-ticker.C:
-			t.updateEntries(g)
-		case <-g.state.stopChans["trips"]:
-			ticker.Stop()
-			break LOOP
-		}
-	}
+  for {
+    select {
+    case <-ticker.C:
+      t.updateEntries(g)
+    case <-g.state.stopChans["trips"]:
+      ticker.Stop()
+      break LOOP
+    }
+  }
 }

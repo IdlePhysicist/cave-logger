@@ -201,7 +201,7 @@ func (g *Gui) switchPanel(panelName string) {
 }
 
 func (g *Gui) closeAndSwitchPanel(removePanel, switchTo string) {
-	g.pages.RemovePage(removePanel).ShowPage("main")
+  g.pages.RemovePage(removePanel).ShowPage("main")
   num := 0
   switch switchTo {
   case `people`:
@@ -215,7 +215,7 @@ func (g *Gui) closeAndSwitchPanel(removePanel, switchTo string) {
 }
 
 func (g *Gui) currentPage() int {
-	return g.state.panels.currentPanel
+  return g.state.panels.currentPanel
 }
 
 func (g *Gui) modal(p tview.Primitive, width, height int) tview.Primitive {
