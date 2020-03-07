@@ -28,7 +28,7 @@ func New(log *logrus.Logger, dbFN string) *Database {
 
 	hldr, err := sqlite3.Open(dbFN)
 	if err != nil {
-		log.Fatalf("database.new: Cannot establish database connection", err)
+		log.Fatalf("database.new: Cannot establish connection to %s: %v", dbFN, err)
 	}
 	db.conn = hldr
 	return &db
