@@ -48,7 +48,7 @@ func (t *trips) setKeybinding(g *Gui) {
 		switch event.Rune() {
 		case 'n':
 			g.createTripForm()
-		case 'u':
+		case 'm':
 			g.modifyTripForm()
 		case 'd':
 			g.deleteTrip()
