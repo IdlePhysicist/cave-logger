@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 from datetime import datetime
+import os
 import sys
 import sqlite3
 import uuid
 import yaml
 
 NOW = datetime.now().strftime("%Y-%m-%dT%H_%M")
+HOME = os.environ["HOME"]
+NEWPATH = "{}/.config/cave-logger".format(HOME)
 
 if sys.version_info < (3,):
   print("""
@@ -13,6 +16,13 @@ Why are you not using Python 3 by now?
 Even I am...
 Alas this script will still try to run.\n"""
   )
+
+
+try:
+  os.makedirs(NEWPATH, 0o755)
+except FileExistsError:
+  print("Directory exists moving on")
+
 
 sqliteFile = str(uuid.uuid4()) + '.db'
 tables = [
@@ -38,7 +48,7 @@ tables = [
   }
 ]
 
-conn = sqlite3.connect("/".join(["./config", sqliteFile]))
+conn = sqlite3.connect("/".join([NEWPATH, sqliteFile]))
 print("Connected to new sqlite database")
 print("Database file name: ", sqliteFile)
 
@@ -64,11 +74,11 @@ conn.commit()
 print("Created {} database tables".format(len(tables)))
 conn.close()
 
-CONFIG_FN = './config/config.yml'
+CONFIG_FN = '{}/config.yml'.format(NEWPATH)
 with open(CONFIG_FN, 'w') as c:
   config = {
     'database': {
-      'filename': './config/{}'.format(sqliteFile),
+      'filename': '/'.join([NEWPATH, sqliteFile]),
       'created' : NOW
     }
   }
