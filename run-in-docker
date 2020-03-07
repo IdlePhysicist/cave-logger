@@ -1,0 +1,11 @@
+#!/bin/bash
+
+docker build -t cave-logger .
+
+docker run \
+  --interactive \
+  --tty \
+  --volume $HOME/.config/cave-logger:/root/.config/cave-logger \
+  cave-logger \
+  cave-logger
+

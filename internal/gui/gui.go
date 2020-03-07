@@ -200,9 +200,22 @@ func (g *Gui) switchPanel(panelName string) {
   }
 }
 
-func (g *Gui) closeAndSwitchPanel(removePanel, switchPanel string) {
-  g.pages.RemovePage(removePanel).ShowPage("main")
-  g.switchPanel(switchPanel)
+func (g *Gui) closeAndSwitchPanel(removePanel, switchTo string) {
+	g.pages.RemovePage(removePanel).ShowPage("main")
+  num := 0
+  switch switchTo {
+  case `people`:
+    num = 1
+  case `locations`:
+    num = 2
+  default:
+    num = 0
+  }
+  g.goTo(g.selectPage(num, 0))
+}
+
+func (g *Gui) currentPage() int {
+	return g.state.panels.currentPanel
 }
 
 func (g *Gui) modal(p tview.Primitive, width, height int) tview.Primitive {
@@ -261,3 +274,4 @@ func (g *Gui) selectedPerson() *model.Caver {
 
   return g.state.resources.people[row-1]
 }
+

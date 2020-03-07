@@ -5,6 +5,7 @@ import (
   "gopkg.in/yaml.v2"
   "io/ioutil"
   "os"
+  "strings"
 
   "github.com/sirupsen/logrus"
   flag "github.com/spf13/pflag"
@@ -18,6 +19,7 @@ func main() {
   // Parse cfg override
   var cfgOverride string
   flag.StringVarP(&cfgOverride, `config`, `c`, ``, `Config file override`)
+  flag.Parse()
 
   // Set up logger
   log := logrus.New()
@@ -37,11 +39,11 @@ func main() {
   // Read config file
   cfg := func (_yamlFile string) *model.Config {
     var _cfg model.Config
-    
+
     if _yamlFile == `` {
-      _yamlFile = fmt.Sprintf("%s/config/cave-logger/config.yml", os.Getenv("HOME"))
+      _yamlFile = fmt.Sprintf("%s/.config/cave-logger/config.yml", os.Getenv("HOME"))
     }
-		
+
 		yamlFile, err := ioutil.ReadFile(_yamlFile)
 		if err != nil {
 			log.Fatalf("main.readfile: %v", err)
@@ -55,9 +57,14 @@ func main() {
 		return &_cfg
 	}(cfgOverride)
 
+  cfg.Database.Filename = strings.Join(
+    []string{os.Getenv("HOME"), cfg.Database.Filename},
+    "/",
+  )
+
   // Initialise the database connection and handler
   db := db.New(log, cfg.Database.Filename)
-  
+
   // Initialise the Gui / Tui
   gui := gui.New(db)
 

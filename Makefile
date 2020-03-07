@@ -1,19 +1,21 @@
 # Environment Variables
 CGO=1
-OS=darwin
 SRC=cmd
 BUILD=build
 
-default: main
+default: darwin
 
-main: clean api 
+main: darwin
 
-api:
-	env CGO_ENABLED=$(CGO) GOOS=$(OS) go build -o $(BUILD)/cave-logger $(SRC)/main.go
+linux: clean
+	env CGO_ENABLED=$(CGO) GOOS=$@ go build -o $(BUILD)/cave-logger $(SRC)/main.go
+
+darwin: clean
+	env CGO_ENABLED=$(CGO) GOOS=$@ go build -o $(BUILD)/cave-logger $(SRC)/main.go
 
 clean:
 	rm -f $(BUILD)/*
 	touch $(BUILD)/.keep
 
-install: api
+install:
 	mv $(BUILD)/cave-logger $(GOPATH)/bin/.
