@@ -20,15 +20,14 @@ You can install by the following set of instructions:
 3. Assuming the binary has built correctly then you have two courses of action:
     - A. If you have no data to import from another media (or wish to manually insert your data) then simply run `./scripts/make-db.py` and this will create a correctly formatted sqlite database and a config file
     - B. If you do wish to import existing records then I have a Python script under `./scripts/csv2sqlite.py` that you can modify to your purposes. Note this script will create the database for itself.
-4. Following this run `scripts/move-configs.py` to move the database and configs to `$HOME/config/cave-logger`.
-5. Finally run `make install`.
-6. You will now (provided you have a GOPATH set up) be able to run the application by running `cave-logger` in your shell. 
+4. Finally run `make install`.
+5. You will now (provided you have a GOPATH set up) be able to run the application by running `cave-logger` in your shell. 
 
 #### Docker
 To run in docker:
 
 1. Clone or download the repo, and naviagte to the repo directory
-2. Follow steps 3 & 4 from above
+2. Follow step 3 from above
 3. `./run-in-docker`
 
 ## Help
