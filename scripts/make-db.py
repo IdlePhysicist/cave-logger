@@ -21,7 +21,28 @@ Alas this script will still try to run.\n"""
 try:
   os.makedirs(NEWPATH, 0o755)
 except FileExistsError:
-  print("Directory exists moving on")
+  print("Config directory exists \nChecking for existing configs")
+
+  # Now we check the config/cave-logger dir for files that we would expect
+  os.chdir(NEWPATH)
+  files = os.listdir()
+  if files:
+    db = False
+    cfg = False
+    for f in files:
+      if '.db' in f:
+        db = f
+      elif 'config.yml' == f:
+        cfg = f
+
+    with open(cfg, 'r') as f:
+      try:
+        fn = yaml.safe_load(f)['database']['filename']
+        if db in fn:
+          print("Found pre-existing configs aborting...")
+          sys.exit()
+      except KeyError:
+        pass
 
 
 sqliteFile = str(uuid.uuid4()) + '.db'
