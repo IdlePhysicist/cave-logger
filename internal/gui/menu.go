@@ -31,7 +31,7 @@ func (m *menu) setEntries(g *Gui) {
 
   for i, option := range g.state.resources.menu {
     table.SetCell(i, 0, tview.NewTableCell(option).
-      SetTextColor(tcell.ColorLightGreen).
+      SetTextColor(tcell.ColorWhite).
       SetMaxWidth(30).
       SetExpansion(1))
   }

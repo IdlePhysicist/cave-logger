@@ -79,17 +79,17 @@ func (c *cavers) setEntries(g *Gui) {
 
   for i, caver := range g.state.resources.people {
     table.SetCell(i+1, 0, tview.NewTableCell(caver.Name).
-      SetTextColor(tcell.ColorLightGreen).
+      SetTextColor(tcell.ColorWhite).
       SetMaxWidth(30).
       SetExpansion(1))
 
     table.SetCell(i+1, 1, tview.NewTableCell(caver.Club).
-      SetTextColor(tcell.ColorLightGreen).
+      SetTextColor(tcell.ColorWhite).
       SetMaxWidth(0).
       SetExpansion(1))
 
     table.SetCell(i+1, 2, tview.NewTableCell(strconv.FormatInt(caver.Count, 10)).
-      SetTextColor(tcell.ColorLightGreen).
+      SetTextColor(tcell.ColorWhite).
       SetMaxWidth(0).
       SetExpansion(1))
   }

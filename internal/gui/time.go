@@ -34,12 +34,12 @@ func (t *timeWindow) setEntries(g *Gui) {
 
   for i, stat := range g.state.resources.timeWindow {
     table.SetCell(i, 0, tview.NewTableCell(stat.Name).
-      SetTextColor(tcell.ColorLightGreen).
+      SetTextColor(tcell.ColorWhite).
       SetMaxWidth(30).
       SetExpansion(2))
 
     table.SetCell(i, 1, tview.NewTableCell(stat.Value).
-      SetTextColor(tcell.ColorLightGreen).
+      SetTextColor(tcell.ColorWhite).
       SetMaxWidth(30).
       SetExpansion(1))
   }
