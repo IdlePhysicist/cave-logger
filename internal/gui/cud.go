@@ -20,8 +20,9 @@ func (g *Gui) createTripForm() {
 
   caveField := tview.NewInputField().
     SetLabel("Cave").
+		SetAutocompleteMultipleEntries(false).
     SetFieldWidth(inputWidth)
-  caveField.SetAutocompleteFunc(func(current string) (matches []string) {
+  caveField.SetAutocompleteFunc(func(current string) (matches []interface{}) {
     if len(current) == 0 {
       return
     }
@@ -35,10 +36,56 @@ func (g *Gui) createTripForm() {
     return
   })
 
+	// Caver Field
+	caverField := tview.NewInputField().
+		SetLabel("Names").
+		SetAutocompleteMultipleEntries(true).
+		SetFieldWidth(inputWidth)
+	caverField.SetAutocompleteFunc(func(current string) (matches []interface{}) {
+		if len(current) == 0 {
+			return []interface{}{[2]string{``,``}}
+		}
+
+		names := strings.Split(current, `,`)
+
+		// Process preceeding names
+		for _, n := range names {
+			n = strings.TrimPrefix(n, ` `)
+		}
+
+		var lastPart string
+		if len(names) == 0 {	// Then we're still on the first name
+			lastPart = current
+		} else {
+			lastPart = names[len(names)-1]	// To get the last name
+		}
+
+		lastPart = strings.TrimPrefix(lastPart, ` `)	// We should still trim whitespace
+
+		if len(lastPart) == 0 {
+			return []interface{}{[2]string{``,``}}
+		}
+
+		for _, caver := range g.state.resources.people {
+			if strings.HasPrefix(strings.ToLower(caver.Name), strings.ToLower(lastPart)) {
+				matches = append(
+					matches,
+					[2]string{
+						caver.Name,
+						textFactory(names[0:len(names)-1], `, `),
+					},
+				)
+			}
+		}
+
+		return
+	})
+
+
   form.
     AddInputField("Date", time.Now().Format(`2006-01-02`), inputWidth, nil, nil).
     AddFormItem(caveField).
-    AddInputField("Names", "", inputWidth, nil, nil).
+    AddFormItem(caverField).
     AddInputField("Notes", "", inputWidth, nil, nil).
     AddButton("Add", func() {
       g.createTrip(form)
@@ -77,8 +124,9 @@ func (g *Gui) createLocationForm() {
 
   regionField := tview.NewInputField().
     SetLabel("Region").
+		SetAutocompleteMultipleEntries(false).
     SetFieldWidth(inputWidth)
-  regionField.SetAutocompleteFunc(func(current string) (matches []string) {
+  regionField.SetAutocompleteFunc(func(current string) (matches []interface{}) {
     if len(current) == 0 {
       return
     }
@@ -93,8 +141,9 @@ func (g *Gui) createLocationForm() {
 
   countryField := tview.NewInputField().
     SetLabel("Country").
+		SetAutocompleteMultipleEntries(false).
     SetFieldWidth(inputWidth)
-  countryField.SetAutocompleteFunc(func(current string) (matches []string) {
+  countryField.SetAutocompleteFunc(func(current string) (matches []interface{}) {
     if len(current) == 0 {
       return
     }
@@ -149,8 +198,9 @@ func (g *Gui) createPersonForm() {
 
   clubField := tview.NewInputField().
     SetLabel("Club").
+		SetAutocompleteMultipleEntries(false).
     SetFieldWidth(inputWidth)
-  clubField.SetAutocompleteFunc(func(current string) (matches []string) {
+  clubField.SetAutocompleteFunc(func(current string) (matches []interface{}) {
     if len(current) == 0 {
       return
     }
@@ -209,8 +259,9 @@ func (g *Gui) modifyTripForm() {
   caveField := tview.NewInputField().
     SetLabel("Cave").
     SetFieldWidth(inputWidth).
+		SetAutocompleteMultipleEntries(false).
     SetText(selectedTrip.Cave)
-  caveField.SetAutocompleteFunc(func(current string) (matches []string) {
+  caveField.SetAutocompleteFunc(func(current string) (matches []interface{}) {
     if len(current) == 0 {
       return
     }
@@ -276,8 +327,9 @@ func (g *Gui) modifyPersonForm() {
   clubField := tview.NewInputField().
     SetLabel("Club").
     SetFieldWidth(inputWidth).
+		SetAutocompleteMultipleEntries(false).
     SetText(selectedPerson.Club)
-  clubField.SetAutocompleteFunc(func(current string) (matches []string) {
+  clubField.SetAutocompleteFunc(func(current string) (matches []interface{}) {
     if len(current) == 0 {
       return
     }
@@ -289,7 +341,7 @@ func (g *Gui) modifyPersonForm() {
     }
 
     return
-  }) 
+  })
 
   form.
     AddInputField("Name", selectedPerson.Name, inputWidth, nil, nil).
@@ -335,8 +387,9 @@ func (g *Gui) modifyLocationForm() {
   regionField := tview.NewInputField().
     SetLabel("Region").
     SetFieldWidth(inputWidth).
+		SetAutocompleteMultipleEntries(false).
     SetText(selectedLocation.Region)
-  regionField.SetAutocompleteFunc(func(current string) (matches []string) {
+  regionField.SetAutocompleteFunc(func(current string) (matches []interface{}) {
     if len(current) == 0 {
       return
     }
@@ -352,8 +405,9 @@ func (g *Gui) modifyLocationForm() {
   countryField := tview.NewInputField().
     SetLabel("Country").
     SetFieldWidth(inputWidth).
+		SetAutocompleteMultipleEntries(false).
     SetText(selectedLocation.Country)
-  countryField.SetAutocompleteFunc(func(current string) (matches []string) {
+  countryField.SetAutocompleteFunc(func(current string) (matches []interface{}) {
     if len(current) == 0 {
       return
     }
@@ -453,4 +507,21 @@ func (g *Gui) deletePerson() {
     }
     g.peoplePanel().updateEntries(g)
   })
+}
+
+
+func textFactory(sl []string, sep string) string {
+	s := ``
+	numEl := len(sl)
+	if numEl == 0 {
+		return s
+	}
+
+	for i, el := range sl {
+		s += el
+		if i < numEl {
+			s += sep
+		}
+	}
+	return s
 }
