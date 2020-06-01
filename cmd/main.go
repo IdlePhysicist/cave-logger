@@ -15,11 +15,22 @@ import (
   "github.com/idlephysicist/cave-logger/internal/model"
 )
 
+var commit, version, date string
+
 func main() {
-  // Parse cfg override
-  var cfgOverride string
-  flag.StringVarP(&cfgOverride, `config`, `c`, ``, `Config file override`)
+	// Parse cfg override
+	var (
+		cfgOverride string
+		versionCall bool
+	)
+	flag.StringVarP(&cfgOverride, `config`, `c`, ``, `Config file override`)
+	flag.BoolVarP(&versionCall, `version`, `v`, false, `Print version info`)
   flag.Parse()
+
+	if versionCall {
+		fmt.Printf("cave-logger %s (commit: %s) (built: %s)\n", version, commit, date)
+		os.Exit(0)
+	}
 
   // Set up logger
   log := logrus.New()
