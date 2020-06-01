@@ -1,23 +1,23 @@
 package gui
 
 import (
-  "fmt"
+	"fmt"
 
-  "github.com/gdamore/tcell"
-  "github.com/idlephysicist/cave-logger/internal/model"
+	"github.com/gdamore/tcell"
+	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 var inspectorFormat = map[string]string{
-  `trips`    : "Date: %s\nCave: %s\nCavers: %s\nNotes: %s",
-  `people`   : "Name: %s\nClub: %s\nCount: %d",
-  `locations`: "Name: %s\nRegion: %s\nCountry: %s\nSRT: %v\nVisits: %d",
+	`trips`    : "Date: %s\nCave: %s\nCavers: %s\nNotes: %s",
+	`people`   : "Name: %s\nClub: %s\nCount: %d",
+	`locations`: "Name: %s\nRegion: %s\nCountry: %s\nSRT: %v\nVisits: %d",
 }
 
 func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
-  switch event.Rune() {
-  case 'q':
-    g.Stop()
-  }
+	switch event.Rune() {
+	case 'q':
+		g.Stop()
+	}
 }
 
 //
@@ -25,51 +25,51 @@ func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 //
 
 func (g *Gui) inspectTrip() {
-  selected := g.selectedTrip()
+	selected := g.selectedTrip()
 
-  trip, err := g.db.GetTrip(selected.ID)
-  if err != nil {
-    return
-  }
+	trip, err := g.db.GetTrip(selected.ID)
+	if err != nil {
+		return
+	}
 
-  g.inspectorPanel().setEntry(g.formatTrip(trip))
+	g.inspectorPanel().setEntry(g.formatTrip(trip))
 }
 
 func (g *Gui) inspectCave() {
-  selected := g.selectedLocation()
+	selected := g.selectedLocation()
 
-  cave, err := g.db.GetLocation(selected.ID)
-  if err != nil {
-    return
-  }
+	cave, err := g.db.GetLocation(selected.ID)
+	if err != nil {
+		return
+	}
 
-  g.inspectorPanel().setEntry(g.formatCave(cave))
+	g.inspectorPanel().setEntry(g.formatCave(cave))
 }
 
 func (g *Gui) inspectPerson() {
-  selected := g.selectedPerson()
+	selected := g.selectedPerson()
 
-  caver, err := g.db.GetPerson(selected.ID)
-  if err != nil {
-    return
-  }
+	caver, err := g.db.GetPerson(selected.ID)
+	if err != nil {
+		return
+	}
 
-  g.inspectorPanel().setEntry(g.formatPerson(caver))
+	g.inspectorPanel().setEntry(g.formatPerson(caver))
 }
 
 //
 // Formatting Functions
 //
 func (g *Gui) formatTrip(trip *model.Log) string {
-  return fmt.Sprintf(inspectorFormat[`trips`], trip.Date, trip.Cave, trip.Names, trip.Notes)
+	return fmt.Sprintf(inspectorFormat[`trips`], trip.Date, trip.Cave, trip.Names, trip.Notes)
 }
 
 func (g *Gui) formatCave(l *model.Cave) string {
-  return fmt.Sprintf(inspectorFormat[`locations`], l.Name, l.Region, l.Country, l.SRT, l.Visits)
+	return fmt.Sprintf(inspectorFormat[`locations`], l.Name, l.Region, l.Country, l.SRT, l.Visits)
 }
 
 func (g *Gui) formatPerson(p *model.Caver) string {
-  return fmt.Sprintf(inspectorFormat[`people`], p.Name, p.Club, p.Count)
+	return fmt.Sprintf(inspectorFormat[`people`], p.Name, p.Club, p.Count)
 }
 
 //
@@ -77,14 +77,14 @@ func (g *Gui) formatPerson(p *model.Caver) string {
 //
 
 func (g *Gui) selectPage(row, col int) string {
-  var p string
-  switch row {
-  case 0:
-    p = `trips`
-  case 1:
-    p = `people`
-  case 2:
-    p = `locations`
-  }
-  return p
+	var p string
+	switch row {
+	case 0:
+		p = `trips`
+	case 1:
+		p = `people`
+	case 2:
+		p = `locations`
+	}
+	return p
 }

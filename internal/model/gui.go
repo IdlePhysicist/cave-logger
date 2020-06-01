@@ -1,5 +1,5 @@
 package model
 
 type Statistic struct {
-  Name, Value string
+	Name, Value string
 }
