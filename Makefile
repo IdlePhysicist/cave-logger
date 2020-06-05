@@ -3,7 +3,7 @@ CGO=1
 SRC=cmd
 BUILD=build
 version?="0.0.0"
-commit=`git rev-list -1 HEAD | head -c 8`
+commit=`if [ -d ./.git ]; then git rev-list -1 HEAD | head -c 8; else echo "release build"; fi`
 date=`date "+%Y-%m-%d"`
 package=main
 ldflags="-X $(package).commit=$(commit) -X $(package).version=$(version) -X $(package).date=$(date)"
