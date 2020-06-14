@@ -8,15 +8,26 @@ import (
 )
 
 var inspectorFormat = map[string]string{
-	`trips`    : "Date: %s\nCave: %s\nCavers: %s\nNotes: %s",
-	`people`   : "Name: %s\nClub: %s\nCount: %d",
-	`locations`: "Name: %s\nRegion: %s\nCountry: %s\nSRT: %v\nVisits: %d",
+	`trips` : "Date: %s\nCave: %s\nCavers: %s\nNotes: %s",
+	`cavers`: "Name: %s\nClub: %s\nCount: %d",
+	`caves` : "Name: %s\nRegion: %s\nCountry: %s\nSRT: %v\nVisits: %d",
 }
 
 func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
+	/*switch event.Key() {
+	case tcell.KeyTAB:
+		g.nextPage()
+	}*/
+
 	switch event.Rune() {
 	case 'q':
 		g.Stop()
+	case '1':
+		g.goTo("trips")
+	case '2':
+		g.goTo("cavers")
+	case '3':
+		g.goTo("caves")
 	}
 }
 
@@ -65,11 +76,11 @@ func (g *Gui) formatTrip(trip *model.Log) string {
 }
 
 func (g *Gui) formatCave(l *model.Cave) string {
-	return fmt.Sprintf(inspectorFormat[`locations`], l.Name, l.Region, l.Country, l.SRT, l.Visits)
+	return fmt.Sprintf(inspectorFormat[`caves`], l.Name, l.Region, l.Country, l.SRT, l.Visits)
 }
 
 func (g *Gui) formatPerson(p *model.Caver) string {
-	return fmt.Sprintf(inspectorFormat[`people`], p.Name, p.Club, p.Count)
+	return fmt.Sprintf(inspectorFormat[`cavers`], p.Name, p.Club, p.Count)
 }
 
 //
@@ -82,9 +93,18 @@ func (g *Gui) selectPage(row, col int) string {
 	case 0:
 		p = `trips`
 	case 1:
-		p = `people`
+		p = `cavers`
 	case 2:
-		p = `locations`
+		p = `caves`
 	}
 	return p
 }
+
+/*
+func (g *Gui) nextPage() {
+	slide, _ := strconv.Atoi(g.state.tabBar.GetHighlights()[0])
+	slide = (slide + 1) % g.pages.GetPageCount()
+	//g.state.tabBar.Highlight(strconv.Itoa(slide)).ScrollToHighlight()
+	g.goTo(g.selectPage(slide - 1, 0)) // NOTE: If the Highlight func is fixed for the tab bar then this line will not be required
+}
+*/

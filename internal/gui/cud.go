@@ -116,10 +116,10 @@ func (g *Gui) createLocationForm() {
 			g.createLocation(form)
 		}).
 		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "locations")
+			g.closeAndSwitchPanel("form", "caves")
 		})
 
-	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)//.ShowPage("main")
+	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
 	//REVIEW: main or trips ? ^^
 }
 
@@ -135,7 +135,7 @@ func (g *Gui) createLocation(form *tview.Form) {
 		return
 	}
 
-	g.closeAndSwitchPanel(`form`, `locations`)
+	g.closeAndSwitchPanel(`form`, `caves`)
 	g.app.QueueUpdateDraw(func() {
 		g.locationsPanel().setEntries(g)
 	})
@@ -162,7 +162,7 @@ func (g *Gui) createPersonForm() {
 		}
 
 		return
-	}) 
+	})
 
 	form.
 		AddInputField("Name", "", inputWidth, nil, nil).
@@ -171,7 +171,7 @@ func (g *Gui) createPersonForm() {
 			g.createPerson(form)
 		}).
 		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "people")
+			g.closeAndSwitchPanel("form", "cavers") // FIXME
 		})
 
 	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
@@ -188,7 +188,7 @@ func (g *Gui) createPerson(form *tview.Form) {
 		return
 	}
 
-	g.closeAndSwitchPanel(`form`, `people`)
+	g.closeAndSwitchPanel(`form`, `cavers`)
 	g.app.QueueUpdateDraw(func() {
 		g.peoplePanel().setEntries(g)
 	})
@@ -289,7 +289,7 @@ func (g *Gui) modifyPersonForm() {
 		}
 
 		return
-	}) 
+	})
 
 	form.
 		AddInputField("Name", selectedPerson.Name, inputWidth, nil, nil).
@@ -298,7 +298,7 @@ func (g *Gui) modifyPersonForm() {
 			g.modifyPerson(selectedPerson.ID, form)
 		}).
 		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "people")
+			g.closeAndSwitchPanel("form", "cavers")
 		})
 
 	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
@@ -315,7 +315,7 @@ func (g *Gui) modifyPerson(id string, form *tview.Form) {
 		return
 	}
 
-	g.closeAndSwitchPanel(`form`, `people`)
+	g.closeAndSwitchPanel(`form`, `cavers`)
 	g.app.QueueUpdateDraw(func() {
 		g.peoplePanel().updateEntries(g)//setEntries(g)
 	})
@@ -376,7 +376,7 @@ func (g *Gui) modifyLocationForm() {
 			g.modifyLocation(selectedLocation.ID, form)
 		}).
 		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "locations")
+			g.closeAndSwitchPanel("form", "caves")
 		})
 
 	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
@@ -395,7 +395,7 @@ func (g *Gui) modifyLocation(id string, form *tview.Form) {
 		return
 	}
 
-	g.closeAndSwitchPanel(`form`, `locations`)
+	g.closeAndSwitchPanel(`form`, `caves`)
 	g.app.QueueUpdateDraw(func() {
 		g.locationsPanel().setEntries(g)
 	})

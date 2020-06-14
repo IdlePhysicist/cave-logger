@@ -18,6 +18,6 @@ func (g *Gui) stopMonitoring() {
 
 func (g *Gui) updateTask() {
 	g.app.QueueUpdateDraw(func() {
-		g.peoplePanel().setEntries(g)
+		g.peoplePanel().setEntries(g) // REVIEW: Why is this just people ?
 	})
 }

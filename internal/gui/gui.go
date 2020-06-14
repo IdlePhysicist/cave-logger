@@ -1,8 +1,9 @@
 package gui
 
 import (
-	//"context"
-	//"fmt"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/rivo/tview"
 
@@ -19,15 +20,16 @@ type resources struct {
 	trips          []*model.Log
 	people         []*model.Caver
 	locations      []*model.Cave
-	statsLocations []*model.Statistic
-	statsPeople    []*model.Statistic
-	timeWindow     []*model.Statistic
+	//statsLocations []*model.Statistic
+	//statsPeople    []*model.Statistic
+	//timeWindow     []*model.Statistic
 	menu           []string
 }
 
 type state struct {
 	panels    panels
-	navigate *navigate
+	navigate  *navigate
+	tabBar    *tview.TextView
 	resources resources
 	stopChans map[string]chan int
 }
@@ -43,8 +45,8 @@ type Gui struct {
 	pages *tview.Pages
 	state *state
 	db    *db.Database
-	statsLocations *statsLocations
-	statsPeople    *statsPeople
+	//statsLocations *statsLocations
+	//statsPeople    *statsPeople
 }
 
 func New(db *db.Database) *Gui {
@@ -86,7 +88,7 @@ func (g *Gui) tripsPanel() *trips {
 
 func (g *Gui) locationsPanel() *caves {
 	for _, panel := range g.state.panels.panel {
-		if panel.name() == `locations` {
+		if panel.name() == `caves` {
 			return panel.(*caves)
 		}
 	}
@@ -95,7 +97,7 @@ func (g *Gui) locationsPanel() *caves {
 
 func (g *Gui) peoplePanel() *cavers {
 	for _, panel := range g.state.panels.panel {
-		if panel.name() == `people` {
+		if panel.name() == `cavers` {
 			return panel.(*cavers)
 		}
 	}
@@ -111,7 +113,7 @@ func (g *Gui) inspectorPanel() *inspector {
 	return nil
 }
 
-func (g *Gui) statsLocationsPanel() *statsLocations {
+/*func (g *Gui) statsLocationsPanel() *statsLocations {
 	for _, panel := range g.state.panels.panel {
 		if panel.name() == `statsLocations` {
 			return panel.(*statsLocations)
@@ -127,57 +129,58 @@ func (g *Gui) statsPeoplePanel() *statsPeople {
 		}
 	}
 	return nil
-}
+}*/
 
 
 func (g *Gui) initPanels() {
+
+	g.state.tabBar = newTabBar(g)
+
 	// Page definitions
 	trips  := newTrips(g)
 	cavers := newCavers(g)
 	caves  := newCaves(g)
 
+	/* 
+	// NOTE: I would really like to get this working as it would be far neater. The issue is with the three pages being of different types.
+	// cannot use pg (type panel) as type tview.Primitive in argument to g.pages.AddPage:
+	// panel does not implement tview.Primitive (missing Blur method)
+	for idx, pg := range []panel{trips, cavers, caves} {
+		name := pg.name()
+		g.pages.AddPage(name, pg, true, idx == 0)
+		fmt.Fprintf(g.state.tabBar, ` %d ["%d"][darkcyan]%s[white][""]  `, idx+1, idx, strings.Title(name))
+	}
+	g.state.tabBar.Highlight("0")
+	*/
+	
 	// Add pages to the "book"
 	g.pages.AddPage(`trips`, trips, true, true)
-	g.pages.AddPage(`people`, cavers, true, true)
-	g.pages.AddPage(`locations`, caves, true, true)
-	
+	fmt.Fprintf(g.state.tabBar, ` %d ["%d"][darkcyan]%s[white][""]  `, 1, 0, strings.Title(trips.name()))
+	g.pages.AddPage(`cavers`, cavers, true, true)
+	fmt.Fprintf(g.state.tabBar, ` %d ["%d"][darkcyan]%s[white][""]  `, 2, 1, strings.Title(cavers.name()))
+	g.pages.AddPage(`caves`, caves, true, true)
+	fmt.Fprintf(g.state.tabBar, ` %d ["%d"][darkcyan]%s[white][""]  `, 3, 2, strings.Title(caves.name()))
+
+	g.state.tabBar.Highlight("0")
+
 	// Panels
-	menu := newMenu(g)
-	statsPeople := newStatsPeople(g)
-	statsLocations := newStatsLocations(g)
-	timeWindow := newTimeWindow(g)
 	inspector := newInspector(g)
-	navigate := newNavigate()
+	statusBar := newNavigate()
 
 	g.state.panels.panel = append(g.state.panels.panel, trips)
 	g.state.panels.panel = append(g.state.panels.panel, cavers)
 	g.state.panels.panel = append(g.state.panels.panel, caves)
-	g.state.panels.panel = append(g.state.panels.panel, menu)
-	g.state.panels.panel = append(g.state.panels.panel, statsPeople)
-	g.state.panels.panel = append(g.state.panels.panel, statsLocations)
-	g.state.panels.panel = append(g.state.panels.panel, timeWindow)
+
 	g.state.panels.panel = append(g.state.panels.panel, inspector)
 
-	g.state.navigate = navigate
+	g.state.navigate = statusBar
 
 	// Arange the windows / tiles
-	layout := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(menu, 0, 5, false).
-			AddItem(statsPeople, 0, 20, false).
-			AddItem(statsLocations, 0, 20, false).
-			AddItem(timeWindow, 0, 2, false),
-			0, 1, false).
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(g.pages, 0, 16, true).
-			AddItem(inspector, 0, 8, false).
-			AddItem(navigate, 0, 1, false),
-			0, 6, true)
-
-	g.statsPeople = statsPeople
-	g.statsLocations = statsLocations
+	layout := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(g.state.tabBar, 0, 1, false).
+		AddItem(g.pages, 0, 16, true).
+		AddItem(inspector, 0, 7, false).
+		AddItem(statusBar, 0, 1, false)
 
 	g.app.SetRoot(layout, true)
 	g.goTo(`trips`)
@@ -194,6 +197,7 @@ func (g *Gui) switchPanel(panelName string) {
 			g.state.navigate.update(panelName)
 			panel.focus(g)
 			g.state.panels.currentPanel = i
+			g.state.tabBar.Highlight(strconv.Itoa(i)).ScrollToHighlight()
 		} else {
 			panel.unfocus()
 		}
@@ -204,9 +208,9 @@ func (g *Gui) closeAndSwitchPanel(removePanel, switchTo string) {
 	g.pages.RemovePage(removePanel).ShowPage("main")
 	num := 0
 	switch switchTo {
-	case `people`:
+	case `cavers`:
 		num = 1
-	case `locations`:
+	case `caves`:
 		num = 2
 	default:
 		num = 0
@@ -274,4 +278,3 @@ func (g *Gui) selectedPerson() *model.Caver {
 
 	return g.state.resources.people[row-1]
 }
-
