@@ -21,9 +21,6 @@ type resources struct {
 	people         []*model.Caver
 	locations      []*model.Cave
 	//statsLocations []*model.Statistic
-	//statsPeople    []*model.Statistic
-	//timeWindow     []*model.Statistic
-	menu           []string
 }
 
 type state struct {
@@ -46,7 +43,6 @@ type Gui struct {
 	state *state
 	db    *db.Database
 	//statsLocations *statsLocations
-	//statsPeople    *statsPeople
 }
 
 func New(db *db.Database) *Gui {
@@ -121,15 +117,7 @@ func (g *Gui) inspectorPanel() *inspector {
 	}
 	return nil
 }
-
-func (g *Gui) statsPeoplePanel() *statsPeople {
-	for _, panel := range g.state.panels.panel {
-		if panel.name() == `statsPeople` {
-			return panel.(*statsPeople)
-		}
-	}
-	return nil
-}*/
+*/
 
 
 func (g *Gui) initPanels() {
@@ -142,7 +130,8 @@ func (g *Gui) initPanels() {
 	caves  := newCaves(g)
 
 	/* 
-	// NOTE: I would really like to get this working as it would be far neater. The issue is with the three pages being of different types.
+	// NOTE: I would really like to get this working as it would be far neater.
+	// The issue is with the three pages being of different types.
 	// cannot use pg (type panel) as type tview.Primitive in argument to g.pages.AddPage:
 	// panel does not implement tview.Primitive (missing Blur method)
 	for idx, pg := range []panel{trips, cavers, caves} {
@@ -152,14 +141,14 @@ func (g *Gui) initPanels() {
 	}
 	g.state.tabBar.Highlight("0")
 	*/
-	
+
 	// Add pages to the "book"
 	g.pages.AddPage(`trips`, trips, true, true)
-	fmt.Fprintf(g.state.tabBar, ` %d ["%d"][darkcyan]%s[white][""]  `, 1, 0, strings.Title(trips.name()))
+	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[white][""] `, 0, 1, strings.Title(trips.name()))
 	g.pages.AddPage(`cavers`, cavers, true, true)
-	fmt.Fprintf(g.state.tabBar, ` %d ["%d"][darkcyan]%s[white][""]  `, 2, 1, strings.Title(cavers.name()))
+	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[white][""] `, 1, 2, strings.Title(cavers.name()))
 	g.pages.AddPage(`caves`, caves, true, true)
-	fmt.Fprintf(g.state.tabBar, ` %d ["%d"][darkcyan]%s[white][""]  `, 3, 2, strings.Title(caves.name()))
+	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[white][""] `, 2, 3, strings.Title(caves.name()))
 
 	g.state.tabBar.Highlight("0")
 
@@ -177,10 +166,10 @@ func (g *Gui) initPanels() {
 
 	// Arange the windows / tiles
 	layout := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(g.state.tabBar, 0, 1, false).
+		AddItem(g.state.tabBar, 1, 1, false).
 		AddItem(g.pages, 0, 16, true).
 		AddItem(inspector, 0, 7, false).
-		AddItem(statusBar, 0, 1, false)
+		AddItem(statusBar, 1, 1, false)
 
 	g.app.SetRoot(layout, true)
 	g.goTo(`trips`)
@@ -243,6 +232,10 @@ func (g *Gui) warning(message, page string, labels []string, doneFunc func()) {
 	g.pages.AddAndSwitchToPage("modal", g.modal(modal, 80, 29), true)
 }
 
+
+//
+// Functions for returning the selected item in the table
+// REVIEW: There might be better ways of doing this.
 func (g *Gui) selectedTrip() *model.Log {
 	row, _ := g.tripsPanel().GetSelection()
 	if len(g.state.resources.trips) == 0 {

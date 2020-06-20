@@ -48,7 +48,7 @@ func main() {
 
 
 	// Read config file
-	cfg := func (_yamlFile string) *model.Config {
+	cfg := func(_yamlFile string) *model.Config {
 		var _cfg model.Config
 
 		if _yamlFile == `` {
