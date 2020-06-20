@@ -82,7 +82,7 @@ func (g *Gui) tripsPanel() *trips {
 	return nil
 }
 
-func (g *Gui) locationsPanel() *caves {
+func (g *Gui) cavesPanel() *caves {
 	for _, panel := range g.state.panels.panel {
 		if panel.name() == `caves` {
 			return panel.(*caves)
@@ -91,7 +91,7 @@ func (g *Gui) locationsPanel() *caves {
 	return nil
 }
 
-func (g *Gui) peoplePanel() *cavers {
+func (g *Gui) caversPanel() *cavers {
 	for _, panel := range g.state.panels.panel {
 		if panel.name() == `cavers` {
 			return panel.(*cavers)
@@ -249,7 +249,7 @@ func (g *Gui) selectedTrip() *model.Log {
 }
 
 func (g *Gui) selectedLocation() *model.Cave {
-	row, _ := g.locationsPanel().GetSelection()
+	row, _ := g.cavesPanel().GetSelection()
 	if len(g.state.resources.locations) == 0 {
 		return nil
 	}
@@ -261,7 +261,7 @@ func (g *Gui) selectedLocation() *model.Cave {
 }
 
 func (g *Gui) selectedPerson() *model.Caver {
-	row, _ := g.peoplePanel().GetSelection()
+	row, _ := g.caversPanel().GetSelection()
 	if len(g.state.resources.people) == 0 {
 		return nil
 	}
