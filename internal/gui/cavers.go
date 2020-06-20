@@ -29,7 +29,7 @@ func newCavers(g *Gui) *cavers {
 }
 
 func (c *cavers) name() string {
-	return `people`
+	return `cavers`
 }
 
 func (c *cavers) setKeybinding(g *Gui) {
@@ -39,8 +39,8 @@ func (c *cavers) setKeybinding(g *Gui) {
 		switch event.Key() {
 		case tcell.KeyEnter:
 			g.inspectPerson()
-		case tcell.KeyTAB:
-			g.switchPanel(`menu`)
+		case tcell.KeyCtrlR:
+			c.setEntries(g)
 		}
 
 		switch event.Rune() {
@@ -107,7 +107,7 @@ func (c *cavers) entries(g *Gui) {
 		return
 	}
 
-	g.state.resources.people = cavers	
+	g.state.resources.people = cavers
 }
 
 func (c *cavers) focus(g *Gui) {

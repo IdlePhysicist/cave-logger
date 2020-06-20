@@ -4,7 +4,7 @@ import csv
 import json
 import subprocess
 import sqlite3
-import yaml
+import json
 import os
 import sys
 
@@ -15,14 +15,14 @@ HOME = os.environ['HOME']
 CSV = sys.argv[1]
 
 INITSCRIPT = "./scripts/make-db.py"
-CFG = "./config/config.yml"
+CFG = "./config/config.json"
 
 class App(object):
   def __init__(self):
     out = subprocess.run(INITSCRIPT, capture_output=True)
     
     with open(CFG, 'r') as c:
-      self.config = yaml.safe_load(c)
+      self.config = json.load(c)
 
     self.conn = sqlite3.connect(
       self.config['database']['filename'],

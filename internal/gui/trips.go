@@ -39,10 +39,8 @@ func (t *trips) setKeybinding(g *Gui) {
 		switch event.Key() {
 		case tcell.KeyEnter:
 			g.inspectTrip()
-		//case tcell.KeyCtrlR:
-		//	t.setEntries(g)
-		case tcell.KeyTAB:
-			g.switchPanel(`menu`)
+		case tcell.KeyCtrlR:
+			t.setEntries(g)
 		}
 
 		switch event.Rune() {
@@ -64,7 +62,7 @@ func (t *trips) entries(g *Gui) {
 		return
 	}
 
-	g.state.resources.trips = trips	
+	g.state.resources.trips = trips
 }
 
 func (t *trips) setEntries(g *Gui) {

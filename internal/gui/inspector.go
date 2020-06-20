@@ -34,9 +34,9 @@ func (i *inspector) setEntries(g *Gui) {}
 
 func (i *inspector) setInitEntry() {
 	i.SetText(`
-			 __    __ __      __ 
-	|  ||_ |  /  /  \|\/||_  
-	|/\||__|__\__\__/|  ||__ `)
+       __    __ __      __ 
+  |  ||_ |  /  /  \|\/||_  
+  |/\||__|__\__\__/|  ||__ `)
 }
 
 func (i *inspector) entries(g *Gui) {}
