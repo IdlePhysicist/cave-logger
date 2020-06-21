@@ -2,6 +2,7 @@ package gui
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gdamore/tcell"
@@ -107,7 +108,14 @@ func (c *cavers) entries(g *Gui) {
 		return
 	}
 
-	g.state.resources.people = cavers
+	var filteredCavers []*model.Caver
+	for _, caver := range cavers {
+		if strings.Index(caver.Name, c.filterWord) == -1 {
+			continue
+		}
+		filteredCavers = append(filteredCavers, caver)
+	}
+	g.state.resources.people = filteredCavers
 }
 
 func (c *cavers) focus(g *Gui) {
@@ -124,7 +132,7 @@ func (c *cavers) setFilterWord(word string) {
 }
 
 func (c *cavers) monitoringCavers(g *Gui) {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(5 * time.Minute)
 
 LOOP:
 	for {

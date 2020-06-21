@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"strings"
 	"time"
 
 	"github.com/gdamore/tcell"
@@ -62,7 +63,14 @@ func (t *trips) entries(g *Gui) {
 		return
 	}
 
-	g.state.resources.trips = trips
+	var filteredTrips []*model.Log
+	for _, trip := range trips {
+		if strings.Index(trip.Cave, t.filterWord) == -1 {
+			continue
+		}
+		filteredTrips = append(filteredTrips, trip)
+	}
+	g.state.resources.trips = filteredTrips
 }
 
 func (t *trips) setEntries(g *Gui) {
@@ -124,7 +132,7 @@ func (t *trips) setFilterWord(word string) {
 }
 
 func (t *trips) monitoringTrips(g *Gui) {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(5 * time.Minute)
 
 LOOP:
 	for {
