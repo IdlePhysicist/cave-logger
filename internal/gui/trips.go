@@ -80,25 +80,25 @@ func (t *trips) setEntries(g *Gui) {
 			Text:            header,
 			NotSelectable:   true,
 			Align:           tview.AlignLeft,
-			Color:           tcell.ColorWhite,
-			BackgroundColor: tcell.ColorDefault,
+			Color:           tview.Styles.PrimaryTextColor,
+			BackgroundColor: tview.Styles.PrimitiveBackgroundColor,
 			Attributes:      tcell.AttrBold,
 		})
 	}
 
 	for i, trip := range g.state.resources.trips {
 		table.SetCell(i+1, 0, tview.NewTableCell(trip.Date).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(30).
 			SetExpansion(1))
 
 		table.SetCell(i+1, 1, tview.NewTableCell(trip.Cave).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(30).
 			SetExpansion(1))
 
 		table.SetCell(i+1, 2, tview.NewTableCell(trip.Names).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(0).
 			SetExpansion(2))
 	}

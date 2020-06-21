@@ -78,6 +78,7 @@ func main() {
 
 	// Initialise the Gui / Tui
 	gui := gui.New(db)
+	gui.ProcessColors(cfg.Colors)
 
 	if err := gui.Start(); err != nil {
 		log.Fatalf("main: Cannot start tui: %s", err)
