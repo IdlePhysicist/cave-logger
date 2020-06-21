@@ -93,6 +93,19 @@ with open(CONFIG_FN, 'w') as c:
     'database': {
       'filename': '/'.join([NEWPATH, sqliteFile]),
       'created' : NOW
+    },
+    'colors': {
+      'primitiveBackground': '',
+      'contrastBackground': '',
+      'moreContrastBackground': '',
+      'border': '',
+      'title': '',
+      'graphics': '',
+      'primaryText': '',
+      'secondaryText': '',
+      'tertiaryText': '',
+      'inverseText': '',
+      'contrastSecondaryText': ''
     }
   }
   json.dump(config, c)

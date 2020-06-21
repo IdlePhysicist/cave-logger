@@ -62,7 +62,7 @@ func (c *caves) entries(g *Gui) {
 		return
 	}
 
-	g.state.resources.locations = caves	
+	g.state.resources.locations = caves
 }
 
 func (c *caves) setEntries(g *Gui) {
@@ -82,35 +82,35 @@ func (c *caves) setEntries(g *Gui) {
 			Text:            header,
 			NotSelectable:   true,
 			Align:           tview.AlignLeft,
-			Color:           tcell.ColorWhite,
-			BackgroundColor: tcell.ColorDefault,
+			Color:           tview.Styles.PrimaryTextColor,
+			BackgroundColor: tview.Styles.PrimitiveBackgroundColor,
 			Attributes:      tcell.AttrBold,
 		})
 	}
 
 	for i, cave := range g.state.resources.locations {
 		table.SetCell(i+1, 0, tview.NewTableCell(cave.Name).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(30).
 			SetExpansion(1))
 
 		table.SetCell(i+1, 1, tview.NewTableCell(cave.Region).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(30).
 			SetExpansion(1))
 
 		table.SetCell(i+1, 2, tview.NewTableCell(cave.Country).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(0).
 			SetExpansion(1))
 
 		table.SetCell(i+1, 3, tview.NewTableCell(strconv.FormatBool(cave.SRT)).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(0).
 			SetExpansion(1))
 
 		table.SetCell(i+1, 4, tview.NewTableCell(strconv.FormatInt(cave.Visits, 10)).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(0).
 			SetExpansion(1))
 	}

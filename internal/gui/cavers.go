@@ -71,25 +71,25 @@ func (c *cavers) setEntries(g *Gui) {
 			Text:            header,
 			NotSelectable:   true,
 			Align:           tview.AlignLeft,
-			Color:           tcell.ColorWhite,
-			BackgroundColor: tcell.ColorDefault,
+			Color:           tview.Styles.PrimaryTextColor,
+			BackgroundColor: tview.Styles.PrimitiveBackgroundColor,
 			Attributes:      tcell.AttrBold,
 		})
 	}
 
 	for i, caver := range g.state.resources.people {
 		table.SetCell(i+1, 0, tview.NewTableCell(caver.Name).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(30).
 			SetExpansion(1))
 
 		table.SetCell(i+1, 1, tview.NewTableCell(caver.Club).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(0).
 			SetExpansion(1))
 
 		table.SetCell(i+1, 2, tview.NewTableCell(strconv.FormatInt(caver.Count, 10)).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(0).
 			SetExpansion(1))
 	}

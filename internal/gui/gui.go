@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/rivo/tview"
+	"github.com/gdamore/tcell"
 
 	"github.com/idlephysicist/cave-logger/internal/db"
 	"github.com/idlephysicist/cave-logger/internal/model"
@@ -38,10 +39,10 @@ func newState() *state {
 }
 
 type Gui struct {
-	app   *tview.Application
-	pages *tview.Pages
-	state *state
-	db    *db.Database
+	app    *tview.Application
+	pages  *tview.Pages
+	state  *state
+	db     *db.Database
 	//statsLocations *statsLocations
 }
 
@@ -51,6 +52,38 @@ func New(db *db.Database) *Gui {
 		pages: tview.NewPages(),
 		state: newState(),
 		db: db,
+	}
+}
+
+func (g *Gui) ProcessColors(colors map[string]string) {
+	for color, hex := range colors {
+		if hex == "" {
+			continue
+		}
+		switch color {
+		case "primitiveBackground":
+			tview.Styles.PrimitiveBackgroundColor = tcell.GetColor(hex)
+		case "contrastBackground":
+			tview.Styles.ContrastBackgroundColor = tcell.GetColor(hex)
+		case "moreContrastBackground":
+			tview.Styles.MoreContrastBackgroundColor = tcell.GetColor(hex)
+		case "border":
+			tview.Styles.BorderColor = tcell.GetColor(hex)
+		case "title":
+			tview.Styles.TitleColor = tcell.GetColor(hex)
+		case "graphics":
+			tview.Styles.GraphicsColor = tcell.GetColor(hex)
+		case "primaryText":
+			tview.Styles.PrimaryTextColor = tcell.GetColor(hex)
+		case "secondaryText":
+			tview.Styles.SecondaryTextColor = tcell.GetColor(hex)
+		case "tertiaryText":
+			tview.Styles.TertiaryTextColor = tcell.GetColor(hex)
+		case "inverseText":
+			tview.Styles.InverseTextColor = tcell.GetColor(hex)
+		case "contrastSecondaryText":
+			tview.Styles.ContrastSecondaryTextColor = tcell.GetColor(hex)
+		}
 	}
 }
 
@@ -144,11 +177,11 @@ func (g *Gui) initPanels() {
 
 	// Add pages to the "book"
 	g.pages.AddPage(`trips`, trips, true, true)
-	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[white][""] `, 0, 1, strings.Title(trips.name()))
+	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[""] `, 0, 1, strings.Title(trips.name()))
 	g.pages.AddPage(`cavers`, cavers, true, true)
-	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[white][""] `, 1, 2, strings.Title(cavers.name()))
+	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[""] `, 1, 2, strings.Title(cavers.name()))
 	g.pages.AddPage(`caves`, caves, true, true)
-	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[white][""] `, 2, 3, strings.Title(caves.name()))
+	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[""] `, 2, 3, strings.Title(caves.name()))
 
 	g.state.tabBar.Highlight("0")
 
@@ -271,3 +304,4 @@ func (g *Gui) selectedPerson() *model.Caver {
 
 	return g.state.resources.people[row-1]
 }
+
