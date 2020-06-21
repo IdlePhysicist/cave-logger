@@ -22,7 +22,7 @@ func newCavers(g *Gui) *cavers {
 		Table: tview.NewTable().SetSelectable(true, false).Select(0,0).SetFixed(1,1),
 	}
 
-	cavers.SetTitle(` Cavers `).SetTitleAlign(tview.AlignLeft)
+	cavers.SetTitle(``).SetTitleAlign(tview.AlignLeft)
 	cavers.SetBorder(true)
 	cavers.setEntries(g)
 	cavers.setKeybinding(g)

@@ -22,7 +22,7 @@ func newTrips(g *Gui) *trips {
 		trips: make(chan *model.Log),
 	}
 
-	trips.SetTitle(` Trips `).SetTitleAlign(tview.AlignLeft)
+	trips.SetTitle(``).SetTitleAlign(tview.AlignLeft)
 	trips.SetBorder(true)
 	trips.setEntries(g)
 	trips.setKeybinding(g)
