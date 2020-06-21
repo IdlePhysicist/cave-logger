@@ -189,7 +189,6 @@ func (g *Gui) initPanels() {
 	layout := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(g.state.tabBar, 1, 1, false).
 		AddItem(g.pages, 0, 16, true).
-		//AddItem(inspector, 0, 7, false).
 		AddItem(statusBar, 1, 1, false)
 
 	g.app.SetRoot(layout, true)

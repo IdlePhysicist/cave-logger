@@ -38,8 +38,6 @@ func (c *caves) setKeybinding(g *Gui) {
 		g.setGlobalKeybinding(event)
 
 		switch event.Key() {
-		//case tcell.KeyEnter:
-		//	g.inspectCave()
 		case tcell.KeyCtrlR:
 			c.setEntries(g)
 		}
