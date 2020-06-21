@@ -1,19 +1,9 @@
 package gui
 
 import (
-	"fmt"
-
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
-
-	"github.com/idlephysicist/cave-logger/internal/model"
 )
-
-var inspectorFormat = map[string]string{
-	`trips` : "Date: %s\nCave: %s\nCavers: %s\nNotes: %s",
-	`cavers`: "Name: %s\nClub: %s\nCount: %d",
-	`caves` : "Name: %s\nRegion: %s\nCountry: %s\nSRT: %v\nVisits: %d",
-}
 
 func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 	/*switch event.Key() {
@@ -70,58 +60,6 @@ func (g *Gui) filter() {
 	})
 
 	g.pages.AddAndSwitchToPage(viewName, g.modal(searchInput, 80, 3), true).ShowPage("main")
-}
-
-//
-// INSPECTION FUNCS
-//
-
-func (g *Gui) inspectTrip() {
-	selected := g.selectedTrip()
-
-	trip, err := g.db.GetTrip(selected.ID)
-	if err != nil {
-		return
-	}
-
-	g.inspectorPanel().setEntry(g.formatTrip(trip))
-}
-
-func (g *Gui) inspectCave() {
-	selected := g.selectedLocation()
-
-	cave, err := g.db.GetLocation(selected.ID)
-	if err != nil {
-		return
-	}
-
-	g.inspectorPanel().setEntry(g.formatCave(cave))
-}
-
-func (g *Gui) inspectPerson() {
-	selected := g.selectedPerson()
-
-	caver, err := g.db.GetPerson(selected.ID)
-	if err != nil {
-		return
-	}
-
-	g.inspectorPanel().setEntry(g.formatPerson(caver))
-}
-
-//
-// Formatting Functions
-//
-func (g *Gui) formatTrip(trip *model.Log) string {
-	return fmt.Sprintf(inspectorFormat[`trips`], trip.Date, trip.Cave, trip.Names, trip.Notes)
-}
-
-func (g *Gui) formatCave(l *model.Cave) string {
-	return fmt.Sprintf(inspectorFormat[`caves`], l.Name, l.Region, l.Country, l.SRT, l.Visits)
-}
-
-func (g *Gui) formatPerson(p *model.Caver) string {
-	return fmt.Sprintf(inspectorFormat[`cavers`], p.Name, p.Club, p.Count)
 }
 
 //

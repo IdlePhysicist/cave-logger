@@ -133,15 +133,6 @@ func (g *Gui) caversPanel() *cavers {
 	return nil
 }
 
-func (g *Gui) inspectorPanel() *inspector {
-	for _, panel := range g.state.panels.panel {
-		if panel.name() == `inspector` {
-			return panel.(*inspector)
-		}
-	}
-	return nil
-}
-
 /*func (g *Gui) statsLocationsPanel() *statsLocations {
 	for _, panel := range g.state.panels.panel {
 		if panel.name() == `statsLocations` {
@@ -186,14 +177,11 @@ func (g *Gui) initPanels() {
 	g.state.tabBar.Highlight("0")
 
 	// Panels
-	inspector := newInspector(g)
 	statusBar := newNavigate()
 
 	g.state.panels.panel = append(g.state.panels.panel, trips)
 	g.state.panels.panel = append(g.state.panels.panel, cavers)
 	g.state.panels.panel = append(g.state.panels.panel, caves)
-
-	g.state.panels.panel = append(g.state.panels.panel, inspector)
 
 	g.state.navigate = statusBar
 
@@ -201,7 +189,7 @@ func (g *Gui) initPanels() {
 	layout := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(g.state.tabBar, 1, 1, false).
 		AddItem(g.pages, 0, 16, true).
-		AddItem(inspector, 0, 7, false).
+		//AddItem(inspector, 0, 7, false).
 		AddItem(statusBar, 1, 1, false)
 
 	g.app.SetRoot(layout, true)
