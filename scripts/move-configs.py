@@ -26,4 +26,4 @@ shutil.copy(CFGFILE, f"{HOME}/{NEWPATH}/")
 cfg['database']['filename'] = f"{HOME}/{NEWPATH}/{cfg['database']['filename'].split('/')[-1]}"
 
 with open(f"{HOME}/{NEWPATH}/config.json", 'w') as c:
-  json.dump(cfg, c)
+  json.dump(cfg, c, indent=2)

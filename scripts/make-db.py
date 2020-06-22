@@ -8,7 +8,7 @@ import json
 
 NOW = datetime.now().strftime("%Y-%m-%dT%H_%M")
 HOME = os.environ["HOME"]
-NEWPATH = "{}/.config/cave-logger".format(HOME)
+NEWPATH = f"{HOME}/.config/cave-logger"
 
 try:
   os.makedirs(NEWPATH, 0o755)
@@ -91,7 +91,7 @@ CONFIG_FN = '{}/config.json'.format(NEWPATH)
 with open(CONFIG_FN, 'w') as c:
   config = {
     'database': {
-      'filename': '/'.join([NEWPATH, sqliteFile]),
+      'filename': '/'.join([".config/cave-logger", sqliteFile]),
       'created' : NOW
     },
     'colors': {
@@ -108,5 +108,5 @@ with open(CONFIG_FN, 'w') as c:
       'contrastSecondaryText': ''
     }
   }
-  json.dump(config, c)
+  json.dump(config, c, indent=2)
   print("Wrote database name to config file")
