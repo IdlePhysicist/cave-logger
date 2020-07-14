@@ -43,6 +43,16 @@ func (g *Gui) inspectTrip() {
 		return
 	}
 
+	if trip == nil {
+		g.warning(
+			fmt.Sprintf("Trip (id: %s) not found", selected.ID),
+			`trips`,
+			[]string{`OK`},
+			func() {return},
+		)
+		return
+	}
+
 	g.displayInspect(g.formatTrip(trip), "trips")
 }
 
