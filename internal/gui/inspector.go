@@ -38,18 +38,13 @@ func (g *Gui) displayInspect(data, page string) {
 func (g *Gui) inspectTrip() {
 	selected := g.selectedTrip()
 
-	trip, err := g.db.GetTrip(selected.ID)
-	if err != nil {
+	if selected == nil {
+		g.warning("No trips in table", `trips`, []string{`OK`}, func() {return})
 		return
 	}
 
-	if trip == nil {
-		g.warning(
-			fmt.Sprintf("Trip (id: %s) not found", selected.ID),
-			`trips`,
-			[]string{`OK`},
-			func() {return},
-		)
+	trip, err := g.db.GetTrip(selected.ID)
+	if err != nil {
 		return
 	}
 
