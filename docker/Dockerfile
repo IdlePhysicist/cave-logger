@@ -10,7 +10,7 @@ RUN apk add \
 
 RUN mkdir /root/.config
 
-WORKDIR /go/src/github.com/idlephysicist/cave-logger
+WORKDIR /go/src/github.com/IdlePhysicist/cave-logger
 
 COPY go.* ./
 #COPY go.sum .

@@ -8,7 +8,7 @@ import (
 	"github.com/bvinc/go-sqlite-lite/sqlite3"
 	"github.com/sirupsen/logrus"
 
-	"github.com/idlephysicist/cave-logger/internal/model"
+	"github.com/IdlePhysicist/cave-logger/internal/model"
 )
 
 const datetime = `2006-01-02T15:04:05Z`
