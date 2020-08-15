@@ -3,7 +3,7 @@ package gui
 import (
 	"fmt"
 
-	"github.com/rivo/tview"
+	tview "gitlab.com/tslocum/cview"
 	"github.com/gdamore/tcell"
 
 	"github.com/IdlePhysicist/cave-logger/internal/model"

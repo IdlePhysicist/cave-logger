@@ -2,7 +2,7 @@ package gui
 
 import (
 	"github.com/gdamore/tcell"
-	"github.com/rivo/tview"
+	tview "gitlab.com/tslocum/cview"
 )
 
 func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
