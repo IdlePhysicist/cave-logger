@@ -8,8 +8,9 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	flag "github.com/spf13/pflag"
+	"github.com/spf13/pflag"
 
+	"github.com/idlephysicist/cave-logger/internal/analytics"
 	"github.com/idlephysicist/cave-logger/internal/db"
 	"github.com/idlephysicist/cave-logger/internal/gui"
 	"github.com/idlephysicist/cave-logger/internal/model"
@@ -21,11 +22,12 @@ func main() {
 	// Parse cfg override
 	var (
 		cfgOverride string
-		versionCall bool
+		versionCall, doAnalytsis bool
 	)
-	flag.StringVarP(&cfgOverride, `config`, `c`, ``, `Config file override`)
-	flag.BoolVarP(&versionCall, `version`, `v`, false, `Print version info`)
-	flag.Parse()
+	pflag.StringVarP(&cfgOverride, `config`, `c`, ``, `Config file override`)
+	pflag.BoolVarP(&versionCall, `version`, `v`, false, `Print version info`)
+	pflag.BoolVarP(&doAnalytsis, `analytics`, `a`, false, `Export general analysis of the database`)
+	pflag.Parse()
 
 	if versionCall {
 		fmt.Printf("cave-logger %s (commit: %s) (built: %s)\n", version, commit, date)
@@ -76,11 +78,18 @@ func main() {
 	// Initialise the database connection and handler
 	db := db.New(log, cfg.Database.Filename)
 
-	// Initialise the Gui / Tui
-	gui := gui.New(db)
-	gui.ProcessColors(cfg.Colors)
+	if doAnalytsis {
+		if err := analytics.New(db).Run(); err != nil {
+			log.Fatalf("main: %s", err)
+		}
+	} else {
 
-	if err := gui.Start(); err != nil {
-		log.Fatalf("main: Cannot start tui: %s", err)
+		// Initialise the Gui / Tui
+		gui := gui.New(db)
+		gui.ProcessColors(cfg.Colors)
+
+		if err := gui.Start(); err != nil {
+			log.Fatalf("main: Cannot start tui: %s", err)
+		}
 	}
 }
