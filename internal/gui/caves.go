@@ -110,7 +110,7 @@ func (c *caves) setEntries(g *Gui) {
 			SetMaxWidth(0).
 			SetExpansion(1))
 
-		table.SetCell(i+1, 3, tview.NewTableCell(strconv.FormatBool(cave.SRT)).
+		table.SetCell(i+1, 3, tview.NewTableCell(yesOrNo(cave.SRT)).
 			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(0).
 			SetExpansion(1))
@@ -182,4 +182,12 @@ func (g *Gui) uniqueCountry(input []*model.Cave) []string {
 	}
 
 	return uniq
+}
+
+func yesOrNo(val bool) string {
+	if val {
+		return `Y`
+	} else {
+		return `N`
+	}
 }
