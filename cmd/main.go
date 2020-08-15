@@ -10,9 +10,9 @@ import (
 	"github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
 
-	"github.com/IdlePhysicist/cave-logger/internal/db"
-	"github.com/IdlePhysicist/cave-logger/internal/gui"
-	"github.com/IdlePhysicist/cave-logger/internal/model"
+	"github.com/idlephysicist/cave-logger/internal/db"
+	"github.com/idlephysicist/cave-logger/internal/gui"
+	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 var commit, version, date string

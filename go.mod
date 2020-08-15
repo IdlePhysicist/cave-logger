@@ -1,4 +1,4 @@
-module github.com/IdlePhysicist/cave-logger
+module github.com/idlephysicist/cave-logger
 
 go 1.13
 

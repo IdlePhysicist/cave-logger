@@ -6,7 +6,7 @@ import (
 	tview "gitlab.com/tslocum/cview"
 	"github.com/gdamore/tcell"
 
-	"github.com/IdlePhysicist/cave-logger/internal/model"
+	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 var inspectorFormat = map[string]string{

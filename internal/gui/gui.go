@@ -8,8 +8,8 @@ import (
 	tview "gitlab.com/tslocum/cview"
 	"github.com/gdamore/tcell"
 
-	"github.com/IdlePhysicist/cave-logger/internal/db"
-	"github.com/IdlePhysicist/cave-logger/internal/model"
+	"github.com/idlephysicist/cave-logger/internal/db"
+	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 type panels struct {

@@ -7,7 +7,7 @@ import (
 	"github.com/gdamore/tcell"
 	tview "gitlab.com/tslocum/cview"
 
-	"github.com/IdlePhysicist/cave-logger/internal/model"
+	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 type trips struct {
