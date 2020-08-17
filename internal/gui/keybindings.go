@@ -1,6 +1,8 @@
 package gui
 
 import (
+	"strings"
+
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
 )
@@ -27,7 +29,7 @@ func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 
 func (g *Gui) filter() {
 	currentPanel := g.state.panels.panel[g.state.panels.currentPanel]
-	currentPanel.setFilterWord("")
+	currentPanel.setFilter("", "")
 	currentPanel.updateEntries(g)
 
 	viewName := "filter"
@@ -55,8 +57,14 @@ func (g *Gui) filter() {
 	})
 
 	searchInput.SetChangedFunc(func(text string) {
-		currentPanel.setFilterWord(text)
-		currentPanel.updateEntries(g)
+		if strings.Contains(text, "/") {
+			textSl := strings.Split(text, "/")
+
+			if len(textSl) == 2 {
+				currentPanel.setFilter(textSl[0], textSl[1])
+				currentPanel.updateEntries(g)
+			}
+		}
 	})
 
 	g.pages.AddAndSwitchToPage(viewName, g.modal(searchInput, 80, 3), true).ShowPage("main")

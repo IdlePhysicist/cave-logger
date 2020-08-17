@@ -14,7 +14,7 @@ import (
 type cavers struct {
 	*tview.Table
 	cavers chan *model.Caver
-	filterWord string
+	filterCol, filterTerm string
 }
 
 func newCavers(g *Gui) *cavers {
@@ -108,7 +108,7 @@ func (c *cavers) entries(g *Gui) {
 
 	var filteredCavers []*model.Caver
 	for _, caver := range cavers {
-		if strings.Index(caver.Name, c.filterWord) == -1 {
+		if c.search(caver) {
 			continue
 		}
 		filteredCavers = append(filteredCavers, caver)
@@ -125,8 +125,9 @@ func (c *cavers) unfocus() {
 	c.SetSelectable(false, false)
 }
 
-func (c *cavers) setFilterWord(word string) {
-	c.filterWord = word
+func (c *cavers) setFilter(col, term string) {
+	c.filterCol = col
+	c.filterTerm = term
 }
 
 func (c *cavers) monitoringCavers(g *Gui) {
@@ -156,4 +157,21 @@ func (g *Gui) uniqueClubs(input []*model.Caver) []string {
 	}
 
 	return uniq
+}
+
+func (c *cavers) search(caver *model.Caver) bool {
+	switch c.filterCol {
+	case "name":
+		if strings.Index(caver.Name, c.filterTerm) == -1 {
+			return true
+		}
+		return false
+	case "club":
+		if strings.Index(caver.Club, c.filterTerm) == -1 {
+			return true
+		}
+		return false
+	default:
+		return false
+	}
 }
