@@ -14,7 +14,7 @@ import (
 type caves struct {
 	*tview.Table
 	caves chan *model.Cave
-	filterWord string
+	filterCol, filterTerm string
 }
 
 func newCaves(g *Gui) *caves {
@@ -63,7 +63,7 @@ func (c *caves) entries(g *Gui) {
 
 	var filteredCaves []*model.Cave
 	for _, cave := range caves {
-		if strings.Index(cave.Name, c.filterWord) == -1 {
+		if c.search(cave) {
 			continue
 		}
 		filteredCaves = append(filteredCaves, cave)
@@ -137,8 +137,9 @@ func (c *caves) unfocus() {
 	c.SetSelectable(false, false)
 }
 
-func (c *caves) setFilterWord(word string) {
-	c.filterWord = word
+func (c *caves) setFilter(col, term string) {
+	c.filterCol = col
+	c.filterTerm = term
 }
 
 func (c *caves) monitoringCaves(g *Gui) {
@@ -189,5 +190,27 @@ func yesOrNo(val bool) string {
 		return `Y`
 	} else {
 		return `N`
+	}
+}
+
+func (c *caves) search(cave *model.Cave) bool {
+	switch c.filterCol {
+	case "name", "":
+		if strings.Index(strings.ToLower(cave.Name), c.filterTerm) == -1 {
+			return true
+		}
+		return false
+	case "region":
+		if strings.Index(strings.ToLower(cave.Region), c.filterTerm) == -1 {
+			return true
+		}
+		return false
+	case "country":
+		if strings.Index(strings.ToLower(cave.Country), c.filterTerm) == -1 {
+			return true
+		}
+		return false
+	default:
+		return false
 	}
 }

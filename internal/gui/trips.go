@@ -12,8 +12,8 @@ import (
 
 type trips struct {
 	*tview.Table
-	trips			 chan *model.Log
-	filterWord string
+	trips chan *model.Log
+	filterCol, filterTerm string
 }
 
 func newTrips(g *Gui) *trips {
@@ -66,7 +66,7 @@ func (t *trips) entries(g *Gui) {
 
 	var filteredTrips []*model.Log
 	for _, trip := range trips {
-		if strings.Index(trip.Cave, t.filterWord) == -1 {
+		if t.search(trip) {
 			continue
 		}
 		filteredTrips = append(filteredTrips, trip)
@@ -128,8 +128,9 @@ func (t *trips) unfocus() {
 	t.SetSelectable(false, false)
 }
 
-func (t *trips) setFilterWord(word string) {
-	t.filterWord = word
+func (t *trips) setFilter(col, term string) {
+	t.filterCol = col
+	t.filterTerm = term
 }
 
 func (t *trips) monitoringTrips(g *Gui) {
@@ -144,5 +145,17 @@ LOOP:
 			ticker.Stop()
 			break LOOP
 		}
+	}
+}
+
+func (t *trips) search(trip *model.Log) bool {
+	switch t.filterCol {
+	case "cave", "":
+		if strings.Index(strings.ToLower(trip.Cave), t.filterTerm) == -1 {
+			return true
+		}
+		return false
+	default:
+		return false
 	}
 }
