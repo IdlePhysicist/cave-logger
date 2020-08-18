@@ -150,8 +150,8 @@ LOOP:
 
 func (t *trips) search(trip *model.Log) bool {
 	switch t.filterCol {
-	case "cave":
-		if strings.Index(trip.Cave, t.filterTerm) == -1 {
+	case "cave", "":
+		if strings.Index(strings.ToLower(trip.Cave), t.filterTerm) == -1 {
 			return true
 		}
 		return false

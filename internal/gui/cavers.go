@@ -161,13 +161,13 @@ func (g *Gui) uniqueClubs(input []*model.Caver) []string {
 
 func (c *cavers) search(caver *model.Caver) bool {
 	switch c.filterCol {
-	case "name":
-		if strings.Index(caver.Name, c.filterTerm) == -1 {
+	case "name", "":
+		if strings.Index(strings.ToLower(caver.Name), c.filterTerm) == -1 {
 			return true
 		}
 		return false
 	case "club":
-		if strings.Index(caver.Club, c.filterTerm) == -1 {
+		if strings.Index(strings.ToLower(caver.Club), c.filterTerm) == -1 {
 			return true
 		}
 		return false

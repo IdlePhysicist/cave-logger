@@ -33,8 +33,8 @@ func (g *Gui) filter() {
 	currentPanel.updateEntries(g)
 
 	viewName := "filter"
-	searchInput := tview.NewInputField().SetLabel("Parameter")
-	searchInput.SetLabelWidth(10)
+	searchInput := tview.NewInputField().SetLabel("Column/Parameter")
+	searchInput.SetLabelWidth(17)
 	searchInput.SetTitle(" Filter ")
 	searchInput.SetTitleAlign(tview.AlignLeft)
 	searchInput.SetBorder(true)
@@ -58,7 +58,7 @@ func (g *Gui) filter() {
 
 	searchInput.SetChangedFunc(func(text string) {
 		if strings.Contains(text, "/") {
-			textSl := strings.Split(text, "/")
+			textSl := strings.Split(strings.ToLower(text), "/")
 
 			if len(textSl) == 2 {
 				currentPanel.setFilter(textSl[0], textSl[1])

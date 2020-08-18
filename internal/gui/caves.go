@@ -195,18 +195,18 @@ func yesOrNo(val bool) string {
 
 func (c *caves) search(cave *model.Cave) bool {
 	switch c.filterCol {
-	case "name":
-		if strings.Index(cave.Name, c.filterTerm) == -1 {
+	case "name", "":
+		if strings.Index(strings.ToLower(cave.Name), c.filterTerm) == -1 {
 			return true
 		}
 		return false
 	case "region":
-		if strings.Index(cave.Region, c.filterTerm) == -1 {
+		if strings.Index(strings.ToLower(cave.Region), c.filterTerm) == -1 {
 			return true
 		}
 		return false
 	case "country":
-		if strings.Index(cave.Country, c.filterTerm) == -1 {
+		if strings.Index(strings.ToLower(cave.Country), c.filterTerm) == -1 {
 			return true
 		}
 		return false
