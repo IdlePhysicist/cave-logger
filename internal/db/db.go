@@ -52,11 +52,11 @@ func (db *Database) AddTrip(date, location, names, notes string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	if err = db.conn.Begin(); err != nil {
 		return err
 	}
-	
+
 	// Insert the trip itself
 	tripID, err := db.execute(query, params)
 	if err != nil {
@@ -163,14 +163,14 @@ func (db *Database) GetAllTrips() ([]*model.Log, error) {
 		trips.notes AS 'notes'
 	FROM trips, locations
 	WHERE trips.caveid = locations.id`
-	
+
 	result, err := db.conn.Prepare(query)
 	if err != nil {
 		db.log.Errorf("db.prepare: Failed to query database", err)
 		return nil, err
 	}
 	defer result.Close()
-	
+
 	trips := make([]*model.Log, 0)
 	for {
 		var stamp int64
@@ -185,7 +185,7 @@ func (db *Database) GetAllTrips() ([]*model.Log, error) {
 		if !rowExists {
 			break
 		}
-		
+
 		err = result.Scan(&trip.ID, &stamp, &trip.Cave, &trip.Names, &trip.Notes)
 		if err != nil {
 			db.log.Error(err)
@@ -193,9 +193,9 @@ func (db *Database) GetAllTrips() ([]*model.Log, error) {
 		}
 
 		trip.Date = time.Unix(stamp, 0).Format(date)
-		
+
 		// Add this formatted row to the rows map
-		trips = append(trips, &trip)  
+		trips = append(trips, &trip)
 	}
 
 	return trips, err
@@ -225,7 +225,7 @@ func (db *Database) GetTrip(logID string) (*model.Log, error) { //FIXME:
 		return nil, err
 	}
 	defer result.Close()
-	
+
 	trips := make([]*model.Log, 0)
 	for {
 		var stamp int64
@@ -240,7 +240,7 @@ func (db *Database) GetTrip(logID string) (*model.Log, error) { //FIXME:
 		if !rowExists {
 			break
 		}
-		
+
 		err = result.Scan(&trip.ID, &stamp, &trip.Cave, &trip.Names, &trip.Notes)
 		if err != nil {
 			db.log.Error(err)
@@ -248,9 +248,9 @@ func (db *Database) GetTrip(logID string) (*model.Log, error) { //FIXME:
 		}
 
 		trip.Date = time.Unix(stamp, 0).Format(date)
-		
+
 		// Add this formatted row to the rows map
-		trips = append(trips, &trip)  
+		trips = append(trips, &trip)
 	}
 
 	return trips[0], err
@@ -281,7 +281,7 @@ func (db *Database) GetAllPeople() ([]*model.Caver, error) {
 	cavers := make([]*model.Caver, 0)
 	for {
 		var c model.Caver
-		
+
 		rowExists, err := result.Step()
 		if err != nil {
 			db.log.Errorf("db.get: Step error: %s", err)
@@ -291,7 +291,7 @@ func (db *Database) GetAllPeople() ([]*model.Caver, error) {
 		if !rowExists {
 			break
 		}
-		
+
 		err = result.Scan(&c.ID, &c.Name, &c.Club, &c.Count)
 		if err != nil {
 			db.log.Errorf("Scan: %v", err)
@@ -321,7 +321,7 @@ func (db *Database) GetTopPeople() ([]*model.Statistic, error) {
 	cavers := make([]*model.Statistic, 0)
 	for {
 		var c model.Statistic
-		
+
 		rowExists, err := result.Step()
 		if err != nil {
 			db.log.Errorf("db.get: Step error: %s", err)
@@ -331,7 +331,7 @@ func (db *Database) GetTopPeople() ([]*model.Statistic, error) {
 		if !rowExists {
 			break
 		}
-		
+
 		err = result.Scan(&c.Name, &c.Value)
 		if err != nil {
 			db.log.Errorf("Scan: %v", err)
@@ -363,7 +363,7 @@ func (db *Database) GetPerson(personID string) (*model.Caver, error) {
 		return nil, err
 	}
 	defer result.Close()
-	
+
 	people := make([]*model.Caver, 0)
 	for {
 		var person model.Caver
@@ -377,7 +377,7 @@ func (db *Database) GetPerson(personID string) (*model.Caver, error) {
 		if !rowExists {
 			break
 		}
-		
+
 		err = result.Scan(&person.ID, &person.Name, &person.Club, &person.Count)
 		if err != nil {
 			db.log.Error(err)
@@ -385,7 +385,7 @@ func (db *Database) GetPerson(personID string) (*model.Caver, error) {
 		}
 
 		// Add this formatted row to the rows map
-		people = append(people, &person)  
+		people = append(people, &person)
 	}
 
 	return people[0], err
@@ -418,7 +418,7 @@ func (db *Database) GetAllLocations() ([]*model.Cave, error) {
 	caves := make([]*model.Cave, 0)
 	for {
 		var c model.Cave
-		
+
 		rowExists, err := result.Step()
 		if err != nil {
 			db.log.Errorf("db.get: Step error: %s", err)
@@ -428,7 +428,7 @@ func (db *Database) GetAllLocations() ([]*model.Cave, error) {
 		if !rowExists {
 			break
 		}
-		
+
 		err = result.Scan(&c.ID, &c.Name, &c.Region, &c.Country, &c.SRT, &c.Visits)
 		if err != nil {
 			db.log.Errorf("Scan: %v", err)
@@ -458,7 +458,7 @@ func (db *Database) GetTopLocations() ([]*model.Statistic, error) {
 	stats := make([]*model.Statistic, 0)
 	for {
 		var s model.Statistic
-		
+
 		rowExists, err := result.Step()
 		if err != nil {
 			db.log.Errorf("db.get: Step error: %s", err)
@@ -468,7 +468,7 @@ func (db *Database) GetTopLocations() ([]*model.Statistic, error) {
 		if !rowExists {
 			break
 		}
-		
+
 		err = result.Scan(&s.Name, &s.Value)
 		if err != nil {
 			db.log.Errorf("Scan: %v", err)
@@ -500,7 +500,7 @@ func (db *Database) GetLocation(caveID string) (*model.Cave, error) {
 		return nil, err
 	}
 	defer result.Close()
-	
+
 	caves := make([]*model.Cave, 0)
 	for {
 		//var caverIDstr string
@@ -516,7 +516,7 @@ func (db *Database) GetLocation(caveID string) (*model.Cave, error) {
 		if !rowExists {
 			break
 		}
-		
+
 		err = result.Scan(&cave.ID, &cave.Name, &cave.Region, &cave.Country, &cave.SRT, &cave.Visits)
 		if err != nil {
 			db.log.Error(err)
@@ -524,7 +524,7 @@ func (db *Database) GetLocation(caveID string) (*model.Cave, error) {
 		}
 
 		// Add this formatted row to the rows map
-		caves = append(caves, &cave)  
+		caves = append(caves, &cave)
 	}
 
 	return caves[0], err
@@ -538,7 +538,7 @@ func (db *Database) RemoveTrip(id string) error {
 	if err := db.conn.Begin(); err != nil {
 		return err
 	}
-	
+
 	// Delete trip entry
 	err := db.conn.Exec(`DELETE FROM trips WHERE id = ?`, id)
 	if err != nil {
@@ -571,7 +571,7 @@ func (db *Database) RemovePerson(id string) error {
 	if err := db.conn.Begin(); err != nil {
 		return err
 	}
-	
+
 	// Delete trip entry
 	err := db.conn.Exec(`DELETE FROM people WHERE id = ?`, id)
 	if err != nil {
@@ -596,7 +596,7 @@ func (db *Database) RemoveLocation(id string) error {
 	if err := db.conn.Begin(); err != nil {
 		return err
 	}
-	
+
 	// Delete trip entry
 	err := db.conn.Exec(`DELETE FROM locations WHERE id = ?`, id)
 	if err != nil {
@@ -627,13 +627,13 @@ func (db *Database) ModifyTrip(id, date, location, names, notes string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	params = append(params, id)
 
 	if err = db.conn.Begin(); err != nil {
 		return err
 	}
-	
+
 	// Update the trip itself
 	_, err = db.execute(query, params)
 	if err != nil {
@@ -650,7 +650,7 @@ func (db *Database) ModifyTrip(id, date, location, names, notes string) error {
 			panic(rb_err)
 		}
 		return err
-	}	
+	}
 
 	_, err = db.execute(db.addTripGroups(id, caverIDs))
 	if err != nil {

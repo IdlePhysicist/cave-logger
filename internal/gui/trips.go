@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"strings"
 	"time"
 
 	"github.com/gdamore/tcell"
@@ -11,8 +12,8 @@ import (
 
 type trips struct {
 	*tview.Table
-	trips			 chan *model.Log
-	filterWord string
+	trips chan *model.Log
+	filterCol, filterTerm string
 }
 
 func newTrips(g *Gui) *trips {
@@ -21,7 +22,7 @@ func newTrips(g *Gui) *trips {
 		trips: make(chan *model.Log),
 	}
 
-	trips.SetTitle(` Trips `).SetTitleAlign(tview.AlignLeft)
+	trips.SetTitle(``).SetTitleAlign(tview.AlignLeft)
 	trips.SetBorder(true)
 	trips.setEntries(g)
 	trips.setKeybinding(g)
@@ -38,11 +39,10 @@ func (t *trips) setKeybinding(g *Gui) {
 
 		switch event.Key() {
 		case tcell.KeyEnter:
+			g.state.navigate.update("detail")
 			g.inspectTrip()
-		//case tcell.KeyCtrlR:
-		//	t.setEntries(g)
-		case tcell.KeyTAB:
-			g.switchPanel(`menu`)
+		case tcell.KeyCtrlR:
+			t.setEntries(g)
 		}
 
 		switch event.Rune() {
@@ -64,7 +64,14 @@ func (t *trips) entries(g *Gui) {
 		return
 	}
 
-	g.state.resources.trips = trips	
+	var filteredTrips []*model.Log
+	for _, trip := range trips {
+		if t.search(trip) {
+			continue
+		}
+		filteredTrips = append(filteredTrips, trip)
+	}
+	g.state.resources.trips = filteredTrips
 }
 
 func (t *trips) setEntries(g *Gui) {
@@ -82,25 +89,25 @@ func (t *trips) setEntries(g *Gui) {
 			Text:            header,
 			NotSelectable:   true,
 			Align:           tview.AlignLeft,
-			Color:           tcell.ColorWhite,
-			BackgroundColor: tcell.ColorDefault,
+			Color:           tview.Styles.PrimaryTextColor,
+			BackgroundColor: tview.Styles.PrimitiveBackgroundColor,
 			Attributes:      tcell.AttrBold,
 		})
 	}
 
 	for i, trip := range g.state.resources.trips {
 		table.SetCell(i+1, 0, tview.NewTableCell(trip.Date).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(30).
 			SetExpansion(1))
 
 		table.SetCell(i+1, 1, tview.NewTableCell(trip.Cave).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(30).
 			SetExpansion(1))
 
 		table.SetCell(i+1, 2, tview.NewTableCell(trip.Names).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(0).
 			SetExpansion(2))
 	}
@@ -121,12 +128,13 @@ func (t *trips) unfocus() {
 	t.SetSelectable(false, false)
 }
 
-func (t *trips) setFilterWord(word string) {
-	t.filterWord = word
+func (t *trips) setFilter(col, term string) {
+	t.filterCol = col
+	t.filterTerm = term
 }
 
 func (t *trips) monitoringTrips(g *Gui) {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(5 * time.Minute)
 
 LOOP:
 	for {
@@ -137,5 +145,17 @@ LOOP:
 			ticker.Stop()
 			break LOOP
 		}
+	}
+}
+
+func (t *trips) search(trip *model.Log) bool {
+	switch t.filterCol {
+	case "cave", "":
+		if strings.Index(strings.ToLower(trip.Cave), t.filterTerm) == -1 {
+			return true
+		}
+		return false
+	default:
+		return false
 	}
 }

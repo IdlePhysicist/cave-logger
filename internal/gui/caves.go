@@ -2,6 +2,7 @@ package gui
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gdamore/tcell"
@@ -13,7 +14,7 @@ import (
 type caves struct {
 	*tview.Table
 	caves chan *model.Cave
-	filterWord string
+	filterCol, filterTerm string
 }
 
 func newCaves(g *Gui) *caves {
@@ -21,7 +22,7 @@ func newCaves(g *Gui) *caves {
 		Table: tview.NewTable().SetSelectable(true, false).Select(0,0).SetFixed(1,1),
 	}
 
-	caves.SetTitle(` Caves `).SetTitleAlign(tview.AlignLeft)
+	caves.SetTitle(``).SetTitleAlign(tview.AlignLeft)
 	caves.SetBorder(true)
 	caves.setEntries(g)
 	caves.setKeybinding(g)
@@ -29,7 +30,7 @@ func newCaves(g *Gui) *caves {
 }
 
 func (c *caves) name() string {
-	return `locations`
+	return `caves`
 }
 
 func (c *caves) setKeybinding(g *Gui) {
@@ -37,10 +38,8 @@ func (c *caves) setKeybinding(g *Gui) {
 		g.setGlobalKeybinding(event)
 
 		switch event.Key() {
-		case tcell.KeyEnter:
-			g.inspectCave()
-		case tcell.KeyTAB:
-			g.switchPanel(`menu`)
+		case tcell.KeyCtrlR:
+			c.setEntries(g)
 		}
 
 		switch event.Rune() {
@@ -62,7 +61,14 @@ func (c *caves) entries(g *Gui) {
 		return
 	}
 
-	g.state.resources.locations = caves	
+	var filteredCaves []*model.Cave
+	for _, cave := range caves {
+		if c.search(cave) {
+			continue
+		}
+		filteredCaves = append(filteredCaves, cave)
+	}
+	g.state.resources.locations = filteredCaves
 }
 
 func (c *caves) setEntries(g *Gui) {
@@ -82,35 +88,35 @@ func (c *caves) setEntries(g *Gui) {
 			Text:            header,
 			NotSelectable:   true,
 			Align:           tview.AlignLeft,
-			Color:           tcell.ColorWhite,
-			BackgroundColor: tcell.ColorDefault,
+			Color:           tview.Styles.PrimaryTextColor,
+			BackgroundColor: tview.Styles.PrimitiveBackgroundColor,
 			Attributes:      tcell.AttrBold,
 		})
 	}
 
 	for i, cave := range g.state.resources.locations {
 		table.SetCell(i+1, 0, tview.NewTableCell(cave.Name).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(30).
 			SetExpansion(1))
 
 		table.SetCell(i+1, 1, tview.NewTableCell(cave.Region).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(30).
 			SetExpansion(1))
 
 		table.SetCell(i+1, 2, tview.NewTableCell(cave.Country).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(0).
 			SetExpansion(1))
 
-		table.SetCell(i+1, 3, tview.NewTableCell(strconv.FormatBool(cave.SRT)).
-			SetTextColor(tcell.ColorWhite).
+		table.SetCell(i+1, 3, tview.NewTableCell(yesOrNo(cave.SRT)).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(0).
 			SetExpansion(1))
 
 		table.SetCell(i+1, 4, tview.NewTableCell(strconv.FormatInt(cave.Visits, 10)).
-			SetTextColor(tcell.ColorWhite).
+			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(0).
 			SetExpansion(1))
 	}
@@ -131,12 +137,13 @@ func (c *caves) unfocus() {
 	c.SetSelectable(false, false)
 }
 
-func (c *caves) setFilterWord(word string) {
-	c.filterWord = word
+func (c *caves) setFilter(col, term string) {
+	c.filterCol = col
+	c.filterTerm = term
 }
 
 func (c *caves) monitoringCaves(g *Gui) {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(5 * time.Minute)
 
 LOOP:
 	for {
@@ -176,4 +183,34 @@ func (g *Gui) uniqueCountry(input []*model.Cave) []string {
 	}
 
 	return uniq
+}
+
+func yesOrNo(val bool) string {
+	if val {
+		return `Y`
+	} else {
+		return `N`
+	}
+}
+
+func (c *caves) search(cave *model.Cave) bool {
+	switch c.filterCol {
+	case "name", "":
+		if strings.Index(strings.ToLower(cave.Name), c.filterTerm) == -1 {
+			return true
+		}
+		return false
+	case "region":
+		if strings.Index(strings.ToLower(cave.Region), c.filterTerm) == -1 {
+			return true
+		}
+		return false
+	case "country":
+		if strings.Index(strings.ToLower(cave.Country), c.filterTerm) == -1 {
+			return true
+		}
+		return false
+	default:
+		return false
+	}
 }

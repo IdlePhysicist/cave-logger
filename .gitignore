@@ -2,7 +2,7 @@
 
 # Project
 *.db
-config/config.yml
+config/
 build/
 _old
 

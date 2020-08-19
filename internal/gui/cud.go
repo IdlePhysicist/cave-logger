@@ -47,8 +47,7 @@ func (g *Gui) createTripForm() {
 			g.closeAndSwitchPanel("form", "trips")
 		})
 
-	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)//.ShowPage("main")
-	//REVIEW: main or trips ? ^^
+	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
 }
 
 func (g *Gui) createTrip(form *tview.Form) {
@@ -64,9 +63,7 @@ func (g *Gui) createTrip(form *tview.Form) {
 	}
 
 	g.closeAndSwitchPanel(`form`, `trips`)
-	g.app.QueueUpdateDraw(func() {
-		g.tripsPanel().setEntries(g)
-	})
+	g.tripsPanel().updateEntries(g)
 }
 
 func (g *Gui) createLocationForm() {
@@ -116,11 +113,10 @@ func (g *Gui) createLocationForm() {
 			g.createLocation(form)
 		}).
 		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "locations")
+			g.closeAndSwitchPanel("form", "caves")
 		})
 
-	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)//.ShowPage("main")
-	//REVIEW: main or trips ? ^^
+	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
 }
 
 func (g *Gui) createLocation(form *tview.Form) {
@@ -135,10 +131,8 @@ func (g *Gui) createLocation(form *tview.Form) {
 		return
 	}
 
-	g.closeAndSwitchPanel(`form`, `locations`)
-	g.app.QueueUpdateDraw(func() {
-		g.locationsPanel().setEntries(g)
-	})
+	g.closeAndSwitchPanel(`form`, `caves`)
+	g.cavesPanel().updateEntries(g)
 }
 
 func (g *Gui) createPersonForm() {
@@ -162,7 +156,7 @@ func (g *Gui) createPersonForm() {
 		}
 
 		return
-	}) 
+	})
 
 	form.
 		AddInputField("Name", "", inputWidth, nil, nil).
@@ -171,11 +165,10 @@ func (g *Gui) createPersonForm() {
 			g.createPerson(form)
 		}).
 		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "people")
+			g.closeAndSwitchPanel("form", "cavers")
 		})
 
 	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
-	//REVIEW: main or trips ? ^^
 }
 
 func (g *Gui) createPerson(form *tview.Form) {
@@ -188,10 +181,8 @@ func (g *Gui) createPerson(form *tview.Form) {
 		return
 	}
 
-	g.closeAndSwitchPanel(`form`, `people`)
-	g.app.QueueUpdateDraw(func() {
-		g.peoplePanel().setEntries(g)
-	})
+	g.closeAndSwitchPanel(`form`, `cavers`)
+	g.caversPanel().updateEntries(g)
 }
 
 //
@@ -257,9 +248,7 @@ func (g *Gui) modifyTrip(id string, form *tview.Form) {
 	}
 
 	g.closeAndSwitchPanel(`form`, `trips`)
-	g.app.QueueUpdateDraw(func() {
-		g.tripsPanel().setEntries(g)
-	})
+	g.tripsPanel().updateEntries(g)
 }
 
 
@@ -289,7 +278,7 @@ func (g *Gui) modifyPersonForm() {
 		}
 
 		return
-	}) 
+	})
 
 	form.
 		AddInputField("Name", selectedPerson.Name, inputWidth, nil, nil).
@@ -298,7 +287,7 @@ func (g *Gui) modifyPersonForm() {
 			g.modifyPerson(selectedPerson.ID, form)
 		}).
 		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "people")
+			g.closeAndSwitchPanel("form", "cavers")
 		})
 
 	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
@@ -315,10 +304,8 @@ func (g *Gui) modifyPerson(id string, form *tview.Form) {
 		return
 	}
 
-	g.closeAndSwitchPanel(`form`, `people`)
-	g.app.QueueUpdateDraw(func() {
-		g.peoplePanel().updateEntries(g)//setEntries(g)
-	})
+	g.closeAndSwitchPanel(`form`, `cavers`)
+	g.caversPanel().updateEntries(g)
 }
 
 
@@ -376,7 +363,7 @@ func (g *Gui) modifyLocationForm() {
 			g.modifyLocation(selectedLocation.ID, form)
 		}).
 		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "locations")
+			g.closeAndSwitchPanel("form", "caves")
 		})
 
 	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
@@ -395,10 +382,8 @@ func (g *Gui) modifyLocation(id string, form *tview.Form) {
 		return
 	}
 
-	g.closeAndSwitchPanel(`form`, `locations`)
-	g.app.QueueUpdateDraw(func() {
-		g.locationsPanel().setEntries(g)
-	})
+	g.closeAndSwitchPanel(`form`, `caves`)
+	g.cavesPanel().updateEntries(g)
 }
 
 
@@ -434,7 +419,7 @@ func (g *Gui) deleteLocation() {
 			g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
 			return
 		}
-		g.locationsPanel().updateEntries(g)
+		g.cavesPanel().updateEntries(g)
 	})
 }
 
@@ -451,6 +436,6 @@ func (g *Gui) deletePerson() {
 			g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
 			return
 		}
-		g.peoplePanel().updateEntries(g)
+		g.caversPanel().updateEntries(g)
 	})
 }

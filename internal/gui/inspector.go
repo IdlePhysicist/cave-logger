@@ -1,53 +1,90 @@
 package gui
 
 import (
+	"fmt"
+
 	"github.com/rivo/tview"
+	"github.com/gdamore/tcell"
+
+	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
-type inspector struct {
-	*tview.TextView
+var inspectorFormat = map[string]string{
+	`trips` : "\tDate: %s\n\tCave: %s\n\tCavers: %s\n\tNotes: %s",
+	`cavers`: "\tName: %s\n\tClub: %s\n\tCount: %d",
+	`caves` : "\tName: %s\n\tRegion: %s\n\tCountry: %s\n\tSRT: %v\n\tVisits: %d",
 }
 
-func newInspector(g *Gui) (insp *inspector) {
-	insp = &inspector{
-		//Frame: tview.NewFrame(tview.NewTextView()),//.SetBorder(true).SetTitle(" Inspector "),
-		TextView: tview.NewTextView(),
+func (g *Gui) displayInspect(data, page string) {
+	text := tview.NewTextView()
+	text.SetTitle(" Detail ").SetTitleAlign(tview.AlignLeft)
+	text.SetBorder(true)
+	text.SetText(data)
+
+	text.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEsc || event.Rune() == 'q' {
+			g.closeAndSwitchPanel("detail", page)
+		}
+		return event
+	})
+
+	g.pages.AddAndSwitchToPage("detail", text, true)
+}
+
+//
+// INSPECTION FUNCS
+//
+
+func (g *Gui) inspectTrip() {
+	selected := g.selectedTrip()
+
+	if selected == nil {
+		g.warning("No trips in table", `trips`, []string{`OK`}, func() {return})
+		return
 	}
 
-	insp.SetTitle(` Inspector `).SetTitleAlign(tview.AlignLeft)
-	insp.SetBorder(true)
-	insp.setInitEntry()
-	return
+	trip, err := g.db.GetTrip(selected.ID)
+	if err != nil {
+		return
+	}
+
+	g.displayInspect(g.formatTrip(trip), "trips")
 }
 
-func (i *inspector) name() string {
-	return `inspector`
+/*func (g *Gui) inspectCave() {
+	selected := g.selectedLocation()
+
+	cave, err := g.db.GetLocation(selected.ID)
+	if err != nil {
+		return
+	}
+
+	g.inspectorPanel().setEntry(g.formatCave(cave))
 }
 
-func (i *inspector) setEntry(text string) {
-	i.SetText(text)
+func (g *Gui) inspectPerson() {
+	selected := g.selectedPerson()
+
+	caver, err := g.db.GetPerson(selected.ID)
+	if err != nil {
+		return
+	}
+
+	g.inspectorPanel().setEntry(g.formatPerson(caver))
+}*/
+
+//
+// Formatting Functions
+//
+func (g *Gui) formatTrip(trip *model.Log) string {
+	return fmt.Sprintf(inspectorFormat[`trips`], trip.Date, trip.Cave, trip.Names, trip.Notes)
 }
 
-func (i *inspector) setKeybinding(g *Gui) {}
-
-func (i *inspector) setEntries(g *Gui) {}
-
-func (i *inspector) setInitEntry() {
-	i.SetText(`
-			 __    __ __      __ 
-	|  ||_ |  /  /  \|\/||_  
-	|/\||__|__\__\__/|  ||__ `)
+/*func (g *Gui) formatCave(l *model.Cave) string {
+	return fmt.Sprintf(inspectorFormat[`caves`], l.Name, l.Region, l.Country, l.SRT, l.Visits)
 }
 
-func (i *inspector) entries(g *Gui) {}
+func (g *Gui) formatPerson(p *model.Caver) string {
+	return fmt.Sprintf(inspectorFormat[`cavers`], p.Name, p.Club, p.Count)
+}*/
 
-func (i *inspector) updateEntries(g *Gui) {}
-
-func (i *inspector) focus(g *Gui) {
-	g.app.SetFocus(i)
-}
-
-func (i *inspector) unfocus() {
-}
-
-func (i *inspector) setFilterWord(word string) {}

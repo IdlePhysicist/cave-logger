@@ -1,8 +1,8 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -48,21 +48,21 @@ func main() {
 
 
 	// Read config file
-	cfg := func (_yamlFile string) *model.Config {
+	cfg := func(_file string) *model.Config {
 		var _cfg model.Config
 
-		if _yamlFile == `` {
-			_yamlFile = fmt.Sprintf("%s/.config/cave-logger/config.yml", os.Getenv("HOME"))
+		if _file == `` {
+			_file = fmt.Sprintf("%s/.config/cave-logger/config.json", os.Getenv("HOME"))
 		}
 
-		yamlFile, err := ioutil.ReadFile(_yamlFile)
+		file, err := ioutil.ReadFile(_file)
 		if err != nil {
 			log.Fatalf("main.readfile: %v", err)
 		}
 
-		err = yaml.Unmarshal(yamlFile, &_cfg)
+		err = json.Unmarshal(file, &_cfg)
 		if err != nil {
-			log.Fatalf("main.unmarshalYAML: %v", err)
+			log.Fatalf("main.unmarshal: %v", err)
 		}
 
 		return &_cfg
@@ -78,6 +78,7 @@ func main() {
 
 	// Initialise the Gui / Tui
 	gui := gui.New(db)
+	gui.ProcessColors(cfg.Colors)
 
 	if err := gui.Start(); err != nil {
 		log.Fatalf("main: Cannot start tui: %s", err)
