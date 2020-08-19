@@ -3,8 +3,6 @@
 ## Summary
 Cave Logger is a basic SQLite database interface written in Go, and it allows cavers to track the caves that they have been to, who with, and when. 
 
-I indend to make the code more generic to allow other outdoorsy people to use this app with less fuss.
-
 ## What It Looks Like
 <p align="center"><img src="assets/screenshot.png"></p>
 
@@ -35,22 +33,3 @@ To run in docker:
 2. Follow step 3 from above
 3. `./docker/run.sh`
 
-## Help
-
-### Keybindings
-
-| Key | Function |
-|:---:|:--------:|
-| <kbd>q</kbd> | quit |
-| <kbd>n</kbd> | new |
-| <kbd>u</kbd> | update |
-| <kbd>d</kbd> | delete |
-| <kbd>j</kbd> | down |
-| <kbd>k</kbd> | up |
-| <kbd>g</kbd> | end |
-| <kbd>G</kbd> | home |
-| <kbd>Tab</kbd> | see menu |
-| <kbd>Enter</kbd> | inspect record |
-
-### Menu
-In the Menu the <kbd>Tab</kbd> key will select the highlighted item, and hitting <kbd>Tab</kbd> again will navigate to the Menu.
