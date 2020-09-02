@@ -3,8 +3,8 @@ package gui
 import (
 	"strings"
 
-	"github.com/gdamore/tcell"
-	"github.com/rivo/tview"
+	"github.com/gdamore/tcell/v2"
+	tview "gitlab.com/tslocum/cview"
 )
 
 func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {

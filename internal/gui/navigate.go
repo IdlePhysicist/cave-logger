@@ -1,6 +1,6 @@
 package gui
 
-import "github.com/rivo/tview"
+import tview "gitlab.com/tslocum/cview"
 
 type navigate struct {
 	*tview.TextView

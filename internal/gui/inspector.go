@@ -3,8 +3,8 @@ package gui
 import (
 	"fmt"
 
-	"github.com/rivo/tview"
-	"github.com/gdamore/tcell"
+	tview "gitlab.com/tslocum/cview"
+	"github.com/gdamore/tcell/v2"
 
 	"github.com/idlephysicist/cave-logger/internal/model"
 )

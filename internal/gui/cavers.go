@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gdamore/tcell"
-	"github.com/rivo/tview"
+	"github.com/gdamore/tcell/v2"
+	tview "gitlab.com/tslocum/cview"
 
 	"github.com/idlephysicist/cave-logger/internal/model"
 )

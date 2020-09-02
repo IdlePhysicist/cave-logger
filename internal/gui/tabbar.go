@@ -1,7 +1,7 @@
 package gui
 
 import (
-	"github.com/rivo/tview"
+	tview "gitlab.com/tslocum/cview"
 )
 
 func newTabBar(g *Gui) *tview.TextView {
