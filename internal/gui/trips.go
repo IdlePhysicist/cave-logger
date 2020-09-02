@@ -14,12 +14,13 @@ type trips struct {
 	*tview.Table
 	trips chan *model.Log
 	filterCol, filterTerm string
+	sortedCol int
 }
 
 func newTrips(g *Gui) *trips {
 	trips := &trips{
-		Table: tview.NewTable().SetSelectable(true, false).Select(0,0).SetFixed(1,1),
-		trips: make(chan *model.Log),
+		Table: tview.NewTable().SetSelectable(true, true).Select(0,0).SetFixed(1,1),
+		sortedCol: 0,
 	}
 
 	trips.SetTitle(``).SetTitleAlign(tview.AlignLeft)
@@ -133,6 +134,19 @@ func (t *trips) setFilter(col, term string) {
 	t.filterTerm = term
 }
 
+func (t *trips) getColumnCount() int {
+	return t.Table.GetColumnCount()
+}
+
+func (t *trips) getSortedCol() int {
+	return t.sortedCol
+}
+
+func (t *trips) setSortedCol(col int) {
+	t.sortedCol = col
+	t.Table.Sort(t.sortedCol, false)
+}
+
 func (t *trips) monitoringTrips(g *Gui) {
 	ticker := time.NewTicker(5 * time.Minute)
 
@@ -159,3 +173,4 @@ func (t *trips) search(trip *model.Log) bool {
 		return false
 	}
 }
+

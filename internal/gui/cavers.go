@@ -15,11 +15,13 @@ type cavers struct {
 	*tview.Table
 	cavers chan *model.Caver
 	filterCol, filterTerm string
+	sortedCol int
 }
 
 func newCavers(g *Gui) *cavers {
 	cavers := &cavers{
 		Table: tview.NewTable().SetSelectable(true, false).Select(0,0).SetFixed(1,1),
+		sortedCol: 0,
 	}
 
 	cavers.SetTitle(``).SetTitleAlign(tview.AlignLeft)
@@ -128,6 +130,19 @@ func (c *cavers) unfocus() {
 func (c *cavers) setFilter(col, term string) {
 	c.filterCol = col
 	c.filterTerm = term
+}
+
+func (c *cavers) getColumnCount() int {
+	return c.Table.GetColumnCount()
+}
+
+func (c *cavers) getSortedCol() int {
+	return c.sortedCol
+}
+
+func (c *cavers) setSortedCol(col int) {
+	c.sortedCol = col
+	c.Table.Sort(c.sortedCol, false)
 }
 
 func (c *cavers) monitoringCavers(g *Gui) {

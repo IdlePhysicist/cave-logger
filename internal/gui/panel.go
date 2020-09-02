@@ -9,4 +9,7 @@ type panel interface {
 	focus(*Gui)
 	unfocus()
 	setFilter(string, string)
+	getSortedCol() int
+	setSortedCol(int)
+	getColumnCount() int
 }

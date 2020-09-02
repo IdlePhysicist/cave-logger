@@ -8,10 +8,12 @@ import (
 )
 
 func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
-	/*switch event.Key() {
-	case tcell.KeyTAB:
-		g.nextPage()
-	}*/
+	switch event.Key() {
+	case tcell.KeyRight:
+		g.nextCol()
+	case tcell.KeyLeft:
+		g.prevCol()
+	}
 
 	switch event.Rune() {
 	case 'q':
@@ -24,6 +26,10 @@ func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 		g.goTo("caves")
 	case '/':
 		g.filter()
+	case 'l':
+		g.nextCol()
+	case 'h':
+		g.prevCol()
 	}
 }
 
@@ -75,7 +81,7 @@ func (g *Gui) filter() {
 //
 
 func (g *Gui) selectPage(row, col int) string {
-	var p string
+	var p string // REVIEW: can this be improved?
 	switch row {
 	case 0:
 		p = `trips`
@@ -87,11 +93,18 @@ func (g *Gui) selectPage(row, col int) string {
 	return p
 }
 
-/*
-func (g *Gui) nextPage() {
-	slide, _ := strconv.Atoi(g.state.tabBar.GetHighlights()[0])
-	slide = (slide + 1) % g.pages.GetPageCount()
-	//g.state.tabBar.Highlight(strconv.Itoa(slide)).ScrollToHighlight()
-	g.goTo(g.selectPage(slide - 1, 0)) // NOTE: If the Highlight func is fixed for the tab bar then this line will not be required
+
+func (g *Gui) nextCol() {
+	currentPanel := g.state.panels.panel[g.state.panels.currentPanel]
+	newSortedCol := (currentPanel.getSortedCol() + 1) % currentPanel.getColumnCount()
+
+	currentPanel.setSortedCol(newSortedCol)
 }
-*/
+
+
+func (g *Gui) prevCol() {
+	currentPanel := g.state.panels.panel[g.state.panels.currentPanel]
+	newSortedCol := (currentPanel.getSortedCol() - 1) % currentPanel.getColumnCount()
+
+	currentPanel.setSortedCol(newSortedCol)
+}
