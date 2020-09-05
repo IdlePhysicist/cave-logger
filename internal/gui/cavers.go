@@ -38,6 +38,9 @@ func (c *cavers) setKeybinding(g *Gui) {
 		g.setGlobalKeybinding(event)
 
 		switch event.Key() {
+		case tcell.KeyEnter:
+			g.state.navigate.update("detail")
+			g.inspectCaver()
 		case tcell.KeyCtrlR:
 			c.setEntries(g)
 		}
