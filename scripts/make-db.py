@@ -10,6 +10,33 @@ NOW = datetime.now().strftime("%Y-%m-%dT%H_%M")
 HOME = os.environ["HOME"]
 NEWPATH = f"{HOME}/.config/cave-logger"
 
+def runTableMigration(dbFile):
+    """
+    This function migrates old databases to the new spec.
+    """
+    print(f"Checking existing database for new spec")
+
+    conn = sqlite3.connect(dbFile)
+    c = conn.cursor()
+
+    def check(cols):
+        for col_info in cols:
+            if "notes" in col_info:
+                return True
+        return False
+    #END
+
+    for t in ("locations","people"):
+        c.execute(f"PRAGMA table_info({t});")
+        if not check(c.fetchall()):
+            stmt = f"ALTER TABLE {t} ADD notes TEXT;"
+            c.execute(stmt)
+            print(f"Added notes column to {t}")
+
+    conn.commit()
+    conn.close()
+#END
+
 try:
   os.makedirs(NEWPATH, 0o755)
 except FileExistsError:
@@ -21,6 +48,7 @@ except FileExistsError:
   if files:
     db = False
     cfg = False
+    runMigration = False
     for f in files:
       if '.db' in f:
         db = f
@@ -32,10 +60,13 @@ except FileExistsError:
         fn = json.load(f)['database']['filename']
         if db in fn:
           print("Found pre-existing configs aborting...")
-          sys.exit()
+          runMigration = True
       except KeyError:
         pass
 
+    if runMigration:
+        runTableMigration(f"{HOME}/{fn}")
+    sys.exit()
 
 sqliteFile = str(uuid.uuid4()) + '.db'
 tables = [
@@ -46,13 +77,13 @@ tables = [
   },
   {
     "name" : "locations",
-    "cols" : ["id","name","region","country","srt"],
-    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","TEXT","TEXT","TEXT","INTEGER"]
+    "cols" : ["id","name","region","country","srt","notes"],
+    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","TEXT","TEXT","TEXT","INTEGER","TEXT"]
   },
   {
     "name" : "people",
-    "cols" : ["id","name","club"],
-    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","TEXT","TEXT"]
+    "cols" : ["id","name","club","notes"],
+    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","TEXT","TEXT","TEXT"]
   },
   {
     "name" : "trip_groups",
@@ -87,12 +118,14 @@ conn.commit()
 print("Created {} database tables".format(len(tables)))
 conn.close()
 
+
 CONFIG_FN = '{}/config.json'.format(NEWPATH)
 with open(CONFIG_FN, 'w') as c:
   config = {
     'database': {
       'filename': '/'.join([".config/cave-logger", sqliteFile]),
-      'created' : NOW
+      'created' : NOW,
+      'spec': "1.1.0"
     },
     'colors': {
       'primitiveBackground': '',
@@ -110,3 +143,4 @@ with open(CONFIG_FN, 'w') as c:
   }
   json.dump(config, c, indent=2)
   print("Wrote database name to config file")
+
