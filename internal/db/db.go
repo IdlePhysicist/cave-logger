@@ -86,8 +86,8 @@ func (db *Database) AddTrip(date, location, names, notes string) error {
 	return nil
 }
 
-func (db *Database) AddLocation(name, region, country string, srt bool) error {
-	query := `INSERT INTO locations (name, region, country, srt) VALUES (?,?,?,?)`
+func (db *Database) AddLocation(name, region, country, notes string, srt bool) error {
+	query := `INSERT INTO locations (name, region, country, srt, notes) VALUES (?,?,?,?,?)`
 	params := []interface{}{name, region, country, srt}
 
 	if err := db.conn.Begin(); err != nil {
@@ -113,8 +113,8 @@ func (db *Database) AddLocation(name, region, country string, srt bool) error {
 	return nil
 }
 
-func (db *Database) AddPerson(name, club string) error {
-	query := `INSERT INTO people (name, club) VALUES (?,?)`
+func (db *Database) AddPerson(name, club, notes string) error {
+	query := `INSERT INTO people (name, club, notes) VALUES (?,?,?)`
 	params := []interface{}{name, club}
 
 	if err := db.conn.Begin(); err != nil {
@@ -353,7 +353,8 @@ func (db *Database) GetPerson(personID string) (*model.Caver, error) {
 			SELECT COUNT(1)
 				FROM trip_groups
 			WHERE trip_groups.caverid = people.id
-		) AS 'count'
+		) AS 'count',
+		people.notes AS 'notes'
 	FROM people
 	WHERE people.id = ?`
 
@@ -378,7 +379,7 @@ func (db *Database) GetPerson(personID string) (*model.Caver, error) {
 			break
 		}
 
-		err = result.Scan(&person.ID, &person.Name, &person.Club, &person.Count)
+		err = result.Scan(&person.ID, &person.Name, &person.Club, &person.Count, &person.Notes)
 		if err != nil {
 			db.log.Error(err)
 			return people[0], err
@@ -491,7 +492,8 @@ func (db *Database) GetLocation(caveID string) (*model.Cave, error) {
 			SELECT COUNT(1)
 			FROM trips
 			WHERE trips.caveid = locations.id
-		) AS 'visits'
+		) AS 'visits',
+		locations.notes AS 'notes'
 	FROM locations
 	WHERE id = ?`
 	result, err := db.conn.Prepare(query, caveID)
@@ -503,8 +505,6 @@ func (db *Database) GetLocation(caveID string) (*model.Cave, error) {
 
 	caves := make([]*model.Cave, 0)
 	for {
-		//var caverIDstr string
-		//var stamp int64
 		var cave model.Cave
 
 		rowExists, err := result.Step()
@@ -517,7 +517,7 @@ func (db *Database) GetLocation(caveID string) (*model.Cave, error) {
 			break
 		}
 
-		err = result.Scan(&cave.ID, &cave.Name, &cave.Region, &cave.Country, &cave.SRT, &cave.Visits)
+		err = result.Scan(&cave.ID, &cave.Name, &cave.Region, &cave.Country, &cave.SRT, &cave.Visits, &cave.Notes)
 		if err != nil {
 			db.log.Error(err)
 			return caves[0], err
@@ -671,9 +671,9 @@ func (db *Database) ModifyTrip(id, date, location, names, notes string) error {
 	return nil
 }
 
-func (db *Database) ModifyPerson(id, name, club string) error {
-	query := `UPDATE people SET name = ?, club = ? WHERE id = ?`
-	params := []interface{}{name, club, id}
+func (db *Database) ModifyPerson(id, name, club, notes string) error {
+	query := `UPDATE people SET name = ?, club = ?, notes = ? WHERE id = ?`
+	params := []interface{}{name, club, notes, id}
 
 	if err := db.conn.Begin(); err != nil {
 		return err
@@ -698,9 +698,9 @@ func (db *Database) ModifyPerson(id, name, club string) error {
 	return nil
 }
 
-func (db *Database) ModifyLocation(id, name, region, country string, srt bool) error {
-	query := `UPDATE locations SET name = ?, region = ?, country = ?, srt = ? WHERE id = ?`
-	params := []interface{}{name, region, country, srt, id}
+func (db *Database) ModifyLocation(id, name, region, country, notes string, srt bool) error {
+	query := `UPDATE locations SET name = ?, region = ?, country = ?, srt = ?, notes = ? WHERE id = ?`
+	params := []interface{}{name, region, country, srt, notes, id}
 
 	if err := db.conn.Begin(); err != nil {
 		return err

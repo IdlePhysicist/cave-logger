@@ -7,6 +7,7 @@ type Cave struct {
 	Country string
 	SRT     bool
 	Visits  int64
+	Notes   string
 }
 
 type Caver struct {
@@ -14,6 +15,7 @@ type Caver struct {
 	Name  string
 	Club  string
 	Count int64
+	Notes string
 }
 
 type Log struct {
