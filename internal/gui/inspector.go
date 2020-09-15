@@ -3,16 +3,16 @@ package gui
 import (
 	"fmt"
 
-	"github.com/rivo/tview"
-	"github.com/gdamore/tcell"
+	tview "gitlab.com/tslocum/cview"
+	"github.com/gdamore/tcell/v2"
 
 	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 var inspectorFormat = map[string]string{
 	`trips` : "\tDate: %s\n\tCave: %s\n\tCavers: %s\n\tNotes: %s",
-	`cavers`: "\tName: %s\n\tClub: %s\n\tCount: %d",
-	`caves` : "\tName: %s\n\tRegion: %s\n\tCountry: %s\n\tSRT: %v\n\tVisits: %d",
+	`cavers`: "\tName: %s\n\tClub: %s\n\tCount: %d\n\tNotes: %s",
+	`caves` : "\tName: %s\n\tRegion: %s\n\tCountry: %s\n\tSRT: %s\n\tVisits: %d\n\tNotes: %s",
 }
 
 func (g *Gui) displayInspect(data, page string) {
@@ -51,7 +51,7 @@ func (g *Gui) inspectTrip() {
 	g.displayInspect(g.formatTrip(trip), "trips")
 }
 
-/*func (g *Gui) inspectCave() {
+func (g *Gui) inspectCave() {
 	selected := g.selectedLocation()
 
 	cave, err := g.db.GetLocation(selected.ID)
@@ -59,10 +59,10 @@ func (g *Gui) inspectTrip() {
 		return
 	}
 
-	g.inspectorPanel().setEntry(g.formatCave(cave))
+	g.displayInspect(g.formatCave(cave), "caves")
 }
 
-func (g *Gui) inspectPerson() {
+func (g *Gui) inspectCaver() {
 	selected := g.selectedPerson()
 
 	caver, err := g.db.GetPerson(selected.ID)
@@ -70,21 +70,21 @@ func (g *Gui) inspectPerson() {
 		return
 	}
 
-	g.inspectorPanel().setEntry(g.formatPerson(caver))
-}*/
+	g.displayInspect(g.formatPerson(caver), "cavers")
+}
 
 //
 // Formatting Functions
 //
-func (g *Gui) formatTrip(trip *model.Log) string {
-	return fmt.Sprintf(inspectorFormat[`trips`], trip.Date, trip.Cave, trip.Names, trip.Notes)
+func (g *Gui) formatTrip(t *model.Log) string {
+	return fmt.Sprintf(inspectorFormat[`trips`], t.Date, t.Cave, t.Names, t.Notes)
 }
 
-/*func (g *Gui) formatCave(l *model.Cave) string {
-	return fmt.Sprintf(inspectorFormat[`caves`], l.Name, l.Region, l.Country, l.SRT, l.Visits)
+func (g *Gui) formatCave(c *model.Cave) string {
+	return fmt.Sprintf(inspectorFormat[`caves`], c.Name, c.Region, c.Country, yesOrNo(c.SRT), c.Visits, c.Notes)
 }
 
-func (g *Gui) formatPerson(p *model.Caver) string {
-	return fmt.Sprintf(inspectorFormat[`cavers`], p.Name, p.Club, p.Count)
-}*/
+func (g *Gui) formatPerson(c *model.Caver) string {
+	return fmt.Sprintf(inspectorFormat[`cavers`], c.Name, c.Club, c.Count, c.Notes)
+}
 

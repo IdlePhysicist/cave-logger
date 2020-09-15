@@ -5,7 +5,7 @@ import (
 	"time"
 	"strings"
 
-	"github.com/rivo/tview"
+	tview "gitlab.com/tslocum/cview"
 )
 
 var inputWidth = 70
@@ -108,7 +108,8 @@ func (g *Gui) createLocationForm() {
 		AddInputField("Name", "", inputWidth, nil, nil).
 		AddFormItem(regionField).
 		AddFormItem(countryField).
-		AddCheckbox("SRT", false, nil).
+		AddCheckBox("SRT", "", false, nil).
+		AddInputField("Notes", "", inputWidth, nil, nil).
 		AddButton("Add", func() {
 			g.createLocation(form)
 		}).
@@ -124,7 +125,8 @@ func (g *Gui) createLocation(form *tview.Form) {
 		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Region").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Country").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("SRT").(*tview.Checkbox).IsChecked(),
+		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("SRT").(*tview.CheckBox).IsChecked(),
 	)
 	if err != nil { // NOTE: Needs fixing
 		g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
@@ -161,6 +163,7 @@ func (g *Gui) createPersonForm() {
 	form.
 		AddInputField("Name", "", inputWidth, nil, nil).
 		AddFormItem(clubField).
+		AddInputField("Notes", "", inputWidth, nil, nil).
 		AddButton("Add", func() {
 			g.createPerson(form)
 		}).
@@ -175,6 +178,7 @@ func (g *Gui) createPerson(form *tview.Form) {
 	err := g.db.AddPerson(
 		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Club").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
 	)
 	if err != nil { // NOTE: Needs fixing
 		g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
@@ -283,6 +287,7 @@ func (g *Gui) modifyPersonForm() {
 	form.
 		AddInputField("Name", selectedPerson.Name, inputWidth, nil, nil).
 		AddFormItem(clubField).
+		AddInputField("Notes",  selectedPerson.Notes, inputWidth, nil, nil).
 		AddButton("Apply", func() {
 			g.modifyPerson(selectedPerson.ID, form)
 		}).
@@ -298,6 +303,7 @@ func (g *Gui) modifyPerson(id string, form *tview.Form) {
 		id,
 		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Club").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
 	)
 	if err != nil {
 		g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
@@ -358,7 +364,8 @@ func (g *Gui) modifyLocationForm() {
 		AddInputField("Name", selectedLocation.Name, inputWidth, nil, nil).
 		AddFormItem(regionField).
 		AddFormItem(countryField).
-		AddCheckbox("SRT", selectedLocation.SRT, nil).
+		AddCheckBox("SRT", "", selectedLocation.SRT, nil).
+		AddInputField("Notes",  selectedLocation.Notes, inputWidth, nil, nil).
 		AddButton("Apply", func() {
 			g.modifyLocation(selectedLocation.ID, form)
 		}).
@@ -375,7 +382,8 @@ func (g *Gui) modifyLocation(id string, form *tview.Form) {
 		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Region").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Country").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("SRT").(*tview.Checkbox).IsChecked(),
+		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("SRT").(*tview.CheckBox).IsChecked(),
 	)
 	if err != nil {
 		g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
