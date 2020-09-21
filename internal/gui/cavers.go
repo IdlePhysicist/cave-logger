@@ -19,7 +19,11 @@ type cavers struct {
 
 func newCavers(g *Gui) *cavers {
 	cavers := &cavers{
-		Table: tview.NewTable().SetSelectable(true, false).Select(0,0).SetFixed(1,1),
+		Table: tview.NewTable().
+			SetScrollBarVisibility(tview.ScrollBarNever).
+			SetSelectable(true, false).
+			Select(0,0).
+			SetFixed(1,1),
 	}
 
 	cavers.SetTitle(``).SetTitleAlign(tview.AlignLeft)

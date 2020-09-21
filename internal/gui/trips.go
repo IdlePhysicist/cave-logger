@@ -18,7 +18,11 @@ type trips struct {
 
 func newTrips(g *Gui) *trips {
 	trips := &trips{
-		Table: tview.NewTable().SetSelectable(true, false).Select(0,0).SetFixed(1,1),
+		Table: tview.NewTable().
+			SetScrollBarVisibility(tview.ScrollBarNever).
+			SetSelectable(true, false).
+			Select(0,0).
+			SetFixed(1,1),
 		trips: make(chan *model.Log),
 	}
 
