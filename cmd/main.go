@@ -15,7 +15,7 @@ import (
 	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
-var commit, version, date string
+var version, date string
 
 func main() {
 	// Parse cfg override
@@ -28,7 +28,7 @@ func main() {
 	flag.Parse()
 
 	if versionCall {
-		fmt.Printf("cave-logger %s (commit: %s) (built: %s)\n", version, commit, date)
+		fmt.Printf("cave-logger %s (built: %s)\n", version, date)
 		os.Exit(0)
 	}
 
