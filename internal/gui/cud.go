@@ -51,7 +51,7 @@ func (g *Gui) createTripForm() {
 }
 
 func (g *Gui) createTrip(form *tview.Form) {
-	err := g.db.AddTrip(
+	err := g.reg.AddTrip(
 		form.GetFormItemByLabel("Date").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Cave").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Names").(*tview.InputField).GetText(),
@@ -121,7 +121,7 @@ func (g *Gui) createLocationForm() {
 }
 
 func (g *Gui) createLocation(form *tview.Form) {
-	err := g.db.AddLocation(
+	err := g.reg.AddCave(
 		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Region").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Country").(*tview.InputField).GetText(),
@@ -175,7 +175,7 @@ func (g *Gui) createPersonForm() {
 }
 
 func (g *Gui) createPerson(form *tview.Form) {
-	err := g.db.AddPerson(
+	err := g.reg.AddCaver(
 		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Club").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
@@ -239,7 +239,7 @@ func (g *Gui) modifyTripForm() {
 }
 
 func (g *Gui) modifyTrip(id string, form *tview.Form) {
-	err := g.db.ModifyTrip(
+	err := g.reg.ModifyTrip(
 		id,
 		form.GetFormItemByLabel("Date").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Cave").(*tview.InputField).GetText(),
@@ -299,7 +299,7 @@ func (g *Gui) modifyPersonForm() {
 }
 
 func (g *Gui) modifyPerson(id string, form *tview.Form) {
-	err := g.db.ModifyPerson(
+	err := g.reg.ModifyCaver(
 		id,
 		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Club").(*tview.InputField).GetText(),
@@ -377,7 +377,7 @@ func (g *Gui) modifyLocationForm() {
 }
 
 func (g *Gui) modifyLocation(id string, form *tview.Form) {
-	err := g.db.ModifyLocation(
+	err := g.reg.ModifyCave(
 		id,
 		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
 		form.GetFormItemByLabel("Region").(*tview.InputField).GetText(),
@@ -406,7 +406,7 @@ func (g *Gui) deleteTrip() {
 	)
 
 	g.warning(message, `trips`, []string{`Yes`, `No`}, func() {
-		if err := g.db.RemoveTrip(selectedTrip.ID); err != nil {
+		if err := g.reg.RemoveTrip(selectedTrip.ID); err != nil {
 			g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
 			return
 		}
@@ -423,7 +423,7 @@ func (g *Gui) deleteLocation() {
 	)
 
 	g.warning(message, `locations`, []string{`Yes`, `No`}, func() {
-		if err := g.db.RemoveLocation(selectedLocation.ID); err != nil {
+		if err := g.reg.RemoveCave(selectedLocation.ID); err != nil {
 			g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
 			return
 		}
@@ -440,7 +440,7 @@ func (g *Gui) deletePerson() {
 	)
 
 	g.warning(message, `people`, []string{`Yes`, `No`}, func() {
-		if err := g.db.RemovePerson(selectedPerson.ID); err != nil {
+		if err := g.reg.RemoveCaver(selectedPerson.ID); err != nil {
 			g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
 			return
 		}

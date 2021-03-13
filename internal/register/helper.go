@@ -1,4 +1,4 @@
-package db
+package register
 
 import (
 	"errors"
@@ -8,8 +8,8 @@ import (
 
 
 // For retrieving the ID of a cave from the `locations` table.
-func (db *Database) getCaveID(cave string) (int, error) {
-	result, err := db.conn.Query(`SELECT id FROM locations WHERE name == ?`, cave)
+func (reg *Register) getCaveID(cave string) (int, error) {
+	result, err := reg.db.Query(`SELECT id FROM locations WHERE name == ?`, cave)
 	if err != nil {
 		return 0, err
 	}
@@ -31,10 +31,10 @@ func (db *Database) getCaveID(cave string) (int, error) {
 
 
 // For formatting the ids for a new 
-func (db *Database) getCaverIDs(names string) ([]string, error) {
+func (reg *Register) getCaverIDs(names string) ([]string, error) {
 	var caverIDs []string
 
-	cavers, err := db.GetAllPeople()
+	cavers, err := reg.GetAllCavers()
 	if err != nil {
 		return caverIDs, err
 	}
@@ -66,7 +66,7 @@ func unixTimestamp(date string) (int64, error) {
 	return d.Unix(), nil
 }
 
-func (db *Database) verifyTrip(date, location, names, notes string) ([]interface{}, []string, error) {
+func (reg *Register) verifyTrip(date, location, names, notes string) ([]interface{}, []string, error) {
 	var peopleIDs []string
 
 	// Conv the date to unix time
@@ -75,14 +75,14 @@ func (db *Database) verifyTrip(date, location, names, notes string) ([]interface
 		return []interface{}{}, peopleIDs, err
 	}
 
-	locationID, err := db.getCaveID(location)
+	locationID, err := reg.getCaveID(location)
 	if err != nil {
 		return []interface{}{}, peopleIDs, err
 	} else if locationID == 0 {
 		return []interface{}{}, peopleIDs, errors.New(`verifyTrip: Cave not known`)
 	}
 
-	peopleIDs, err = db.getCaverIDs(names)
+	peopleIDs, err = reg.getCaverIDs(names)
 	if err != nil {
 		return []interface{}{}, peopleIDs, err
 	}

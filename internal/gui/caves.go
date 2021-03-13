@@ -63,7 +63,7 @@ func (c *caves) setKeybinding(g *Gui) {
 }
 
 func (c *caves) entries(g *Gui) {
-	caves, err := g.db.GetAllLocations()
+	caves, err := g.reg.GetAllCaves()
 	if err != nil {
 		return
 	}

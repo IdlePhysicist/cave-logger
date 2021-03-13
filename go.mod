@@ -1,6 +1,6 @@
 module github.com/idlephysicist/cave-logger
 
-go 1.14
+go 1.16
 
 require (
 	github.com/gdamore/tcell/v2 v2.0.0-dev.0.20200831155531-da485f47343b

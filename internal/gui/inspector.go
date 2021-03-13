@@ -43,7 +43,7 @@ func (g *Gui) inspectTrip() {
 		return
 	}
 
-	trip, err := g.db.GetTrip(selected.ID)
+	trip, err := g.reg.GetTrip(selected.ID)
 	if err != nil {
 		return
 	}
@@ -54,7 +54,7 @@ func (g *Gui) inspectTrip() {
 func (g *Gui) inspectCave() {
 	selected := g.selectedLocation()
 
-	cave, err := g.db.GetLocation(selected.ID)
+	cave, err := g.reg.GetCave(selected.ID)
 	if err != nil {
 		return
 	}
@@ -65,7 +65,7 @@ func (g *Gui) inspectCave() {
 func (g *Gui) inspectCaver() {
 	selected := g.selectedPerson()
 
-	caver, err := g.db.GetPerson(selected.ID)
+	caver, err := g.reg.GetCaver(selected.ID)
 	if err != nil {
 		return
 	}

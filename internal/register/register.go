@@ -1,4 +1,4 @@
-package db
+package register
 
 import (
 	"context"
@@ -15,28 +15,28 @@ import (
 const datetime = `2006-01-02T15:04:05Z`
 const date = `2006-01-02`
 
-type Database struct {
+type Register struct {
 	log  *logrus.Logger
-	conn *sql.DB
+	db   *sql.DB
 	ctx  context.Context
 }
 
-func New(log *logrus.Logger, dbFN string) *Database {
-	var db Database
+func New(log *logrus.Logger, dbFN string) *Register {
+	var reg Register
 
-	db.log = log
-	db.ctx = context.Background()
+	reg.log = log
+	reg.ctx = context.Background()
 
-	conn, err := sql.Open("sqlite", dbFN)
+	db, err := sql.Open("sqlite", dbFN)
 	if err != nil {
 		log.Fatalf("database.new: Cannot establish connection to %s: %v", dbFN, err)
 	}
-	db.conn = conn
-	return &db
+	reg.db = db
+	return &reg
 }
 
-func (db *Database) Close() {
-	db.conn.Close()
+func (reg *Register) Close() {
+	reg.db.Close()
 }
 
 //
@@ -46,21 +46,21 @@ func (db *Database) Close() {
 //
 // ADD FUNCS ---- ----
 
-func (db *Database) AddTrip(date, location, names, notes string) error {
+func (reg *Register) AddTrip(date, location, names, notes string) error {
 	query := `INSERT INTO trips (date, caveid, notes) VALUES (?,?,?)`
 
-	params, caverIDs, err := db.verifyTrip(date, location, names, notes)
+	params, caverIDs, err := reg.verifyTrip(date, location, names, notes)
 	if err != nil {
 		return err
 	}
 
-	trans, err := db.conn.Begin()
+	trans, err := reg.db.Begin()
 	if err != nil {
 		return err
 	}
 
 	// Insert the trip itself
-	tripID, err := db.execute(query, params, trans)
+	tripID, err := reg.execute(query, params, trans)
 	if err != nil {
 		if rb_err := trans.Rollback(); rb_err != nil {
 			panic(rb_err)
@@ -69,8 +69,8 @@ func (db *Database) AddTrip(date, location, names, notes string) error {
 	}
 
 	// Insert the group of people
-	tgQuery, tgParams := db.addTripGroups(tripID, caverIDs)
-	_, err = db.execute(tgQuery, tgParams, trans)
+	tgQuery, tgParams := reg.addTripGroups(tripID, caverIDs)
+	_, err = reg.execute(tgQuery, tgParams, trans)
 	if err != nil {
 		if rb_err := trans.Rollback(); rb_err != nil {
 			panic(rb_err)
@@ -89,16 +89,16 @@ func (db *Database) AddTrip(date, location, names, notes string) error {
 	return nil
 }
 
-func (db *Database) AddLocation(name, region, country, notes string, srt bool) error {
+func (reg *Register) AddCave(name, region, country, notes string, srt bool) error {
 	query := `INSERT INTO locations (name, region, country, srt, notes) VALUES (?,?,?,?,?)`
 	params := []interface{}{name, region, country, srt, notes}
 
-	trans, err := db.conn.Begin()
+	trans, err := reg.db.Begin()
 	if err != nil {
 		return err
 	}
 
-	_, err = db.execute(query, params, trans)
+	_, err = reg.execute(query, params, trans)
 	if err != nil {
 		if rb_err := trans.Rollback(); rb_err != nil {
 			panic(rb_err)
@@ -117,16 +117,16 @@ func (db *Database) AddLocation(name, region, country, notes string, srt bool) e
 	return nil
 }
 
-func (db *Database) AddPerson(name, club, notes string) error {
+func (reg *Register) AddCaver(name, club, notes string) error {
 	query := `INSERT INTO people (name, club, notes) VALUES (?,?,?)`
 	params := []interface{}{name, club, notes}
 
-	trans, err := db.conn.Begin()
+	trans, err := reg.db.Begin()
 	if err != nil {
 		return err
 	}
 
-	_, err = db.execute(query, params, trans)
+	_, err = reg.execute(query, params, trans)
 	if err != nil {
 		if rb_err := trans.Rollback(); rb_err != nil {
 			panic(rb_err)
@@ -151,7 +151,7 @@ func (db *Database) AddPerson(name, club, notes string) error {
 //
 // ---- TRIPS FUNCS
 
-func (db *Database) GetAllTrips() ([]*model.Log, error) {
+func (reg *Register) GetAllTrips() ([]*model.Log, error) {
 	query := `
     SELECT
         trips.id AS 'id',
@@ -166,9 +166,9 @@ func (db *Database) GetAllTrips() ([]*model.Log, error) {
     FROM trips, locations
     WHERE trips.caveid = locations.id`
 
-	result, err := db.conn.Query(query)
+	result, err := reg.db.Query(query)
 	if err != nil {
-		db.log.Errorf("db.prepare: Failed to query database", err)
+		reg.log.Errorf("reg.prepare: Failed to query database", err)
 		return nil, err
 	}
 	defer result.Close()
@@ -180,7 +180,7 @@ func (db *Database) GetAllTrips() ([]*model.Log, error) {
 
 		err = result.Scan(&trip.ID, &stamp, &trip.Cave, &trip.Names, &trip.Notes)
 		if err != nil {
-			db.log.Error(err)
+			reg.log.Error(err)
 			return trips, err
 		}
 
@@ -190,14 +190,14 @@ func (db *Database) GetAllTrips() ([]*model.Log, error) {
 		trips = append(trips, &trip)
 	}
 	if err = result.Err(); err != nil {
-		db.log.Errorf("db.get: Step error: %s", err)
+		reg.log.Errorf("reg.get: Step error: %s", err)
 		return trips, err
 	}
 
 	return trips, err
 }
 
-func (db *Database) GetTrip(tripID string) (*model.Log, error) {
+func (reg *Register) GetTrip(id string) (*model.Log, error) {
 	query := `
     SELECT trips.id AS 'id',
         trips.date AS 'date',
@@ -211,9 +211,9 @@ func (db *Database) GetTrip(tripID string) (*model.Log, error) {
     FROM trips, locations
     WHERE trips.caveid = locations.id AND trips.id = ?`
 
-	result, err := db.conn.Query(query, tripID)
+	result, err := reg.db.Query(query, id)
 	if err != nil {
-		db.log.Errorf("db.prepare: Failed to query database", err)
+		reg.log.Errorf("reg.prepare: Failed to query database", err)
 		return nil, err
 	}
 	defer result.Close()
@@ -225,14 +225,14 @@ func (db *Database) GetTrip(tripID string) (*model.Log, error) {
 	for result.Next() {
 		err = result.Scan(&trip.ID, &stamp, &trip.Cave, &trip.Names, &trip.Notes)
 		if err != nil {
-			db.log.Error(err)
+			reg.log.Error(err)
 			return nil, err
 		}
 
 		trip.Date = time.Unix(stamp, 0).Format(date)
 	}
 	if err = result.Err(); err != nil {
-		db.log.Errorf("db.get: Step error: %s", err)
+		reg.log.Errorf("reg.get: Step error: %s", err)
 		return nil, err
 	}
 
@@ -242,7 +242,7 @@ func (db *Database) GetTrip(tripID string) (*model.Log, error) {
 //
 // ---- PEOPLE FUNCS
 
-func (db *Database) GetAllPeople() ([]*model.Caver, error) {
+func (reg *Register) GetAllCavers() ([]*model.Caver, error) {
 	query := `
     SELECT 
         people.id AS 'id',
@@ -256,9 +256,9 @@ func (db *Database) GetAllPeople() ([]*model.Caver, error) {
     FROM people
     ORDER BY name`
 
-	result, err := db.conn.Query(query)
+	result, err := reg.db.Query(query)
 	if err != nil {
-		db.log.Errorf("db.getcaverlist: Failed to get cavers", err)
+		reg.log.Errorf("reg.getcaverlist: Failed to get cavers", err)
 	}
 
 	cavers := make([]*model.Caver, 0)
@@ -267,19 +267,19 @@ func (db *Database) GetAllPeople() ([]*model.Caver, error) {
 
 		err = result.Scan(&c.ID, &c.Name, &c.Club, &c.Count)
 		if err != nil {
-			db.log.Errorf("Scan: %v", err)
+			reg.log.Errorf("Scan: %v", err)
 		}
 		cavers = append(cavers, &c)
 	}
 	if err = result.Err(); err != nil {
-		db.log.Errorf("db.get: Step error: %s", err)
+		reg.log.Errorf("reg.get: Step error: %s", err)
 		return cavers, err
 	}
 	return cavers, err
 }
 
 /*
-func (db *Database) GetTopPeople() ([]*model.Statistic, error) {
+func (reg *Register) GetTopPeople() ([]*model.Statistic, error) {
 	query := `
     SELECT 
         people.name AS 'name',
@@ -288,9 +288,9 @@ func (db *Database) GetTopPeople() ([]*model.Statistic, error) {
         ) AS count
     FROM people
     ORDER BY count DESC LIMIT 15`
-	result, err := db.conn.Prepare(query)
+	result, err := reg.db.Prepare(query)
 	if err != nil {
-		db.log.Errorf("db.GetTopPeople: Failed to get cavers", err)
+		reg.log.Errorf("reg.GetTopPeople: Failed to get cavers", err)
 	}
 
 	cavers := make([]*model.Statistic, 0)
@@ -299,19 +299,19 @@ func (db *Database) GetTopPeople() ([]*model.Statistic, error) {
 
 		err = result.Scan(&c.Name, &c.Value)
 		if err != nil {
-			db.log.Errorf("Scan: %v", err)
+			reg.log.Errorf("Scan: %v", err)
 		}
 		cavers = append(cavers, &c)
 	}
 	if err = result.Err(); err != nil {
-		db.log.Errorf("db.get: Step error: %s", err)
+		reg.log.Errorf("reg.get: Step error: %s", err)
 		return cavers, err
 	}
 	return cavers, err
 }
 */
 
-func (db *Database) GetPerson(caverID string) (*model.Caver, error) {
+func (reg *Register) GetCaver(id string) (*model.Caver, error) {
 	query := `
     SELECT 
         people.id AS 'id',
@@ -324,9 +324,9 @@ func (db *Database) GetPerson(caverID string) (*model.Caver, error) {
     FROM people
     WHERE people.id = ?`
 
-	result, err := db.conn.Query(query, caverID)
+	result, err := reg.db.Query(query, id)
 	if err != nil {
-		db.log.Errorf("db.prepare: Failed to query database", err)
+		reg.log.Errorf("reg.prepare: Failed to query database", err)
 		return nil, err
 	}
 	defer result.Close()
@@ -336,12 +336,12 @@ func (db *Database) GetPerson(caverID string) (*model.Caver, error) {
 
 		err = result.Scan(&caver.ID, &caver.Name, &caver.Club, &caver.Count, &caver.Notes)
 		if err != nil {
-			db.log.Errorf("db.scan", err)
+			reg.log.Errorf("reg.scan", err)
 			return nil, err
 		}
 	}
 	if err = result.Err(); err != nil {
-		db.log.Errorf("db.get: Step error: %s", err)
+		reg.log.Errorf("reg.get: Step error: %s", err)
 		return nil, err
 	}
 
@@ -351,7 +351,7 @@ func (db *Database) GetPerson(caverID string) (*model.Caver, error) {
 //
 // ---- LOCATION FUNCS
 
-func (db *Database) GetAllLocations() ([]*model.Cave, error) {
+func (reg *Register) GetAllCaves() ([]*model.Cave, error) {
 	query := `
     SELECT
         locations.id AS 'id',
@@ -366,9 +366,9 @@ func (db *Database) GetAllLocations() ([]*model.Cave, error) {
         ) AS 'visits'
     FROM locations
     ORDER BY name`
-	result, err := db.conn.Query(query)
+	result, err := reg.db.Query(query)
 	if err != nil {
-		db.log.Errorf("db.getcaverlist: Failed to get cavers", err)
+		reg.log.Errorf("reg.getcaverlist: Failed to get cavers", err)
 	}
 
 	caves := make([]*model.Cave, 0)
@@ -377,19 +377,19 @@ func (db *Database) GetAllLocations() ([]*model.Cave, error) {
 
 		err = result.Scan(&c.ID, &c.Name, &c.Region, &c.Country, &c.SRT, &c.Visits)
 		if err != nil {
-			db.log.Errorf("Scan: %v", err)
+			reg.log.Errorf("Scan: %v", err)
 		}
 		caves = append(caves, &c)
 	}
 	if err = result.Err(); err != nil {
-		db.log.Errorf("db.get: Step error: %s", err)
+		reg.log.Errorf("reg.get: Step error: %s", err)
 		return caves, err
 	}
 	return caves, err
 }
 
 /*
-func (db *Database) GetTopLocations() ([]*model.Statistic, error) {
+func (reg *Register) GetTopLocations() ([]*model.Statistic, error) {
 	query := `
     SELECT
         locations.name AS 'name',
@@ -398,9 +398,9 @@ func (db *Database) GetTopLocations() ([]*model.Statistic, error) {
         ) AS visits
     FROM locations
     ORDER BY visits DESC LIMIT 15`
-	result, err := db.conn.Prepare(query)
+	result, err := reg.db.Prepare(query)
 	if err != nil {
-		db.log.Errorf("db.GetTopLocations: Failed to get caves", err)
+		reg.log.Errorf("reg.GetTopLocations: Failed to get caves", err)
 	}
 
 	stats := make([]*model.Statistic, 0)
@@ -409,19 +409,19 @@ func (db *Database) GetTopLocations() ([]*model.Statistic, error) {
 
 		err = result.Scan(&s.Name, &s.Value)
 		if err != nil {
-			db.log.Errorf("Scan: %v", err)
+			reg.log.Errorf("Scan: %v", err)
 		}
 		stats = append(stats, &s)
 	}
 	if err = result.Err(); err != nil {
-		db.log.Errorf("db.get: Step error: %s", err)
+		reg.log.Errorf("reg.get: Step error: %s", err)
 		return stats, err
 	}
 	return stats, err
 }
 */
 
-func (db *Database) GetLocation(caveID string) (*model.Cave, error) {
+func (reg *Register) GetCave(id string) (*model.Cave, error) {
 	query := `
     SELECT
         locations.id AS 'id',
@@ -436,9 +436,9 @@ func (db *Database) GetLocation(caveID string) (*model.Cave, error) {
     FROM locations
     WHERE id = ?`
 
-	result, err := db.conn.Query(query, caveID)
+	result, err := reg.db.Query(query, id)
 	if err != nil {
-		db.log.Errorf("db.prepare: Failed to query database", err)
+		reg.log.Errorf("reg.prepare: Failed to query database", err)
 		return nil, err
 	}
 	defer result.Close()
@@ -447,12 +447,12 @@ func (db *Database) GetLocation(caveID string) (*model.Cave, error) {
 	for result.Next() {
 		err = result.Scan(&cave.ID, &cave.Name, &cave.Region, &cave.Country, &cave.SRT, &cave.Visits, &cave.Notes)
 		if err != nil {
-			db.log.Error(err)
+			reg.log.Error(err)
 			return nil, err
 		}
 	}
 	if err = result.Err(); err != nil {
-		db.log.Errorf("db.get: Step error: %s", err)
+		reg.log.Errorf("reg.get: Step error: %s", err)
 		return nil, err
 	}
 
@@ -463,8 +463,8 @@ func (db *Database) GetLocation(caveID string) (*model.Cave, error) {
 //
 // DELETE FUNCS ---- ----
 
-func (db *Database) RemoveTrip(id string) error {
-	trans, err := db.conn.Begin()
+func (reg *Register) RemoveTrip(id string) error {
+	trans, err := reg.db.Begin()
 	if err != nil {
 		return err
 	}
@@ -497,8 +497,8 @@ func (db *Database) RemoveTrip(id string) error {
 	return nil
 }
 
-func (db *Database) RemovePerson(id string) error {
-	trans, err := db.conn.Begin()
+func (reg *Register) RemoveCaver(id string) error {
+	trans, err := reg.db.Begin()
 	if err != nil {
 		return err
 	}
@@ -523,8 +523,8 @@ func (db *Database) RemovePerson(id string) error {
 	return nil
 }
 
-func (db *Database) RemoveLocation(id string) error {
-	trans, err := db.conn.Begin()
+func (reg *Register) RemoveCave(id string) error {
+	trans, err := reg.db.Begin()
 	if err != nil {
 		return err
 	}
@@ -552,23 +552,23 @@ func (db *Database) RemoveLocation(id string) error {
 //
 // MODIFY FUNCS ---- ----
 
-func (db *Database) ModifyTrip(id, date, location, names, notes string) error {
+func (reg *Register) ModifyTrip(id, date, location, names, notes string) error {
 	query := `UPDATE trips SET date = ?, caveid = ?, notes = ? WHERE id = ?`
 
-	params, caverIDs, err := db.verifyTrip(date, location, names, notes)
+	params, caverIDs, err := reg.verifyTrip(date, location, names, notes)
 	if err != nil {
 		return err
 	}
 
 	params = append(params, id)
 
-	trans, err := db.conn.Begin()
+	trans, err := reg.db.Begin()
 	if err != nil {
 		return err
 	}
 
 	// Update the trip itself
-	_, err = db.execute(query, params, trans)
+	_, err = reg.execute(query, params, trans)
 	if err != nil {
 		if rb_err := trans.Rollback(); rb_err != nil {
 			panic(rb_err)
@@ -577,7 +577,7 @@ func (db *Database) ModifyTrip(id, date, location, names, notes string) error {
 	}
 
 	// Update the group of people
-	_, err = db.execute(`DELETE FROM trip_groups WHERE tripid = ?`, []interface{}{id}, trans)
+	_, err = reg.execute(`DELETE FROM trip_groups WHERE tripid = ?`, []interface{}{id}, trans)
 	if err != nil {
 		if rb_err := trans.Rollback(); rb_err != nil {
 			panic(rb_err)
@@ -585,8 +585,8 @@ func (db *Database) ModifyTrip(id, date, location, names, notes string) error {
 		return err
 	}
 
-	tgQuery, tgParams := db.addTripGroups(id, caverIDs)
-	_, err = db.execute(tgQuery, tgParams, trans)
+	tgQuery, tgParams := reg.addTripGroups(id, caverIDs)
+	_, err = reg.execute(tgQuery, tgParams, trans)
 	if err != nil {
 		if rb_err := trans.Rollback(); rb_err != nil {
 			panic(rb_err)
@@ -605,16 +605,16 @@ func (db *Database) ModifyTrip(id, date, location, names, notes string) error {
 	return nil
 }
 
-func (db *Database) ModifyPerson(id, name, club, notes string) error {
+func (reg *Register) ModifyCaver(id, name, club, notes string) error {
 	query := `UPDATE people SET name = ?, club = ?, notes = ? WHERE id = ?`
 	params := []interface{}{name, club, notes, id}
 
-	trans, err := db.conn.Begin()
+	trans, err := reg.db.Begin()
 	if err != nil {
 		return err
 	}
 
-	_, err = db.execute(query, params, trans)
+	_, err = reg.execute(query, params, trans)
 	if err != nil {
 		if rb_err := trans.Rollback(); rb_err != nil {
 			panic(rb_err)
@@ -633,16 +633,16 @@ func (db *Database) ModifyPerson(id, name, club, notes string) error {
 	return nil
 }
 
-func (db *Database) ModifyLocation(id, name, region, country, notes string, srt bool) error {
+func (reg *Register) ModifyCave(id, name, region, country, notes string, srt bool) error {
 	query := `UPDATE locations SET name = ?, region = ?, country = ?, srt = ?, notes = ? WHERE id = ?`
 	params := []interface{}{name, region, country, srt, notes, id}
 
-	trans, err := db.conn.Begin()
+	trans, err := reg.db.Begin()
 	if err != nil {
 		return err
 	}
 
-	_, err = db.execute(query, params, trans)
+	_, err = reg.execute(query, params, trans)
 	if err != nil {
 		if rb_err := trans.Rollback(); rb_err != nil {
 			panic(rb_err)
@@ -666,7 +666,7 @@ func (db *Database) ModifyLocation(id, name, region, country, notes string, srt 
 
 // addTripGroups builds a SQL statement and slice of parameters representing the
 // trip group.
-func (db *Database) addTripGroups(tripID interface{}, caverIDs []string) (string, []interface{}) {
+func (reg *Register) addTripGroups(tripID interface{}, caverIDs []string) (string, []interface{}) {
 	// Build the query
 	paramPlaceholderTemplate := `(?,?)`
 	var paramPlaceholderGroup []string
@@ -690,7 +690,7 @@ func (db *Database) addTripGroups(tripID interface{}, caverIDs []string) (string
 
 //
 // Execute database query
-func (db *Database) execute(query string, params []interface{}, trans *sql.Tx) (int64, error) {
+func (reg *Register) execute(query string, params []interface{}, trans *sql.Tx) (int64, error) {
 	var (
 		result sql.Result
 		err    error
@@ -699,7 +699,7 @@ func (db *Database) execute(query string, params []interface{}, trans *sql.Tx) (
 	if trans == nil {
 		result, err = trans.Exec(query, params...)
 	} else {
-		result, err = db.conn.Exec(query, params...)
+		result, err = reg.db.Exec(query, params...)
 	}
 	if err != nil {
 		return -1, err
