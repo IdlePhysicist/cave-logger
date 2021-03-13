@@ -278,38 +278,6 @@ func (reg *Register) GetAllCavers() ([]*model.Caver, error) {
 	return cavers, err
 }
 
-/*
-func (reg *Register) GetTopPeople() ([]*model.Statistic, error) {
-	query := `
-    SELECT 
-        people.name AS 'name',
-        (
-            SELECT COUNT(1) FROM trip_groups WHERE trip_groups.caverid = people.id
-        ) AS count
-    FROM people
-    ORDER BY count DESC LIMIT 15`
-	result, err := reg.db.Prepare(query)
-	if err != nil {
-		reg.log.Errorf("reg.GetTopPeople: Failed to get cavers", err)
-	}
-
-	cavers := make([]*model.Statistic, 0)
-	for result.Next() {
-		var c model.Statistic
-
-		err = result.Scan(&c.Name, &c.Value)
-		if err != nil {
-			reg.log.Errorf("Scan: %v", err)
-		}
-		cavers = append(cavers, &c)
-	}
-	if err = result.Err(); err != nil {
-		reg.log.Errorf("reg.get: Step error: %s", err)
-		return cavers, err
-	}
-	return cavers, err
-}
-*/
 
 func (reg *Register) GetCaver(id string) (*model.Caver, error) {
 	query := `
@@ -388,38 +356,6 @@ func (reg *Register) GetAllCaves() ([]*model.Cave, error) {
 	return caves, err
 }
 
-/*
-func (reg *Register) GetTopLocations() ([]*model.Statistic, error) {
-	query := `
-    SELECT
-        locations.name AS 'name',
-        (
-            SELECT COUNT(1) FROM trips WHERE trips.caveid = locations.id
-        ) AS visits
-    FROM locations
-    ORDER BY visits DESC LIMIT 15`
-	result, err := reg.db.Prepare(query)
-	if err != nil {
-		reg.log.Errorf("reg.GetTopLocations: Failed to get caves", err)
-	}
-
-	stats := make([]*model.Statistic, 0)
-	for result.Next() {
-		var s model.Statistic
-
-		err = result.Scan(&s.Name, &s.Value)
-		if err != nil {
-			reg.log.Errorf("Scan: %v", err)
-		}
-		stats = append(stats, &s)
-	}
-	if err = result.Err(); err != nil {
-		reg.log.Errorf("reg.get: Step error: %s", err)
-		return stats, err
-	}
-	return stats, err
-}
-*/
 
 func (reg *Register) GetCave(id string) (*model.Cave, error) {
 	query := `
