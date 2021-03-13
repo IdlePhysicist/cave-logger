@@ -19,7 +19,11 @@ type cavers struct {
 
 func newCavers(g *Gui) *cavers {
 	cavers := &cavers{
-		Table: tview.NewTable().SetSelectable(true, false).Select(0,0).SetFixed(1,1),
+		Table: tview.NewTable().
+			SetScrollBarVisibility(tview.ScrollBarNever).
+			SetSelectable(true, false).
+			Select(0,0).
+			SetFixed(1,1),
 	}
 
 	cavers.SetTitle(``).SetTitleAlign(tview.AlignLeft)
@@ -104,7 +108,7 @@ func (c *cavers) updateEntries(g *Gui) {
 }
 
 func (c *cavers) entries(g *Gui) {
-	cavers, err := g.db.GetAllPeople()
+	cavers, err := g.reg.GetAllCavers()
 	if err != nil {
 		return
 	}

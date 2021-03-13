@@ -19,7 +19,11 @@ type caves struct {
 
 func newCaves(g *Gui) *caves {
 	caves := &caves{
-		Table: tview.NewTable().SetSelectable(true, false).Select(0,0).SetFixed(1,1),
+		Table: tview.NewTable().
+			SetScrollBarVisibility(tview.ScrollBarNever).
+			SetSelectable(true, false).
+			Select(0,0).
+			SetFixed(1,1),
 	}
 
 	caves.SetTitle(``).SetTitleAlign(tview.AlignLeft)
@@ -59,7 +63,7 @@ func (c *caves) setKeybinding(g *Gui) {
 }
 
 func (c *caves) entries(g *Gui) {
-	caves, err := g.db.GetAllLocations()
+	caves, err := g.reg.GetAllCaves()
 	if err != nil {
 		return
 	}
