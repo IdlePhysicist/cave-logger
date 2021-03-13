@@ -1,5 +1,5 @@
 # Environment Variables
-CGO   =1
+CGO   =0
 SRC   =cmd
 BUILD =build
 PREFIX=$(GOPATH)/bin/
