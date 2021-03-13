@@ -63,7 +63,7 @@ func (t *trips) setKeybinding(g *Gui) {
 }
 
 func (t *trips) entries(g *Gui) {
-	trips, err := g.db.GetAllTrips()
+	trips, err := g.reg.GetAllTrips()
 	if err != nil {
 		return
 	}

@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
 
-	"github.com/idlephysicist/cave-logger/internal/db"
+	"github.com/idlephysicist/cave-logger/internal/register"
 	"github.com/idlephysicist/cave-logger/internal/gui"
 	"github.com/idlephysicist/cave-logger/internal/model"
 )
@@ -74,10 +74,10 @@ func main() {
 	)
 
 	// Initialise the database connection and handler
-	db := db.New(log, cfg.Database.Filename)
+	reg := register.New(log, cfg.Database.Filename)
 
 	// Initialise the Gui / Tui
-	gui := gui.New(db)
+	gui := gui.New(reg)
 	gui.ProcessColors(cfg.Colors)
 
 	if err := gui.Start(); err != nil {

@@ -8,7 +8,7 @@ import (
 	tview "gitlab.com/tslocum/cview"
 	"github.com/gdamore/tcell/v2"
 
-	"github.com/idlephysicist/cave-logger/internal/db"
+	"github.com/idlephysicist/cave-logger/internal/register"
 	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
@@ -42,16 +42,16 @@ type Gui struct {
 	app    *tview.Application
 	pages  *tview.Pages
 	state  *state
-	db     *db.Database
+	reg    *register.Register
 	//statsLocations *statsLocations
 }
 
-func New(db *db.Database) *Gui {
+func New(reg *register.Register) *Gui {
 	return &Gui{
 		app: tview.NewApplication(),
 		pages: tview.NewPages(),
 		state: newState(),
-		db: db,
+		reg: reg,
 	}
 }
 

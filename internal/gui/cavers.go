@@ -108,7 +108,7 @@ func (c *cavers) updateEntries(g *Gui) {
 }
 
 func (c *cavers) entries(g *Gui) {
-	cavers, err := g.db.GetAllPeople()
+	cavers, err := g.reg.GetAllCavers()
 	if err != nil {
 		return
 	}
