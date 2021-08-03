@@ -3,16 +3,16 @@ package gui
 import (
 	"fmt"
 
-	tview "gitlab.com/tslocum/cview"
 	"github.com/gdamore/tcell/v2"
+	tview "gitlab.com/tslocum/cview"
 
 	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 var inspectorFormat = map[string]string{
-	`trips` : "\tDate: %s\n\tCave: %s\n\tCavers: %s\n\tNotes: %s",
-	`cavers`: "\tName: %s\n\tClub: %s\n\tCount: %d\n\tNotes: %s",
-	`caves` : "\tName: %s\n\tRegion: %s\n\tCountry: %s\n\tSRT: %s\n\tVisits: %d\n\tNotes: %s",
+	`trips`:  "\tDate: %s\n\tCave: %s\n\tCavers: %s\n\tNotes: %s",
+	`cavers`: "\tName: %s\n\tClub: %s\n\tCount: %d\n\tLast Trip: %s\n\tNotes: %s",
+	`caves`:  "\tName: %s\n\tRegion: %s\n\tCountry: %s\n\tSRT: %s\n\tVisits: %d\n\tLast Visit: %s\n\tNotes: %s",
 }
 
 func (g *Gui) displayInspect(data, page string) {
@@ -39,7 +39,7 @@ func (g *Gui) inspectTrip() {
 	selected := g.selectedTrip()
 
 	if selected == nil {
-		g.warning("No trips in table", `trips`, []string{`OK`}, func() {return})
+		g.warning("No trips in table", `trips`, []string{`OK`}, func() { return })
 		return
 	}
 
@@ -81,10 +81,11 @@ func (g *Gui) formatTrip(t *model.Log) string {
 }
 
 func (g *Gui) formatCave(c *model.Cave) string {
-	return fmt.Sprintf(inspectorFormat[`caves`], c.Name, c.Region, c.Country, yesOrNo(c.SRT), c.Visits, c.Notes)
+	return fmt.Sprintf(inspectorFormat[`caves`],
+		c.Name, c.Region, c.Country, yesOrNo(c.SRT), c.Visits, c.LastVisit, c.Notes,
+	)
 }
 
 func (g *Gui) formatPerson(c *model.Caver) string {
-	return fmt.Sprintf(inspectorFormat[`cavers`], c.Name, c.Club, c.Count, c.Notes)
+	return fmt.Sprintf(inspectorFormat[`cavers`], c.Name, c.Club, c.Count, c.LastTrip, c.Notes)
 }
-

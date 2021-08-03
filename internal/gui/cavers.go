@@ -13,7 +13,7 @@ import (
 
 type cavers struct {
 	*tview.Table
-	cavers chan *model.Caver
+	cavers                chan *model.Caver
 	filterCol, filterTerm string
 }
 
@@ -22,8 +22,8 @@ func newCavers(g *Gui) *cavers {
 		Table: tview.NewTable().
 			SetScrollBarVisibility(tview.ScrollBarNever).
 			SetSelectable(true, false).
-			Select(0,0).
-			SetFixed(1,1),
+			Select(0, 0).
+			SetFixed(1, 1),
 	}
 
 	cavers.SetTitle(``).SetTitleAlign(tview.AlignLeft)
@@ -70,6 +70,7 @@ func (c *cavers) setEntries(g *Gui) {
 		"Name",
 		"Club",
 		"Count",
+		"Last Trip",
 	}
 
 	for i, header := range headers {
@@ -95,6 +96,11 @@ func (c *cavers) setEntries(g *Gui) {
 			SetExpansion(1))
 
 		table.SetCell(i+1, 2, tview.NewTableCell(strconv.FormatInt(caver.Count, 10)).
+			SetTextColor(tview.Styles.PrimaryTextColor).
+			SetMaxWidth(0).
+			SetExpansion(1))
+
+		table.SetCell(i+1, 3, tview.NewTableCell(caver.LastTrip).
 			SetTextColor(tview.Styles.PrimaryTextColor).
 			SetMaxWidth(0).
 			SetExpansion(1))

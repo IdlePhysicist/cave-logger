@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	_ "modernc.org/sqlite"
 	"github.com/sirupsen/logrus"
+	_ "modernc.org/sqlite"
 
 	"github.com/idlephysicist/cave-logger/internal/model"
 )
@@ -16,9 +16,9 @@ const datetime = `2006-01-02T15:04:05Z`
 const date = `2006-01-02`
 
 type Register struct {
-	log  *logrus.Logger
-	db   *sql.DB
-	ctx  context.Context
+	log *logrus.Logger
+	db  *sql.DB
+	ctx context.Context
 }
 
 func New(log *logrus.Logger, dbFN string) *Register {
@@ -245,7 +245,7 @@ func (reg *Register) GetTrip(id string) (*model.Log, error) {
 
 func (reg *Register) GetAllCavers() ([]*model.Caver, error) {
 	query := `
-    SELECT 
+    SELECT
         people.id AS 'id',
         people.name AS 'name',
         people.club AS 'club',
@@ -253,7 +253,15 @@ func (reg *Register) GetAllCavers() ([]*model.Caver, error) {
             SELECT COUNT(1)
             FROM trip_groups
             WHERE trip_groups.caverid = people.id
-        )
+        ),
+        (
+            SELECT printf("%s in %s", date(trips.date, 'unixepoch'), locations.name)
+            FROM trips, trip_groups, locations
+            WHERE trips.caveid == locations.id
+              AND trips.id == trip_groups.tripid
+              AND trip_groups.caverid == people.id
+            ORDER BY trips.date DESC, trips.id DESC LIMIT 1
+        ) AS 'last_trip'
     FROM people
     ORDER BY name`
 
@@ -266,7 +274,7 @@ func (reg *Register) GetAllCavers() ([]*model.Caver, error) {
 	for result.Next() {
 		var c model.Caver
 
-		err = result.Scan(&c.ID, &c.Name, &c.Club, &c.Count)
+		err = result.Scan(&c.ID, &c.Name, &c.Club, &c.Count, &c.LastTrip)
 		if err != nil {
 			reg.log.Errorf("Scan: %v", err)
 		}
@@ -279,16 +287,23 @@ func (reg *Register) GetAllCavers() ([]*model.Caver, error) {
 	return cavers, err
 }
 
-
 func (reg *Register) GetCaver(id string) (*model.Caver, error) {
 	query := `
-    SELECT 
+    SELECT
         people.id AS 'id',
         people.name AS 'name',
         people.club AS 'club',
         (
             SELECT COUNT(1) FROM trip_groups WHERE trip_groups.caverid = people.id
         ) AS 'count',
+        (
+            SELECT printf("%s in %s", date(trips.date, 'unixepoch'), locations.name)
+            FROM trips, trip_groups, locations
+            WHERE trips.caveid == locations.id
+              AND trips.id == trip_groups.tripid
+              AND trip_groups.caverid == people.id
+            ORDER BY trips.date DESC, trips.id DESC LIMIT 1
+        ) AS 'last_trip',
         people.notes AS 'notes'
     FROM people
     WHERE people.id = ?`
@@ -303,7 +318,7 @@ func (reg *Register) GetCaver(id string) (*model.Caver, error) {
 	var caver model.Caver
 	for result.Next() {
 
-		err = result.Scan(&caver.ID, &caver.Name, &caver.Club, &caver.Count, &caver.Notes)
+		err = result.Scan(&caver.ID, &caver.Name, &caver.Club, &caver.Count, &caver.LastTrip, &caver.Notes)
 		if err != nil {
 			reg.log.Errorf("reg.scan", err)
 			return nil, err
@@ -332,19 +347,25 @@ func (reg *Register) GetAllCaves() ([]*model.Cave, error) {
             SELECT COUNT(1)
             FROM trips
             WHERE trips.caveid = locations.id
-        ) AS 'visits'
+        ) AS 'visits',
+        (
+            SELECT date(trips.date, 'unixepoch')
+            FROM trips
+            WHERE trips.caveid = locations.id
+            ORDER BY trips.date DESC LIMIT 1
+        ) AS 'last_visit'
     FROM locations
     ORDER BY name`
 	result, err := reg.db.Query(query)
 	if err != nil {
-		reg.log.Errorf("reg.getcaverlist: Failed to get cavers", err)
+		reg.log.Errorf("reg.getcavelist: Failed to get caves", err)
 	}
 
 	caves := make([]*model.Cave, 0)
 	for result.Next() {
 		var c model.Cave
 
-		err = result.Scan(&c.ID, &c.Name, &c.Region, &c.Country, &c.SRT, &c.Visits)
+		err = result.Scan(&c.ID, &c.Name, &c.Region, &c.Country, &c.SRT, &c.Visits, &c.LastVisit)
 		if err != nil {
 			reg.log.Errorf("Scan: %v", err)
 		}
@@ -357,7 +378,6 @@ func (reg *Register) GetAllCaves() ([]*model.Cave, error) {
 	return caves, err
 }
 
-
 func (reg *Register) GetCave(id string) (*model.Cave, error) {
 	query := `
     SELECT
@@ -369,6 +389,12 @@ func (reg *Register) GetCave(id string) (*model.Cave, error) {
         (
             SELECT COUNT(1) FROM trips WHERE trips.caveid = locations.id
         ) AS 'visits',
+        (
+            SELECT date(trips.date, 'unixepoch')
+            FROM trips
+            WHERE trips.caveid = locations.id
+            ORDER BY trips.date DESC LIMIT 1
+        ) AS 'last_visit',
         locations.notes AS 'notes'
     FROM locations
     WHERE id = ?`
@@ -382,7 +408,7 @@ func (reg *Register) GetCave(id string) (*model.Cave, error) {
 
 	var cave model.Cave
 	for result.Next() {
-		err = result.Scan(&cave.ID, &cave.Name, &cave.Region, &cave.Country, &cave.SRT, &cave.Visits, &cave.Notes)
+		err = result.Scan(&cave.ID, &cave.Name, &cave.Region, &cave.Country, &cave.SRT, &cave.Visits, &cave.LastVisit, &cave.Notes)
 		if err != nil {
 			reg.log.Error(err)
 			return nil, err
@@ -395,7 +421,6 @@ func (reg *Register) GetCave(id string) (*model.Cave, error) {
 
 	return &cave, err
 }
-
 
 //
 // DELETE FUNCS ---- ----
@@ -597,6 +622,7 @@ func (reg *Register) ModifyCave(id, name, region, country, notes string, srt boo
 
 	return nil
 }
+
 //
 // INTERNAL FUNCTIONS ----------------------------------------------------------
 //

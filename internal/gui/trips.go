@@ -12,7 +12,7 @@ import (
 
 type trips struct {
 	*tview.Table
-	trips chan *model.Log
+	trips                 chan *model.Log
 	filterCol, filterTerm string
 }
 
@@ -21,8 +21,8 @@ func newTrips(g *Gui) *trips {
 		Table: tview.NewTable().
 			SetScrollBarVisibility(tview.ScrollBarNever).
 			SetSelectable(true, false).
-			Select(0,0).
-			SetFixed(1,1),
+			Select(0, 0).
+			SetFixed(1, 1),
 		trips: make(chan *model.Log),
 	}
 
