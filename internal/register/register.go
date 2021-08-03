@@ -164,7 +164,8 @@ func (reg *Register) GetAllTrips() ([]*model.Log, error) {
         ) AS 'names',
         trips.notes AS 'notes'
     FROM trips, locations
-    WHERE trips.caveid = locations.id`
+    WHERE trips.caveid = locations.id
+    ORDER BY date ASC`
 
 	result, err := reg.db.Query(query)
 	if err != nil {
