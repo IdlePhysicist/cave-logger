@@ -2,8 +2,6 @@ module github.com/idlephysicist/cave-logger
 
 go 1.16
 
-replace github.com/rivo/tview => ../tview
-
 require (
 	github.com/gdamore/tcell/v2 v2.0.0-dev.0.20200831155531-da485f47343b
 	github.com/sirupsen/logrus v1.4.2
