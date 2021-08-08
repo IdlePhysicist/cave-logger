@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-import yaml
+import json
 import os
 import shutil
 
 HOME = os.environ["HOME"]
-CFGFILE = "./config/config.yml"
+CFGFILE = "./config/config.json"
 
 NEWPATH = ".config/cave-logger"
 
@@ -15,7 +15,7 @@ except FileExistsError:
   print("Directory exists moving on")
 
 with open(CFGFILE, 'r') as c:
-  cfg = yaml.safe_load(c)
+  cfg = json.load(c)
 
 shutil.copy(
   '/'.join([HOME,cfg['database']['filename']]),
@@ -25,5 +25,5 @@ shutil.copy(CFGFILE, f"{HOME}/{NEWPATH}/")
 
 cfg['database']['filename'] = f"{HOME}/{NEWPATH}/{cfg['database']['filename'].split('/')[-1]}"
 
-with open(f"{HOME}/{NEWPATH}/config.yml", 'w') as c:
-  yaml.dump(cfg, c)
+with open(f"{HOME}/{NEWPATH}/config.json", 'w') as c:
+  json.dump(cfg, c, indent=2)

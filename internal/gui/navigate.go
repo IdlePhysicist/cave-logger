@@ -1,29 +1,27 @@
 package gui
 
-import (
-  "github.com/gdamore/tcell"
-  "github.com/rivo/tview"
-)
+import tview "gitlab.com/tslocum/cview"
 
 type navigate struct {
-  *tview.TextView
-  keybindings map[string]string
+	*tview.TextView
+	keybindings map[string]string
 }
 
 func newNavigate() *navigate {
-  navi := &navigate{
-    TextView: tview.NewTextView().SetTextColor(tcell.ColorWhite),
-    keybindings: map[string]string{
-      "trips": " n: New Log Entry, m: Modify Log,  d: Remove Log, /: filter, Enter: Inspect ",
-      "locations": " n: New Cave, m: Modify Cave, d: Remove Cave, /: filter, Enter: Inspect ",
-      "people": " n: New Caver, m: Modify Caver, d: Remove Caver, /: filter, Enter: Inspect ",
-    },
-  }
+	navi := &navigate{
+		TextView: tview.NewTextView().SetTextColor(tview.Styles.PrimaryTextColor),
+		keybindings: map[string]string{
+			"trips":  " n: New Trip, m: Modify Trip,  d: Remove Trip, /: Filter, Enter: Inspect Detail ",
+			"caves":  " n: New Cave, m: Modify Cave, d: Remove Cave, /: Filter, Enter: Inspect Detail ",
+			"cavers": " n: New Caver, m: Modify Caver, d: Remove Caver, /: Filter, Enter: Inspect Detail ",
+			"detail": " q | ESC: Exit Detail ",
+		},
+	}
 
-  navi.SetBorder(true)
-  return navi
+	navi.SetBorder(false)
+	return navi
 }
 
 func (n *navigate) update(panel string) {
-  n.SetText(n.keybindings[panel])
+	n.SetText(n.keybindings[panel])
 }

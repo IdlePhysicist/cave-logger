@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker build -t cave-logger .
+docker build -t cave-logger ./docker/.
 
 docker run \
   --interactive \

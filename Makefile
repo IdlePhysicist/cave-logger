@@ -1,21 +1,21 @@
 # Environment Variables
-CGO=1
-SRC=cmd
-BUILD=build
+SRC   =cmd
+BUILD =build
+PREFIX=$(GOPATH)/bin/
 
-default: darwin
+version?=`if [ -d ./.git ]; then git describe --tags; else echo release-build; fi`
+date    =`date "+%Y-%m-%d"`
+package =main
+ldflags ="-X $(package).version=$(version) -X $(package).date=$(date)"
 
-main: darwin
+default: build
 
-linux: clean
-	env CGO_ENABLED=$(CGO) GOOS=$@ go build -o $(BUILD)/cave-logger $(SRC)/main.go
-
-darwin: clean
-	env CGO_ENABLED=$(CGO) GOOS=$@ go build -o $(BUILD)/cave-logger $(SRC)/main.go
+build: clean
+	env go build -ldflags $(ldflags) -o $(BUILD)/cave-logger $(SRC)/main.go
 
 clean:
 	rm -f $(BUILD)/*
 	touch $(BUILD)/.keep
 
 install:
-	mv $(BUILD)/cave-logger $(GOPATH)/bin/.
+	mv $(BUILD)/cave-logger $(PREFIX)

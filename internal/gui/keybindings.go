@@ -1,75 +1,73 @@
 package gui
 
 import (
-  "fmt"
+	"strings"
 
-  "github.com/gdamore/tcell"
-  "github.com/idlephysicist/cave-logger/internal/model"
+	"github.com/gdamore/tcell/v2"
+	tview "gitlab.com/tslocum/cview"
 )
 
-var inspectorFormat = map[string]string{
-  `trips`    : "Date: %s\nCave: %s\nCavers: %s\nNotes: %s",
-  `people`   : "Name: %s\nClub: %s\nCount: %d",
-  `locations`: "Name: %s\nRegion: %s\nCountry: %s\nSRT: %v\nVisits: %d",
-}
-
 func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
-  switch event.Rune() {
-  case 'q':
-    g.Stop()
-  }
+	/*switch event.Key() {
+	case tcell.KeyTAB:
+		g.nextPage()
+	}*/
+
+	switch event.Rune() {
+	case 'q':
+		g.Stop()
+	case '1':
+		g.goTo("trips")
+	case '2':
+		g.goTo("cavers")
+	case '3':
+		g.goTo("caves")
+	case '/':
+		g.filter()
+	}
 }
 
-//
-// INSPECTION FUNCS
-//
+func (g *Gui) filter() {
+	currentPanel := g.state.panels.panel[g.state.panels.currentPanel]
+	currentPanel.setFilter("", "")
+	currentPanel.updateEntries(g)
 
-func (g *Gui) inspectTrip() {
-  selected := g.selectedTrip()
+	viewName := "filter"
+	searchInput := tview.NewInputField().SetLabel("Column/Parameter")
+	searchInput.SetLabelWidth(17)
+	searchInput.SetTitle(" Filter ")
+	searchInput.SetTitleAlign(tview.AlignLeft)
+	searchInput.SetBorder(true)
 
-  trip, err := g.db.GetTrip(selected.ID)
-  if err != nil {
-    return
-  }
+	closeSearchInput := func() {
+		g.closeAndSwitchPanel(viewName, g.state.panels.panel[g.state.panels.currentPanel].name())
+	}
 
-  g.inspectorPanel().setEntry(g.formatTrip(trip))
-}
+	searchInput.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEnter {
+			closeSearchInput()
+		}
+	})
 
-func (g *Gui) inspectCave() {
-  selected := g.selectedLocation()
+	searchInput.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEsc {
+			closeSearchInput()
+		}
+		return event
+	})
 
-  cave, err := g.db.GetLocation(selected.ID)
-  if err != nil {
-    return
-  }
+	searchInput.SetChangedFunc(func(text string) {
+		if strings.Contains(text, "/") {
+			textSl := strings.Split(strings.ToLower(text), "/")
 
-  g.inspectorPanel().setEntry(g.formatCave(cave))
-}
+			if len(textSl) == 2 {
+				currentPanel.setFilter(textSl[0], textSl[1])
+				currentPanel.updateEntries(g)
+			}
+		}
+	})
 
-func (g *Gui) inspectPerson() {
-  selected := g.selectedPerson()
-
-  caver, err := g.db.GetPerson(selected.ID)
-  if err != nil {
-    return
-  }
-
-  g.inspectorPanel().setEntry(g.formatPerson(caver))
-}
-
-//
-// Formatting Functions
-//
-func (g *Gui) formatTrip(trip *model.Log) string {
-  return fmt.Sprintf(inspectorFormat[`trips`], trip.Date, trip.Cave, trip.Names, trip.Notes)
-}
-
-func (g *Gui) formatCave(l *model.Cave) string {
-  return fmt.Sprintf(inspectorFormat[`locations`], l.Name, l.Region, l.Country, l.SRT, l.Visits)
-}
-
-func (g *Gui) formatPerson(p *model.Caver) string {
-  return fmt.Sprintf(inspectorFormat[`people`], p.Name, p.Club, p.Count)
+	g.pages.AddAndSwitchToPage(viewName, g.modal(searchInput, 80, 3), true).ShowPage("main")
 }
 
 //
@@ -77,14 +75,23 @@ func (g *Gui) formatPerson(p *model.Caver) string {
 //
 
 func (g *Gui) selectPage(row, col int) string {
-  var p string
-  switch row {
-  case 0:
-    p = `trips`
-  case 1:
-    p = `people`
-  case 2:
-    p = `locations`
-  }
-  return p
+	var p string
+	switch row {
+	case 0:
+		p = `trips`
+	case 1:
+		p = `cavers`
+	case 2:
+		p = `caves`
+	}
+	return p
 }
+
+/*
+func (g *Gui) nextPage() {
+	slide, _ := strconv.Atoi(g.state.tabBar.GetHighlights()[0])
+	slide = (slide + 1) % g.pages.GetPageCount()
+	//g.state.tabBar.Highlight(strconv.Itoa(slide)).ScrollToHighlight()
+	g.goTo(g.selectPage(slide - 1, 0)) // NOTE: If the Highlight func is fixed for the tab bar then this line will not be required
+}
+*/
