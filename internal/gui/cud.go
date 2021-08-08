@@ -20,9 +20,8 @@ func (g *Gui) createTripForm() {
 
 	caveField := tview.NewInputField().
 		SetLabel("Cave").
-		SetAutocompleteMultipleEntries(false).
 		SetFieldWidth(inputWidth)
-	caveField.SetAutocompleteFunc(func(current string) (matches []interface{}) {
+	caveField.SetAutocompleteFunc(func(current string) (matches []string) {
 		if len(current) == 0 {
 			return
 		}
@@ -39,18 +38,17 @@ func (g *Gui) createTripForm() {
 	// Caver Field
 	caverField := tview.NewInputField().
 		SetLabel("Names").
-		SetAutocompleteMultipleEntries(true).
 		SetFieldWidth(inputWidth)
-	caverField.SetAutocompleteFunc(func(current string) (matches []interface{}) {
+	caverField.SetAutocompleteFunc(func(current string) (matches []string) {
 		if len(current) == 0 {
-			return []interface{}{[2]string{``, ``}}
+			return []string{``}
 		}
 
 		names := strings.Split(current, `,`)
 
 		// Process preceeding names
 		for _, n := range names {
-			n = strings.TrimPrefix(n, ` `)
+			n = strings.TrimSpace(n)
 		}
 
 		var lastPart string
@@ -63,17 +61,14 @@ func (g *Gui) createTripForm() {
 		lastPart = strings.TrimPrefix(lastPart, ` `) // We should still trim whitespace
 
 		if len(lastPart) == 0 {
-			return []interface{}{[2]string{``, ``}}
+			return []string{``}
 		}
 
 		for _, caver := range g.state.resources.people {
 			if strings.HasPrefix(strings.ToLower(caver.Name), strings.ToLower(lastPart)) {
 				matches = append(
 					matches,
-					[2]string{
-						caver.Name,
-						textFactory(names[0:len(names)-1], `, `),
-					},
+					fmt.Sprintf("%s%s", textFactory(names[0:len(names)-1], `, `), caver.Name),
 				)
 			}
 		}
@@ -251,9 +246,8 @@ func (g *Gui) modifyTripForm() {
 	caveField := tview.NewInputField().
 		SetLabel("Cave").
 		SetFieldWidth(inputWidth).
-		SetAutocompleteMultipleEntries(false).
 		SetText(selectedTrip.Cave)
-	caveField.SetAutocompleteFunc(func(current string) (matches []interface{}) {
+	caveField.SetAutocompleteFunc(func(current string) (matches []string) {
 		if len(current) == 0 {
 			return
 		}
@@ -271,10 +265,52 @@ func (g *Gui) modifyTripForm() {
 		return
 	})
 
+	// Caver Field
+	caverField := tview.NewInputField().
+		SetLabel("Names").
+		SetFieldWidth(inputWidth).
+		SetText(selectedTrip.Names)
+	caverField.SetAutocompleteFunc(func(current string) (matches []string) {
+		if len(current) == 0 {
+			return []string{``}
+		}
+
+		names := strings.Split(current, `,`)
+
+		// Process preceeding names
+		for _, n := range names {
+			n = strings.TrimSpace(n)
+		}
+
+		var lastPart string
+		if len(names) == 0 { // Then we're still on the first name
+			lastPart = current
+		} else {
+			lastPart = names[len(names)-1] // To get the last name
+		}
+
+		lastPart = strings.TrimPrefix(lastPart, ` `) // We should still trim whitespace
+
+		if len(lastPart) == 0 {
+			return []string{``}
+		}
+
+		for _, caver := range g.state.resources.people {
+			if strings.HasPrefix(strings.ToLower(caver.Name), strings.ToLower(lastPart)) {
+				matches = append(
+					matches,
+					fmt.Sprintf("%s%s", textFactory(names[0:len(names)-1], `, `), caver.Name),
+				)
+			}
+		}
+
+		return
+	})
+
 	form.
 		AddInputField("Date", selectedTrip.Date, inputWidth, nil, nil).
 		AddFormItem(caveField).
-		AddInputField("Names", selectedTrip.Names, inputWidth, nil, nil).
+		AddFormItem(caverField).
 		AddInputField("Notes", selectedTrip.Notes, inputWidth, nil, nil).
 		AddButton("Apply", func() {
 			g.modifyTrip(selectedTrip.ID, form)
@@ -500,6 +536,7 @@ func textFactory(sl []string, sep string) string {
 	}
 
 	for i, el := range sl {
+		el = strings.TrimSpace(el)
 		s += el
 		if i < numEl {
 			s += sep
