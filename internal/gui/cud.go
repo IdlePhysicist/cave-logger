@@ -2,8 +2,8 @@ package gui
 
 import (
 	"fmt"
-	"time"
 	"strings"
+	"time"
 
 	tview "gitlab.com/tslocum/cview"
 )
@@ -35,10 +35,51 @@ func (g *Gui) createTripForm() {
 		return
 	})
 
+	// Caver Field
+	caverField := tview.NewInputField().
+		SetLabel("Names").
+		SetFieldWidth(inputWidth)
+	caverField.SetAutocompleteFunc(func(current string) (matches []string) {
+		if len(current) == 0 {
+			return []string{``}
+		}
+
+		names := strings.Split(current, `,`)
+
+		// Process preceeding names
+		for _, n := range names {
+			n = strings.TrimSpace(n)
+		}
+
+		var lastPart string
+		if len(names) == 0 { // Then we're still on the first name
+			lastPart = current
+		} else {
+			lastPart = names[len(names)-1] // To get the last name
+		}
+
+		lastPart = strings.TrimPrefix(lastPart, ` `) // We should still trim whitespace
+
+		if len(lastPart) == 0 {
+			return []string{``}
+		}
+
+		for _, caver := range g.state.resources.people {
+			if strings.HasPrefix(strings.ToLower(caver.Name), strings.ToLower(lastPart)) {
+				matches = append(
+					matches,
+					fmt.Sprintf("%s%s", textFactory(names[0:len(names)-1], `, `), caver.Name),
+				)
+			}
+		}
+
+		return
+	})
+
 	form.
 		AddInputField("Date", time.Now().Format(`2006-01-02`), inputWidth, nil, nil).
 		AddFormItem(caveField).
-		AddInputField("Names", "", inputWidth, nil, nil).
+		AddFormItem(caverField).
 		AddInputField("Notes", "", inputWidth, nil, nil).
 		AddButton("Add", func() {
 			g.createTrip(form)
@@ -47,7 +88,8 @@ func (g *Gui) createTripForm() {
 			g.closeAndSwitchPanel("form", "trips")
 		})
 
-	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
+	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true) //.ShowPage("main")
+	//REVIEW: main or trips ? ^^
 }
 
 func (g *Gui) createTrip(form *tview.Form) {
@@ -58,7 +100,7 @@ func (g *Gui) createTrip(form *tview.Form) {
 		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
 	)
 	if err != nil { // NOTE: Needs fixing
-		g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
+		g.warning(err.Error(), `form`, []string{`OK`}, func() { return })
 		return
 	}
 
@@ -129,7 +171,7 @@ func (g *Gui) createLocation(form *tview.Form) {
 		form.GetFormItemByLabel("SRT").(*tview.CheckBox).IsChecked(),
 	)
 	if err != nil { // NOTE: Needs fixing
-		g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
+		g.warning(err.Error(), `form`, []string{`OK`}, func() { return })
 		return
 	}
 
@@ -181,7 +223,7 @@ func (g *Gui) createPerson(form *tview.Form) {
 		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
 	)
 	if err != nil { // NOTE: Needs fixing
-		g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
+		g.warning(err.Error(), `form`, []string{`OK`}, func() { return })
 		return
 	}
 
@@ -216,8 +258,50 @@ func (g *Gui) modifyTripForm() {
 			}
 		}
 
-		if len(matches) <=  1 ||  matches[0] == current {
+		if len(matches) <= 1 || matches[0] == current {
 			matches = nil
+		}
+
+		return
+	})
+
+	// Caver Field
+	caverField := tview.NewInputField().
+		SetLabel("Names").
+		SetFieldWidth(inputWidth).
+		SetText(selectedTrip.Names)
+	caverField.SetAutocompleteFunc(func(current string) (matches []string) {
+		if len(current) == 0 {
+			return []string{``}
+		}
+
+		names := strings.Split(current, `,`)
+
+		// Process preceeding names
+		for _, n := range names {
+			n = strings.TrimSpace(n)
+		}
+
+		var lastPart string
+		if len(names) == 0 { // Then we're still on the first name
+			lastPart = current
+		} else {
+			lastPart = names[len(names)-1] // To get the last name
+		}
+
+		lastPart = strings.TrimPrefix(lastPart, ` `) // We should still trim whitespace
+
+		if len(lastPart) == 0 {
+			return []string{``}
+		}
+
+		for _, caver := range g.state.resources.people {
+			if strings.HasPrefix(strings.ToLower(caver.Name), strings.ToLower(lastPart)) {
+				matches = append(
+					matches,
+					fmt.Sprintf("%s%s", textFactory(names[0:len(names)-1], `, `), caver.Name),
+				)
+			}
 		}
 
 		return
@@ -226,8 +310,8 @@ func (g *Gui) modifyTripForm() {
 	form.
 		AddInputField("Date", selectedTrip.Date, inputWidth, nil, nil).
 		AddFormItem(caveField).
-		AddInputField("Names", selectedTrip.Names, inputWidth, nil, nil).
-		AddInputField("Notes",  selectedTrip.Notes, inputWidth, nil, nil).
+		AddFormItem(caverField).
+		AddInputField("Notes", selectedTrip.Notes, inputWidth, nil, nil).
 		AddButton("Apply", func() {
 			g.modifyTrip(selectedTrip.ID, form)
 		}).
@@ -247,14 +331,13 @@ func (g *Gui) modifyTrip(id string, form *tview.Form) {
 		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
 	)
 	if err != nil {
-		g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
+		g.warning(err.Error(), `form`, []string{`OK`}, func() { return })
 		return
 	}
 
 	g.closeAndSwitchPanel(`form`, `trips`)
 	g.tripsPanel().updateEntries(g)
 }
-
 
 func (g *Gui) modifyPersonForm() {
 	// First - what trip is selected?
@@ -287,7 +370,7 @@ func (g *Gui) modifyPersonForm() {
 	form.
 		AddInputField("Name", selectedPerson.Name, inputWidth, nil, nil).
 		AddFormItem(clubField).
-		AddInputField("Notes",  selectedPerson.Notes, inputWidth, nil, nil).
+		AddInputField("Notes", selectedPerson.Notes, inputWidth, nil, nil).
 		AddButton("Apply", func() {
 			g.modifyPerson(selectedPerson.ID, form)
 		}).
@@ -306,14 +389,13 @@ func (g *Gui) modifyPerson(id string, form *tview.Form) {
 		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
 	)
 	if err != nil {
-		g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
+		g.warning(err.Error(), `form`, []string{`OK`}, func() { return })
 		return
 	}
 
 	g.closeAndSwitchPanel(`form`, `cavers`)
 	g.caversPanel().updateEntries(g)
 }
-
 
 func (g *Gui) modifyLocationForm() {
 	// First - what trip is selected?
@@ -359,13 +441,12 @@ func (g *Gui) modifyLocationForm() {
 		return
 	})
 
-
 	form.
 		AddInputField("Name", selectedLocation.Name, inputWidth, nil, nil).
 		AddFormItem(regionField).
 		AddFormItem(countryField).
 		AddCheckBox("SRT", "", selectedLocation.SRT, nil).
-		AddInputField("Notes",  selectedLocation.Notes, inputWidth, nil, nil).
+		AddInputField("Notes", selectedLocation.Notes, inputWidth, nil, nil).
 		AddButton("Apply", func() {
 			g.modifyLocation(selectedLocation.ID, form)
 		}).
@@ -386,14 +467,13 @@ func (g *Gui) modifyLocation(id string, form *tview.Form) {
 		form.GetFormItemByLabel("SRT").(*tview.CheckBox).IsChecked(),
 	)
 	if err != nil {
-		g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
+		g.warning(err.Error(), `form`, []string{`OK`}, func() { return })
 		return
 	}
 
 	g.closeAndSwitchPanel(`form`, `caves`)
 	g.cavesPanel().updateEntries(g)
 }
-
 
 //
 // DELETE FUNCS
@@ -407,7 +487,7 @@ func (g *Gui) deleteTrip() {
 
 	g.warning(message, `trips`, []string{`Yes`, `No`}, func() {
 		if err := g.reg.RemoveTrip(selectedTrip.ID); err != nil {
-			g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
+			g.warning(err.Error(), `form`, []string{`OK`}, func() { return })
 			return
 		}
 		g.tripsPanel().updateEntries(g)
@@ -424,7 +504,7 @@ func (g *Gui) deleteLocation() {
 
 	g.warning(message, `locations`, []string{`Yes`, `No`}, func() {
 		if err := g.reg.RemoveCave(selectedLocation.ID); err != nil {
-			g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
+			g.warning(err.Error(), `form`, []string{`OK`}, func() { return })
 			return
 		}
 		g.cavesPanel().updateEntries(g)
@@ -441,9 +521,26 @@ func (g *Gui) deletePerson() {
 
 	g.warning(message, `people`, []string{`Yes`, `No`}, func() {
 		if err := g.reg.RemoveCaver(selectedPerson.ID); err != nil {
-			g.warning(err.Error(), `form`, []string{`OK`}, func() {return})
+			g.warning(err.Error(), `form`, []string{`OK`}, func() { return })
 			return
 		}
 		g.caversPanel().updateEntries(g)
 	})
+}
+
+func textFactory(sl []string, sep string) string {
+	s := ``
+	numEl := len(sl)
+	if numEl == 0 {
+		return s
+	}
+
+	for i, el := range sl {
+		el = strings.TrimSpace(el)
+		s += el
+		if i < numEl {
+			s += sep
+		}
+	}
+	return s
 }

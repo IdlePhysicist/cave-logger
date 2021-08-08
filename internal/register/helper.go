@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-
 // For retrieving the ID of a cave from the `locations` table.
 func (reg *Register) getCaveID(cave string) (int, error) {
 	result, err := reg.db.Query(`SELECT id FROM locations WHERE name == ?`, cave)
@@ -29,8 +28,7 @@ func (reg *Register) getCaveID(cave string) (int, error) {
 	return caveID, err
 }
 
-
-// For formatting the ids for a new 
+// For formatting the ids for a new
 func (reg *Register) getCaverIDs(names string) ([]string, error) {
 	var caverIDs []string
 
@@ -58,7 +56,7 @@ func (reg *Register) getCaverIDs(names string) ([]string, error) {
 
 // For processing dates into UNIX timestamps
 func unixTimestamp(date string) (int64, error) {
-	d, err := time.Parse(datetime, strings.Join([]string{date,`12:00:00Z`},`T`))
+	d, err := time.Parse(datetime, strings.Join([]string{date, `12:00:00Z`}, `T`))
 	if err != nil {
 		return -1, err
 	}

@@ -10,9 +10,9 @@ import (
 	"github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
 
-	"github.com/idlephysicist/cave-logger/internal/register"
 	"github.com/idlephysicist/cave-logger/internal/gui"
 	"github.com/idlephysicist/cave-logger/internal/model"
+	"github.com/idlephysicist/cave-logger/internal/register"
 )
 
 var version, date string
@@ -45,7 +45,6 @@ func main() {
 		level = logrus.InfoLevel
 	}
 	log.SetLevel(level)
-
 
 	// Read config file
 	cfg := func(_file string) *model.Config {

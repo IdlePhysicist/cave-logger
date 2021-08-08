@@ -5,11 +5,11 @@ import (
 	"strconv"
 	"strings"
 
-	tview "gitlab.com/tslocum/cview"
 	"github.com/gdamore/tcell/v2"
+	tview "gitlab.com/tslocum/cview"
 
-	"github.com/idlephysicist/cave-logger/internal/register"
 	"github.com/idlephysicist/cave-logger/internal/model"
+	"github.com/idlephysicist/cave-logger/internal/register"
 )
 
 type panels struct {
@@ -18,9 +18,9 @@ type panels struct {
 }
 
 type resources struct {
-	trips          []*model.Log
-	people         []*model.Caver
-	locations      []*model.Cave
+	trips     []*model.Log
+	people    []*model.Caver
+	locations []*model.Cave
 	//statsLocations []*model.Statistic
 }
 
@@ -39,19 +39,19 @@ func newState() *state {
 }
 
 type Gui struct {
-	app    *tview.Application
-	pages  *tview.Pages
-	state  *state
-	reg    *register.Register
+	app   *tview.Application
+	pages *tview.Pages
+	state *state
+	reg   *register.Register
 	//statsLocations *statsLocations
 }
 
 func New(reg *register.Register) *Gui {
 	return &Gui{
-		app: tview.NewApplication(),
+		app:   tview.NewApplication(),
 		pages: tview.NewPages(),
 		state: newState(),
-		reg: reg,
+		reg:   reg,
 	}
 }
 
@@ -143,17 +143,16 @@ func (g *Gui) caversPanel() *cavers {
 }
 */
 
-
 func (g *Gui) initPanels() {
 
 	g.state.tabBar = newTabBar(g)
 
 	// Page definitions
-	trips  := newTrips(g)
+	trips := newTrips(g)
 	cavers := newCavers(g)
-	caves  := newCaves(g)
+	caves := newCaves(g)
 
-	/* 
+	/*
 	// NOTE: I would really like to get this working as it would be far neater.
 	// The issue is with the three pages being of different types.
 	// cannot use pg (type panel) as type tview.Primitive in argument to g.pages.AddPage:
@@ -252,7 +251,6 @@ func (g *Gui) warning(message, page string, labels []string, doneFunc func()) {
 	g.pages.AddAndSwitchToPage("modal", g.modal(modal, 80, 29), true)
 }
 
-
 //
 // Functions for returning the selected item in the table
 // REVIEW: There might be better ways of doing this.
@@ -291,4 +289,3 @@ func (g *Gui) selectedPerson() *model.Caver {
 
 	return g.state.resources.people[row-1]
 }
-
