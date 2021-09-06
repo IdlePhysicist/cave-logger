@@ -272,12 +272,20 @@ func (reg *Register) GetAllCavers() ([]*model.Caver, error) {
 
 	cavers := make([]*model.Caver, 0)
 	for result.Next() {
-		var c model.Caver
+		var (
+			c model.Caver
+			lastTrip sql.NullString
+		)
 
-		err = result.Scan(&c.ID, &c.Name, &c.Club, &c.Count, &c.LastTrip)
+		err = result.Scan(&c.ID, &c.Name, &c.Club, &c.Count, &lastTrip)
 		if err != nil {
 			reg.log.Errorf("Scan: %v", err)
 		}
+
+		if lastTrip.Valid {
+			c.LastTrip = lastTrip.String
+		}
+
 		cavers = append(cavers, &c)
 	}
 	if err = result.Err(); err != nil {
@@ -315,14 +323,22 @@ func (reg *Register) GetCaver(id string) (*model.Caver, error) {
 	}
 	defer result.Close()
 
-	var caver model.Caver
+	var (
+		caver model.Caver
+		lastTrip sql.NullString
+	)
 	for result.Next() {
 
-		err = result.Scan(&caver.ID, &caver.Name, &caver.Club, &caver.Count, &caver.LastTrip, &caver.Notes)
+		err = result.Scan(&caver.ID, &caver.Name, &caver.Club, &caver.Count, &lastTrip, &caver.Notes)
 		if err != nil {
 			reg.log.Errorf("reg.scan", err)
 			return nil, err
 		}
+
+		if lastTrip.Valid {
+			caver.LastTrip = lastTrip.String
+		}
+
 	}
 	if err = result.Err(); err != nil {
 		reg.log.Errorf("reg.get: Step error: %s", err)
@@ -363,12 +379,20 @@ func (reg *Register) GetAllCaves() ([]*model.Cave, error) {
 
 	caves := make([]*model.Cave, 0)
 	for result.Next() {
-		var c model.Cave
+		var (
+			c model.Cave
+			lastVisit sql.NullString
+		)
 
-		err = result.Scan(&c.ID, &c.Name, &c.Region, &c.Country, &c.SRT, &c.Visits, &c.LastVisit)
+		err = result.Scan(&c.ID, &c.Name, &c.Region, &c.Country, &c.SRT, &c.Visits, &lastVisit)
 		if err != nil {
 			reg.log.Errorf("Scan: %v", err)
 		}
+
+		if lastVisit.Valid {
+			c.LastVisit = lastVisit.String
+		}
+
 		caves = append(caves, &c)
 	}
 	if err = result.Err(); err != nil {
@@ -406,12 +430,19 @@ func (reg *Register) GetCave(id string) (*model.Cave, error) {
 	}
 	defer result.Close()
 
-	var cave model.Cave
+	var (
+		cave model.Cave
+		lastVisit sql.NullString
+	)
 	for result.Next() {
-		err = result.Scan(&cave.ID, &cave.Name, &cave.Region, &cave.Country, &cave.SRT, &cave.Visits, &cave.LastVisit, &cave.Notes)
+		err = result.Scan(&cave.ID, &cave.Name, &cave.Region, &cave.Country, &cave.SRT, &cave.Visits, &lastVisit, &cave.Notes)
 		if err != nil {
 			reg.log.Error(err)
 			return nil, err
+		}
+
+		if lastVisit.Valid {
+			cave.LastVisit = lastVisit.String
 		}
 	}
 	if err = result.Err(); err != nil {
