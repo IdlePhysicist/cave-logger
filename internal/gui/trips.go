@@ -12,8 +12,8 @@ import (
 
 type trips struct {
 	*tview.Table
-	trips                 chan *model.Log
-	filterCol, filterTerm string
+	trips                               chan *model.Log
+	filterCol, filterTerm, filterAction string
 }
 
 func newTrips(g *Gui) *trips {
@@ -132,9 +132,10 @@ func (t *trips) unfocus() {
 	t.SetSelectable(false, false)
 }
 
-func (t *trips) setFilter(col, term string) {
+func (t *trips) setFilter(col, term, action string) {
 	t.filterCol = col
 	t.filterTerm = term
+	t.filterAction = action // Unused in this window.
 }
 
 func (t *trips) monitoringTrips(g *Gui) {
@@ -153,6 +154,8 @@ LOOP:
 }
 
 func (t *trips) search(trip *model.Log) bool {
+	// Below *looks* goofy but it all makes sense considering this funciton
+	// needs to return false normally!!
 	switch t.filterCol {
 	case "cave", "":
 		if strings.Index(strings.ToLower(trip.Cave), t.filterTerm) == -1 {

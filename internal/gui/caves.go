@@ -13,8 +13,8 @@ import (
 
 type caves struct {
 	*tview.Table
-	caves                 chan *model.Cave
-	filterCol, filterTerm string
+	caves                               chan *model.Cave
+	filterCol, filterTerm, filterAction string
 }
 
 func newCaves(g *Gui) *caves {
@@ -150,9 +150,10 @@ func (c *caves) unfocus() {
 	c.SetSelectable(false, false)
 }
 
-func (c *caves) setFilter(col, term string) {
+func (c *caves) setFilter(col, term, action string) {
 	c.filterCol = col
 	c.filterTerm = term
+	c.filterAction = action
 }
 
 func (c *caves) monitoringCaves(g *Gui) {
@@ -207,8 +208,10 @@ func yesOrNo(val bool) string {
 }
 
 func (c *caves) search(cave *model.Cave) bool {
+	// Below *looks* goofy but it all makes sense considering this funciton
+	// needs to return false normally!!
 	switch c.filterCol {
-	case "name", "":
+	case "name":
 		if strings.Index(strings.ToLower(cave.Name), c.filterTerm) == -1 {
 			return true
 		}
@@ -223,6 +226,15 @@ func (c *caves) search(cave *model.Cave) bool {
 			return true
 		}
 		return false
+	case "visits", "":
+		switch c.filterAction {
+		case "<":
+			return cave.Visits > atoi(c.filterTerm)
+		case ">":
+			return cave.Visits < atoi(c.filterTerm)
+		default:
+			return false
+		}
 	default:
 		return false
 	}

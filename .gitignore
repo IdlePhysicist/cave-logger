@@ -15,6 +15,7 @@ _old
 # Mac
 *.DS_Store
 
+tags
 
 # -- Except ----
 !.keep
