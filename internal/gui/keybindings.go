@@ -3,8 +3,8 @@ package gui
 import (
 	"strings"
 
+	"code.rocketnine.space/tslocum/cview"
 	"github.com/gdamore/tcell/v2"
-	tview "gitlab.com/tslocum/cview"
 )
 
 func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
@@ -33,10 +33,11 @@ func (g *Gui) filter() {
 	currentPanel.updateEntries(g)
 
 	viewName := "filter"
-	searchInput := tview.NewInputField().SetLabel("Column/Parameter")
+	searchInput := cview.NewInputField()
+	searchInput.SetLabel("Column/Parameter")
 	searchInput.SetLabelWidth(17)
 	searchInput.SetTitle(" Filter ")
-	searchInput.SetTitleAlign(tview.AlignLeft)
+	searchInput.SetTitleAlign(cview.AlignLeft)
 	searchInput.SetBorder(true)
 
 	closeSearchInput := func() {
@@ -67,7 +68,8 @@ func (g *Gui) filter() {
 		}
 	})
 
-	g.pages.AddAndSwitchToPage(viewName, g.modal(searchInput, 80, 3), true).ShowPage("main")
+	g.pages.AddAndSwitchToPage(viewName, g.modal(searchInput, 80, 3), true)
+	g.pages.ShowPage("main")
 }
 
 //

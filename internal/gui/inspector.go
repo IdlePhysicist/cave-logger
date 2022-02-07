@@ -3,8 +3,8 @@ package gui
 import (
 	"fmt"
 
+	"code.rocketnine.space/tslocum/cview"
 	"github.com/gdamore/tcell/v2"
-	tview "gitlab.com/tslocum/cview"
 
 	"github.com/idlephysicist/cave-logger/internal/model"
 )
@@ -16,11 +16,11 @@ var inspectorFormat = map[string]string{
 }
 
 func (g *Gui) displayInspect(data, page string) {
-	text := tview.NewTextView()
-	text.SetTitle(" Detail ").SetTitleAlign(tview.AlignLeft)
+	text := cview.NewTextView()
+	text.SetTitle(" Detail ")
+	text.SetTitleAlign(cview.AlignLeft)
 	text.SetBorder(true)
 	text.SetText(data)
-
 	text.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc || event.Rune() == 'q' {
 			g.closeAndSwitchPanel("detail", page)
