@@ -8,5 +8,5 @@ type panel interface {
 	setKeybinding(*Gui)
 	focus(*Gui)
 	unfocus()
-	setFilter(string, string)
+	setFilter(string, string, string)
 }

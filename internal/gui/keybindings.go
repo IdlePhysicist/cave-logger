@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
@@ -29,7 +30,7 @@ func (g *Gui) setGlobalKeybinding(event *tcell.EventKey) {
 
 func (g *Gui) filter() {
 	currentPanel := g.state.panels.panel[g.state.panels.currentPanel]
-	currentPanel.setFilter("", "")
+	currentPanel.setFilter("", "", "")
 	currentPanel.updateEntries(g)
 
 	viewName := "filter"
@@ -61,7 +62,21 @@ func (g *Gui) filter() {
 			textSl := strings.Split(strings.ToLower(text), "/")
 
 			if len(textSl) == 2 {
-				currentPanel.setFilter(textSl[0], textSl[1])
+				currentPanel.setFilter(textSl[0], textSl[1], "")
+				currentPanel.updateEntries(g)
+			}
+		} else if strings.Contains(text, "<") {
+			textSl := strings.Split(strings.ToLower(text), "<")
+
+			if len(textSl) == 2 {
+				currentPanel.setFilter(textSl[0], textSl[1], "<")
+				currentPanel.updateEntries(g)
+			}
+		} else if strings.Contains(text, ">") {
+			textSl := strings.Split(strings.ToLower(text), ">")
+
+			if len(textSl) == 2 {
+				currentPanel.setFilter(textSl[0], textSl[1], ">")
 				currentPanel.updateEntries(g)
 			}
 		}
@@ -95,3 +110,11 @@ func (g *Gui) nextPage() {
 	g.goTo(g.selectPage(slide - 1, 0)) // NOTE: If the Highlight func is fixed for the tab bar then this line will not be required
 }
 */
+
+func atoi(s string) int64 {
+	v, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0
+	}
+	return v
+}
