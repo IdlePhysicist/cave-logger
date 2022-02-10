@@ -1,15 +1,18 @@
 package gui
 
-import tview "gitlab.com/tslocum/cview"
+import "code.rocketnine.space/tslocum/cview"
 
 type navigate struct {
-	*tview.TextView
+	*cview.TextView
 	keybindings map[string]string
 }
 
 func newNavigate() *navigate {
+	tv := cview.NewTextView()
+	tv.SetTextColor(cview.Styles.PrimaryTextColor)
+
 	navi := &navigate{
-		TextView: tview.NewTextView().SetTextColor(tview.Styles.PrimaryTextColor),
+		TextView: tv,
 		keybindings: map[string]string{
 			"trips":  " n: New Trip, m: Modify Trip,  d: Remove Trip, /: Filter, Enter: Inspect Detail ",
 			"caves":  " n: New Cave, m: Modify Cave, d: Remove Cave, /: Filter, Enter: Inspect Detail ",

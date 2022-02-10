@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	"code.rocketnine.space/tslocum/cview"
 	"github.com/gdamore/tcell/v2"
-	tview "gitlab.com/tslocum/cview"
 
 	"github.com/idlephysicist/cave-logger/internal/model"
 	"github.com/idlephysicist/cave-logger/internal/register"
@@ -27,7 +27,7 @@ type resources struct {
 type state struct {
 	panels    panels
 	navigate  *navigate
-	tabBar    *tview.TextView
+	tabBar    *cview.TextView
 	resources resources
 	stopChans map[string]chan int
 }
@@ -39,8 +39,8 @@ func newState() *state {
 }
 
 type Gui struct {
-	app   *tview.Application
-	pages *tview.Pages
+	app   *cview.Application
+	pages *cview.Pages
 	state *state
 	reg   *register.Register
 	//statsLocations *statsLocations
@@ -48,8 +48,8 @@ type Gui struct {
 
 func New(reg *register.Register) *Gui {
 	return &Gui{
-		app:   tview.NewApplication(),
-		pages: tview.NewPages(),
+		app:   cview.NewApplication(),
+		pages: cview.NewPages(),
 		state: newState(),
 		reg:   reg,
 	}
@@ -62,27 +62,27 @@ func (g *Gui) ProcessColors(colors map[string]string) {
 		}
 		switch color {
 		case "primitiveBackground":
-			tview.Styles.PrimitiveBackgroundColor = tcell.GetColor(hex)
+			cview.Styles.PrimitiveBackgroundColor = tcell.GetColor(hex)
 		case "contrastBackground":
-			tview.Styles.ContrastBackgroundColor = tcell.GetColor(hex)
+			cview.Styles.ContrastBackgroundColor = tcell.GetColor(hex)
 		case "moreContrastBackground":
-			tview.Styles.MoreContrastBackgroundColor = tcell.GetColor(hex)
+			cview.Styles.MoreContrastBackgroundColor = tcell.GetColor(hex)
 		case "border":
-			tview.Styles.BorderColor = tcell.GetColor(hex)
+			cview.Styles.BorderColor = tcell.GetColor(hex)
 		case "title":
-			tview.Styles.TitleColor = tcell.GetColor(hex)
+			cview.Styles.TitleColor = tcell.GetColor(hex)
 		case "graphics":
-			tview.Styles.GraphicsColor = tcell.GetColor(hex)
+			cview.Styles.GraphicsColor = tcell.GetColor(hex)
 		case "primaryText":
-			tview.Styles.PrimaryTextColor = tcell.GetColor(hex)
+			cview.Styles.PrimaryTextColor = tcell.GetColor(hex)
 		case "secondaryText":
-			tview.Styles.SecondaryTextColor = tcell.GetColor(hex)
+			cview.Styles.SecondaryTextColor = tcell.GetColor(hex)
 		case "tertiaryText":
-			tview.Styles.TertiaryTextColor = tcell.GetColor(hex)
+			cview.Styles.TertiaryTextColor = tcell.GetColor(hex)
 		case "inverseText":
-			tview.Styles.InverseTextColor = tcell.GetColor(hex)
+			cview.Styles.InverseTextColor = tcell.GetColor(hex)
 		case "contrastSecondaryText":
-			tview.Styles.ContrastSecondaryTextColor = tcell.GetColor(hex)
+			cview.Styles.ContrastSecondaryTextColor = tcell.GetColor(hex)
 		}
 	}
 }
@@ -153,16 +153,16 @@ func (g *Gui) initPanels() {
 	caves := newCaves(g)
 
 	/*
-	// NOTE: I would really like to get this working as it would be far neater.
-	// The issue is with the three pages being of different types.
-	// cannot use pg (type panel) as type tview.Primitive in argument to g.pages.AddPage:
-	// panel does not implement tview.Primitive (missing Blur method)
-	for idx, pg := range []panel{trips, cavers, caves} {
-		name := pg.name()
-		g.pages.AddPage(name, pg, true, idx == 0)
-		fmt.Fprintf(g.state.tabBar, ` %d ["%d"][darkcyan]%s[white][""]  `, idx+1, idx, strings.Title(name))
-	}
-	g.state.tabBar.Highlight("0")
+		// NOTE: I would really like to get this working as it would be far neater.
+		// The issue is with the three pages being of different types.
+		// cannot use pg (type panel) as type cview.Primitive in argument to g.pages.AddPage:
+		// panel does not implement cview.Primitive (missing Blur method)
+		for idx, pg := range []panel{trips, cavers, caves} {
+			name := pg.name()
+			g.pages.AddPage(name, pg, true, idx == 0)
+			fmt.Fprintf(g.state.tabBar, ` %d ["%d"][darkcyan]%s[white][""]  `, idx+1, idx, strings.Title(name))
+		}
+		g.state.tabBar.Highlight("0")
 	*/
 
 	// Add pages to the "book"
@@ -185,10 +185,11 @@ func (g *Gui) initPanels() {
 	g.state.navigate = statusBar
 
 	// Arange the windows / tiles
-	layout := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(g.state.tabBar, 1, 1, false).
-		AddItem(g.pages, 0, 16, true).
-		AddItem(statusBar, 1, 1, false)
+	layout := cview.NewFlex()
+	layout.SetDirection(cview.FlexRow)
+	layout.AddItem(g.state.tabBar, 1, 1, false)
+	layout.AddItem(g.pages, 0, 16, true)
+	layout.AddItem(statusBar, 1, 1, false)
 
 	g.app.SetRoot(layout, true)
 	g.goTo(`trips`)
@@ -205,7 +206,8 @@ func (g *Gui) switchPanel(panelName string) {
 			g.state.navigate.update(panelName)
 			panel.focus(g)
 			g.state.panels.currentPanel = i
-			g.state.tabBar.Highlight(strconv.Itoa(i)).ScrollToHighlight()
+			g.state.tabBar.Highlight(strconv.Itoa(i))
+			g.state.tabBar.ScrollToHighlight()
 		} else {
 			panel.unfocus()
 		}
@@ -213,7 +215,8 @@ func (g *Gui) switchPanel(panelName string) {
 }
 
 func (g *Gui) closeAndSwitchPanel(removePanel, switchTo string) {
-	g.pages.RemovePage(removePanel).ShowPage("main")
+	g.pages.RemovePage(removePanel)
+	g.pages.ShowPage("main")
 	num := 0
 	switch switchTo {
 	case `cavers`:
@@ -230,23 +233,24 @@ func (g *Gui) currentPage() int {
 	return g.state.panels.currentPanel
 }
 
-func (g *Gui) modal(p tview.Primitive, width, height int) tview.Primitive {
-	return tview.NewGrid().
-		SetColumns(0, width, 0).
-		SetRows(0, height, 0).
-		AddItem(p, 1, 1, 1, 1, 0, 0, true)
+func (g *Gui) modal(p cview.Primitive, width, height int) cview.Primitive {
+	grid := cview.NewGrid()
+	grid.SetColumns(0, width, 0)
+	grid.SetRows(0, height, 0)
+	grid.AddItem(p, 1, 1, 1, 1, 0, 0, true)
+	return grid
 }
 
 func (g *Gui) warning(message, page string, labels []string, doneFunc func()) {
-	modal := tview.NewModal().
-		SetText(message).
-		AddButtons(labels).
-		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			g.closeAndSwitchPanel("modal", page)
-			if buttonLabel == labels[0] {
-				doneFunc()
-			}
-		})
+	modal := cview.NewModal()
+	modal.SetText(message)
+	modal.AddButtons(labels)
+	modal.SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+		g.closeAndSwitchPanel("modal", page)
+		if buttonLabel == labels[0] {
+			doneFunc()
+		}
+	})
 
 	g.pages.AddAndSwitchToPage("modal", g.modal(modal, 80, 29), true)
 }

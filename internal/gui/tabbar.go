@@ -1,12 +1,11 @@
 package gui
 
-import (
-	tview "gitlab.com/tslocum/cview"
-)
+import "code.rocketnine.space/tslocum/cview"
 
-func newTabBar(g *Gui) *tview.TextView {
-	return tview.NewTextView().
-		SetDynamicColors(true).
-		SetRegions(true).
-		SetWrap(false)
+func newTabBar(g *Gui) (t *cview.TextView) {
+	t = cview.NewTextView()
+	t.SetDynamicColors(true)
+	t.SetRegions(true)
+	t.SetWrap(false)
+	return
 }
