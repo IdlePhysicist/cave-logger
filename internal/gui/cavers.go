@@ -13,7 +13,7 @@ import (
 
 type cavers struct {
 	*cview.Table
-	filterCol, filterTerm string
+	filterCol, filterTerm, filterAction string
 }
 
 func newCavers(g *Gui) *cavers {

@@ -12,7 +12,7 @@ import (
 
 type trips struct {
 	*cview.Table
-	filterCol, filterTerm string
+	filterCol, filterTerm, filterAction string
 }
 
 func newTrips(g *Gui) *trips {
