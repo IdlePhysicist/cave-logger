@@ -5,28 +5,26 @@ import (
 	"strings"
 	"time"
 
+	"code.rocketnine.space/tslocum/cview"
 	"github.com/gdamore/tcell/v2"
-	tview "gitlab.com/tslocum/cview"
 
 	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 type caves struct {
-	*tview.Table
-	caves                               chan *model.Cave
-	filterCol, filterTerm, filterAction string
+	*cview.Table
+	filterCol, filterTerm string
 }
 
 func newCaves(g *Gui) *caves {
-	caves := &caves{
-		Table: tview.NewTable().
-			SetScrollBarVisibility(tview.ScrollBarNever).
-			SetSelectable(true, false).
-			Select(0, 0).
-			SetFixed(1, 1),
-	}
+	t := cview.NewTable()
+	t.SetScrollBarVisibility(cview.ScrollBarNever)
+	t.SetSelectable(true, false)
+	t.SetSortClicked(false)
+	t.Select(0, 0)
+	t.SetFixed(1, 1)
 
-	caves.SetTitle(``).SetTitleAlign(tview.AlignLeft)
+	caves := &caves{Table: t}
 	caves.SetBorder(true)
 	caves.setEntries(g)
 	caves.setKeybinding(g)
@@ -80,59 +78,68 @@ func (c *caves) entries(g *Gui) {
 
 func (c *caves) setEntries(g *Gui) {
 	c.entries(g)
-	table := c.Clear()
+	c.Clear()
 
-	headers := []string{
-		"Name",
-		"Region",
-		"Country",
-		"SRT",
-		"Visits",
-		"Last Visit",
+	headers := [][]byte{
+		[]byte("Name"),
+		[]byte("Region"),
+		[]byte("Country"),
+		[]byte("SRT"),
+		[]byte("Visits"),
+		[]byte("Last Visit"),
 	}
 
 	for i, header := range headers {
-		table.SetCell(0, i, &tview.TableCell{
+		c.SetCell(0, i, &cview.TableCell{
 			Text:            header,
 			NotSelectable:   true,
-			Align:           tview.AlignLeft,
-			Color:           tview.Styles.PrimaryTextColor,
-			BackgroundColor: tview.Styles.PrimitiveBackgroundColor,
+			Align:           cview.AlignLeft,
+			Color:           cview.Styles.PrimaryTextColor,
+			BackgroundColor: cview.Styles.PrimitiveBackgroundColor,
 			Attributes:      tcell.AttrBold,
 		})
 	}
 
+	var cell *cview.TableCell
 	for i, cave := range g.state.resources.locations {
-		table.SetCell(i+1, 0, tview.NewTableCell(cave.Name).
-			SetTextColor(tview.Styles.PrimaryTextColor).
-			SetMaxWidth(30).
-			SetExpansion(1))
+		cell = cview.NewTableCell(cave.Name)
+		cell.SetTextColor(cview.Styles.PrimaryTextColor)
+		cell.SetMaxWidth(30)
+		cell.SetExpansion(1)
+		c.SetCell(i+1, 0, cell)
 
-		table.SetCell(i+1, 1, tview.NewTableCell(cave.Region).
-			SetTextColor(tview.Styles.PrimaryTextColor).
-			SetMaxWidth(30).
-			SetExpansion(1))
+		cell = cview.NewTableCell(cave.Region)
+		cell.SetTextColor(cview.Styles.PrimaryTextColor)
+		cell.SetMaxWidth(30)
+		cell.SetExpansion(1)
+		c.SetCell(i+1, 1, cell)
 
-		table.SetCell(i+1, 2, tview.NewTableCell(cave.Country).
-			SetTextColor(tview.Styles.PrimaryTextColor).
-			SetMaxWidth(0).
-			SetExpansion(1))
+		cell = cview.NewTableCell(cave.Country)
+		cell.SetTextColor(cview.Styles.PrimaryTextColor)
+		cell.SetMaxWidth(0)
+		cell.SetExpansion(1)
+		c.SetCell(i+1, 2, cell)
 
-		table.SetCell(i+1, 3, tview.NewTableCell(yesOrNo(cave.SRT)).
-			SetTextColor(tview.Styles.PrimaryTextColor).
-			SetMaxWidth(0).
-			SetExpansion(1))
+		cell = cview.NewTableCell(yesOrNo(cave.SRT))
+		cell.SetTextColor(cview.Styles.PrimaryTextColor)
+		cell.SetMaxWidth(0)
+		cell.SetExpansion(1)
+		c.SetCell(i+1, 3, cell)
 
-		table.SetCell(i+1, 4, tview.NewTableCell(strconv.FormatInt(cave.Visits, 10)).
-			SetTextColor(tview.Styles.PrimaryTextColor).
-			SetMaxWidth(0).
-			SetExpansion(1))
+		cell = cview.NewTableCell(strconv.FormatInt(cave.Visits, 10))
+		cell.SetTextColor(cview.Styles.PrimaryTextColor)
+		cell.SetMaxWidth(0)
+		cell.SetExpansion(1)
+		c.SetCell(i+1, 4, cell)
 
-		table.SetCell(i+1, 5, tview.NewTableCell(cave.LastVisit).
-			SetTextColor(tview.Styles.PrimaryTextColor).
-			SetMaxWidth(0).
-			SetExpansion(1))
+		cell = cview.NewTableCell(cave.LastVisit)
+		cell.SetTextColor(cview.Styles.PrimaryTextColor)
+		cell.SetMaxWidth(0)
+		cell.SetExpansion(1)
+		c.SetCell(i+1, 5, cell)
 	}
+
+	c.Select(1, 1)
 }
 
 func (c *caves) updateEntries(g *Gui) {

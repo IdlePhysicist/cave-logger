@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	tview "gitlab.com/tslocum/cview"
+	"code.rocketnine.space/tslocum/cview"
 )
 
 var inputWidth = 70
@@ -13,22 +13,22 @@ var inputWidth = 70
 //
 // CREATE FUNCS
 func (g *Gui) createTripForm() {
-	form := tview.NewForm()
+	form := cview.NewForm()
 	form.SetBorder(true)
 	form.SetTitle(" Add Trip ")
-	form.SetTitleAlign(tview.AlignLeft)
+	form.SetTitleAlign(cview.AlignLeft)
 
-	caveField := tview.NewInputField().
-		SetLabel("Cave").
-		SetFieldWidth(inputWidth)
-	caveField.SetAutocompleteFunc(func(current string) (matches []string) {
+	caveField := cview.NewInputField()
+	caveField.SetLabel("Cave")
+	caveField.SetFieldWidth(inputWidth)
+	caveField.SetAutocompleteFunc(func(current string) (matches []*cview.ListItem) {
 		if len(current) == 0 {
 			return
 		}
 
 		for _, location := range g.state.resources.locations {
 			if strings.HasPrefix(strings.ToLower(location.Name), strings.ToLower(current)) {
-				matches = append(matches, location.Name)
+				matches = append(matches, cview.NewListItem(location.Name))
 			}
 		}
 
@@ -36,12 +36,12 @@ func (g *Gui) createTripForm() {
 	})
 
 	// Caver Field
-	caverField := tview.NewInputField().
-		SetLabel("Names").
-		SetFieldWidth(inputWidth)
-	caverField.SetAutocompleteFunc(func(current string) (matches []string) {
+	caverField := cview.NewInputField()
+	caverField.SetLabel("Names")
+	caverField.SetFieldWidth(inputWidth)
+	caverField.SetAutocompleteFunc(func(current string) (matches []*cview.ListItem) {
 		if len(current) == 0 {
-			return []string{``}
+			return
 		}
 
 		names := strings.Split(current, `,`)
@@ -61,14 +61,18 @@ func (g *Gui) createTripForm() {
 		lastPart = strings.TrimPrefix(lastPart, ` `) // We should still trim whitespace
 
 		if len(lastPart) == 0 {
-			return []string{``}
+			return
 		}
 
 		for _, caver := range g.state.resources.people {
 			if strings.HasPrefix(strings.ToLower(caver.Name), strings.ToLower(lastPart)) {
 				matches = append(
 					matches,
-					fmt.Sprintf("%s%s", textFactory(names[0:len(names)-1], `, `), caver.Name),
+					cview.NewListItem(
+						fmt.Sprintf(
+							"%s%s", textFactory(names[0:len(names)-1], `, `), caver.Name,
+						),
+					),
 				)
 			}
 		}
@@ -76,28 +80,27 @@ func (g *Gui) createTripForm() {
 		return
 	})
 
-	form.
-		AddInputField("Date", time.Now().Format(`2006-01-02`), inputWidth, nil, nil).
-		AddFormItem(caveField).
-		AddFormItem(caverField).
-		AddInputField("Notes", "", inputWidth, nil, nil).
-		AddButton("Add", func() {
-			g.createTrip(form)
-		}).
-		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "trips")
-		})
+	form.AddInputField("Date", time.Now().Format(`2006-01-02`), inputWidth, nil, nil)
+	form.AddFormItem(caveField)
+	form.AddFormItem(caverField)
+	form.AddInputField("Notes", "", inputWidth, nil, nil)
+	form.AddButton("Add", func() {
+		g.createTrip(form)
+	})
+	form.AddButton("Cancel", func() {
+		g.closeAndSwitchPanel("form", "trips")
+	})
 
 	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true) //.ShowPage("main")
 	//REVIEW: main or trips ? ^^
 }
 
-func (g *Gui) createTrip(form *tview.Form) {
+func (g *Gui) createTrip(form *cview.Form) {
 	err := g.reg.AddTrip(
-		form.GetFormItemByLabel("Date").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Cave").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Names").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("Date").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Cave").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Names").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Notes").(*cview.InputField).GetText(),
 	)
 	if err != nil { // NOTE: Needs fixing
 		g.warning(err.Error(), `form`, []string{`OK`}, func() { return })
@@ -109,66 +112,65 @@ func (g *Gui) createTrip(form *tview.Form) {
 }
 
 func (g *Gui) createLocationForm() {
-	form := tview.NewForm()
+	form := cview.NewForm()
 	form.SetBorder(true)
 	form.SetTitle(" Add Location ")
-	form.SetTitleAlign(tview.AlignLeft)
+	form.SetTitleAlign(cview.AlignLeft)
 
-	regionField := tview.NewInputField().
-		SetLabel("Region").
-		SetFieldWidth(inputWidth)
-	regionField.SetAutocompleteFunc(func(current string) (matches []string) {
+	regionField := cview.NewInputField()
+	regionField.SetLabel("Region")
+	regionField.SetFieldWidth(inputWidth)
+	regionField.SetAutocompleteFunc(func(current string) (matches []*cview.ListItem) {
 		if len(current) == 0 {
 			return
 		}
 
 		for _, region := range g.uniqueRegion(g.state.resources.locations) {
 			if strings.HasPrefix(strings.ToLower(region), strings.ToLower(current)) {
-				matches = append(matches, region)
+				matches = append(matches, cview.NewListItem(region))
 			}
 		}
 		return
 	})
 
-	countryField := tview.NewInputField().
-		SetLabel("Country").
-		SetFieldWidth(inputWidth)
-	countryField.SetAutocompleteFunc(func(current string) (matches []string) {
+	countryField := cview.NewInputField()
+	countryField.SetLabel("Country")
+	countryField.SetFieldWidth(inputWidth)
+	countryField.SetAutocompleteFunc(func(current string) (matches []*cview.ListItem) {
 		if len(current) == 0 {
 			return
 		}
 
 		for _, country := range g.uniqueCountry(g.state.resources.locations) {
 			if strings.HasPrefix(strings.ToLower(country), strings.ToLower(current)) {
-				matches = append(matches, country)
+				matches = append(matches, cview.NewListItem(country))
 			}
 		}
 		return
 	})
 
-	form.
-		AddInputField("Name", "", inputWidth, nil, nil).
-		AddFormItem(regionField).
-		AddFormItem(countryField).
-		AddCheckBox("SRT", "", false, nil).
-		AddInputField("Notes", "", inputWidth, nil, nil).
-		AddButton("Add", func() {
-			g.createLocation(form)
-		}).
-		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "caves")
-		})
+	form.AddInputField("Name", "", inputWidth, nil, nil)
+	form.AddFormItem(regionField)
+	form.AddFormItem(countryField)
+	form.AddCheckBox("SRT", "", false, nil)
+	form.AddInputField("Notes", "", inputWidth, nil, nil)
+	form.AddButton("Add", func() {
+		g.createLocation(form)
+	})
+	form.AddButton("Cancel", func() {
+		g.closeAndSwitchPanel("form", "caves")
+	})
 
 	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
 }
 
-func (g *Gui) createLocation(form *tview.Form) {
+func (g *Gui) createLocation(form *cview.Form) {
 	err := g.reg.AddCave(
-		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Region").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Country").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("SRT").(*tview.CheckBox).IsChecked(),
+		form.GetFormItemByLabel("Name").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Region").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Country").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Notes").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("SRT").(*cview.CheckBox).IsChecked(),
 	)
 	if err != nil { // NOTE: Needs fixing
 		g.warning(err.Error(), `form`, []string{`OK`}, func() { return })
@@ -180,47 +182,46 @@ func (g *Gui) createLocation(form *tview.Form) {
 }
 
 func (g *Gui) createPersonForm() {
-	form := tview.NewForm()
+	form := cview.NewForm()
 	form.SetBorder(true)
 	form.SetTitle(" Add Person ")
-	form.SetTitleAlign(tview.AlignLeft)
+	form.SetTitleAlign(cview.AlignLeft)
 
-	clubField := tview.NewInputField().
-		SetLabel("Club").
-		SetFieldWidth(inputWidth)
-	clubField.SetAutocompleteFunc(func(current string) (matches []string) {
+	clubField := cview.NewInputField()
+	clubField.SetLabel("Club")
+	clubField.SetFieldWidth(inputWidth)
+	clubField.SetAutocompleteFunc(func(current string) (matches []*cview.ListItem) {
 		if len(current) == 0 {
 			return
 		}
 
 		for _, club := range g.uniqueClubs(g.state.resources.people) {
 			if strings.HasPrefix(strings.ToLower(club), strings.ToLower(current)) {
-				matches = append(matches, club)
+				matches = append(matches, cview.NewListItem(club))
 			}
 		}
 
 		return
 	})
 
-	form.
-		AddInputField("Name", "", inputWidth, nil, nil).
-		AddFormItem(clubField).
-		AddInputField("Notes", "", inputWidth, nil, nil).
-		AddButton("Add", func() {
-			g.createPerson(form)
-		}).
-		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "cavers")
-		})
+	form.AddInputField("Name", "", inputWidth, nil, nil)
+	form.AddFormItem(clubField)
+	form.AddInputField("Notes", "", inputWidth, nil, nil)
+	form.AddButton("Add", func() {
+		g.createPerson(form)
+	})
+	form.AddButton("Cancel", func() {
+		g.closeAndSwitchPanel("form", "cavers")
+	})
 
 	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
 }
 
-func (g *Gui) createPerson(form *tview.Form) {
+func (g *Gui) createPerson(form *cview.Form) {
 	err := g.reg.AddCaver(
-		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Club").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("Name").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Club").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Notes").(*cview.InputField).GetText(),
 	)
 	if err != nil { // NOTE: Needs fixing
 		g.warning(err.Error(), `form`, []string{`OK`}, func() { return })
@@ -238,27 +239,27 @@ func (g *Gui) modifyTripForm() {
 	selectedTrip := g.selectedTrip()
 
 	// Populate the form
-	form := tview.NewForm()
+	form := cview.NewForm()
 	form.SetBorder(true)
 	form.SetTitle(" Modify Trip ")
-	form.SetTitleAlign(tview.AlignLeft)
+	form.SetTitleAlign(cview.AlignLeft)
 
-	caveField := tview.NewInputField().
-		SetLabel("Cave").
-		SetFieldWidth(inputWidth).
-		SetText(selectedTrip.Cave)
-	caveField.SetAutocompleteFunc(func(current string) (matches []string) {
+	caveField := cview.NewInputField()
+	caveField.SetLabel("Cave")
+	caveField.SetFieldWidth(inputWidth)
+	caveField.SetText(selectedTrip.Cave)
+	caveField.SetAutocompleteFunc(func(current string) (matches []*cview.ListItem) {
 		if len(current) == 0 {
 			return
 		}
 
 		for _, location := range g.state.resources.locations {
 			if strings.HasPrefix(strings.ToLower(location.Name), strings.ToLower(current)) {
-				matches = append(matches, location.Name)
+				matches = append(matches, cview.NewListItem(location.Name))
 			}
 		}
 
-		if len(matches) <= 1 || matches[0] == current {
+		if len(matches) <= 1 || matches[0].GetMainText() == current {
 			matches = nil
 		}
 
@@ -266,13 +267,13 @@ func (g *Gui) modifyTripForm() {
 	})
 
 	// Caver Field
-	caverField := tview.NewInputField().
-		SetLabel("Names").
-		SetFieldWidth(inputWidth).
-		SetText(selectedTrip.Names)
-	caverField.SetAutocompleteFunc(func(current string) (matches []string) {
+	caverField := cview.NewInputField()
+	caverField.SetLabel("Names")
+	caverField.SetFieldWidth(inputWidth)
+	caverField.SetText(selectedTrip.Names)
+	caverField.SetAutocompleteFunc(func(current string) (matches []*cview.ListItem) {
 		if len(current) == 0 {
-			return []string{``}
+			return
 		}
 
 		names := strings.Split(current, `,`)
@@ -292,14 +293,16 @@ func (g *Gui) modifyTripForm() {
 		lastPart = strings.TrimPrefix(lastPart, ` `) // We should still trim whitespace
 
 		if len(lastPart) == 0 {
-			return []string{``}
+			return
 		}
 
 		for _, caver := range g.state.resources.people {
 			if strings.HasPrefix(strings.ToLower(caver.Name), strings.ToLower(lastPart)) {
 				matches = append(
 					matches,
-					fmt.Sprintf("%s%s", textFactory(names[0:len(names)-1], `, `), caver.Name),
+					cview.NewListItem(
+						fmt.Sprintf("%s%s", textFactory(names[0:len(names)-1], `, `), caver.Name),
+					),
 				)
 			}
 		}
@@ -307,28 +310,27 @@ func (g *Gui) modifyTripForm() {
 		return
 	})
 
-	form.
-		AddInputField("Date", selectedTrip.Date, inputWidth, nil, nil).
-		AddFormItem(caveField).
-		AddFormItem(caverField).
-		AddInputField("Notes", selectedTrip.Notes, inputWidth, nil, nil).
-		AddButton("Apply", func() {
-			g.modifyTrip(selectedTrip.ID, form)
-		}).
-		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "trips")
-		})
+	form.AddInputField("Date", selectedTrip.Date, inputWidth, nil, nil)
+	form.AddFormItem(caveField)
+	form.AddFormItem(caverField)
+	form.AddInputField("Notes", selectedTrip.Notes, inputWidth, nil, nil)
+	form.AddButton("Apply", func() {
+		g.modifyTrip(selectedTrip.ID, form)
+	})
+	form.AddButton("Cancel", func() {
+		g.closeAndSwitchPanel("form", "trips")
+	})
 
 	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
 }
 
-func (g *Gui) modifyTrip(id string, form *tview.Form) {
+func (g *Gui) modifyTrip(id string, form *cview.Form) {
 	err := g.reg.ModifyTrip(
 		id,
-		form.GetFormItemByLabel("Date").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Cave").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Names").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("Date").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Cave").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Names").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Notes").(*cview.InputField).GetText(),
 	)
 	if err != nil {
 		g.warning(err.Error(), `form`, []string{`OK`}, func() { return })
@@ -344,49 +346,48 @@ func (g *Gui) modifyPersonForm() {
 	selectedPerson := g.selectedPerson()
 
 	// Populate the form
-	form := tview.NewForm()
+	form := cview.NewForm()
 	form.SetBorder(true)
 	form.SetTitle(" Modify Person ")
-	form.SetTitleAlign(tview.AlignLeft)
+	form.SetTitleAlign(cview.AlignLeft)
 
-	clubField := tview.NewInputField().
-		SetLabel("Club").
-		SetFieldWidth(inputWidth).
-		SetText(selectedPerson.Club)
-	clubField.SetAutocompleteFunc(func(current string) (matches []string) {
+	clubField := cview.NewInputField()
+	clubField.SetLabel("Club")
+	clubField.SetFieldWidth(inputWidth)
+	clubField.SetText(selectedPerson.Club)
+	clubField.SetAutocompleteFunc(func(current string) (matches []*cview.ListItem) {
 		if len(current) == 0 {
 			return
 		}
 
 		for _, club := range g.uniqueClubs(g.state.resources.people) {
 			if strings.HasPrefix(strings.ToLower(club), strings.ToLower(current)) {
-				matches = append(matches, club)
+				matches = append(matches, cview.NewListItem(club))
 			}
 		}
 
 		return
 	})
 
-	form.
-		AddInputField("Name", selectedPerson.Name, inputWidth, nil, nil).
-		AddFormItem(clubField).
-		AddInputField("Notes", selectedPerson.Notes, inputWidth, nil, nil).
-		AddButton("Apply", func() {
-			g.modifyPerson(selectedPerson.ID, form)
-		}).
-		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "cavers")
-		})
+	form.AddInputField("Name", selectedPerson.Name, inputWidth, nil, nil)
+	form.AddFormItem(clubField)
+	form.AddInputField("Notes", selectedPerson.Notes, inputWidth, nil, nil)
+	form.AddButton("Apply", func() {
+		g.modifyPerson(selectedPerson.ID, form)
+	})
+	form.AddButton("Cancel", func() {
+		g.closeAndSwitchPanel("form", "cavers")
+	})
 
 	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
 }
 
-func (g *Gui) modifyPerson(id string, form *tview.Form) {
+func (g *Gui) modifyPerson(id string, form *cview.Form) {
 	err := g.reg.ModifyCaver(
 		id,
-		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Club").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
+		form.GetFormItemByLabel("Name").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Club").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Notes").(*cview.InputField).GetText(),
 	)
 	if err != nil {
 		g.warning(err.Error(), `form`, []string{`OK`}, func() { return })
@@ -402,69 +403,68 @@ func (g *Gui) modifyLocationForm() {
 	selectedLocation := g.selectedLocation()
 
 	// Populate the form
-	form := tview.NewForm()
+	form := cview.NewForm()
 	form.SetBorder(true)
 	form.SetTitle(" Modify Location ")
-	form.SetTitleAlign(tview.AlignLeft)
+	form.SetTitleAlign(cview.AlignLeft)
 
-	regionField := tview.NewInputField().
-		SetLabel("Region").
-		SetFieldWidth(inputWidth).
-		SetText(selectedLocation.Region)
-	regionField.SetAutocompleteFunc(func(current string) (matches []string) {
+	regionField := cview.NewInputField()
+	regionField.SetLabel("Region")
+	regionField.SetFieldWidth(inputWidth)
+	regionField.SetText(selectedLocation.Region)
+	regionField.SetAutocompleteFunc(func(current string) (matches []*cview.ListItem) {
 		if len(current) == 0 {
 			return
 		}
 
 		for _, region := range g.uniqueRegion(g.state.resources.locations) {
 			if strings.HasPrefix(strings.ToLower(region), strings.ToLower(current)) {
-				matches = append(matches, region)
+				matches = append(matches, cview.NewListItem(region))
 			}
 		}
 		return
 	})
 
-	countryField := tview.NewInputField().
-		SetLabel("Country").
-		SetFieldWidth(inputWidth).
-		SetText(selectedLocation.Country)
-	countryField.SetAutocompleteFunc(func(current string) (matches []string) {
+	countryField := cview.NewInputField()
+	countryField.SetLabel("Country")
+	countryField.SetFieldWidth(inputWidth)
+	countryField.SetText(selectedLocation.Country)
+	countryField.SetAutocompleteFunc(func(current string) (matches []*cview.ListItem) {
 		if len(current) == 0 {
 			return
 		}
 
 		for _, country := range g.uniqueCountry(g.state.resources.locations) {
 			if strings.HasPrefix(strings.ToLower(country), strings.ToLower(current)) {
-				matches = append(matches, country)
+				matches = append(matches, cview.NewListItem(country))
 			}
 		}
 		return
 	})
 
-	form.
-		AddInputField("Name", selectedLocation.Name, inputWidth, nil, nil).
-		AddFormItem(regionField).
-		AddFormItem(countryField).
-		AddCheckBox("SRT", "", selectedLocation.SRT, nil).
-		AddInputField("Notes", selectedLocation.Notes, inputWidth, nil, nil).
-		AddButton("Apply", func() {
-			g.modifyLocation(selectedLocation.ID, form)
-		}).
-		AddButton("Cancel", func() {
-			g.closeAndSwitchPanel("form", "caves")
-		})
+	form.AddInputField("Name", selectedLocation.Name, inputWidth, nil, nil)
+	form.AddFormItem(regionField)
+	form.AddFormItem(countryField)
+	form.AddCheckBox("SRT", "", selectedLocation.SRT, nil)
+	form.AddInputField("Notes", selectedLocation.Notes, inputWidth, nil, nil)
+	form.AddButton("Apply", func() {
+		g.modifyLocation(selectedLocation.ID, form)
+	})
+	form.AddButton("Cancel", func() {
+		g.closeAndSwitchPanel("form", "caves")
+	})
 
 	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
 }
 
-func (g *Gui) modifyLocation(id string, form *tview.Form) {
+func (g *Gui) modifyLocation(id string, form *cview.Form) {
 	err := g.reg.ModifyCave(
 		id,
-		form.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Region").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Country").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("Notes").(*tview.InputField).GetText(),
-		form.GetFormItemByLabel("SRT").(*tview.CheckBox).IsChecked(),
+		form.GetFormItemByLabel("Name").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Region").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Country").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("Notes").(*cview.InputField).GetText(),
+		form.GetFormItemByLabel("SRT").(*cview.CheckBox).IsChecked(),
 	)
 	if err != nil {
 		g.warning(err.Error(), `form`, []string{`OK`}, func() { return })

@@ -5,28 +5,26 @@ import (
 	"strings"
 	"time"
 
+	"code.rocketnine.space/tslocum/cview"
 	"github.com/gdamore/tcell/v2"
-	tview "gitlab.com/tslocum/cview"
 
 	"github.com/idlephysicist/cave-logger/internal/model"
 )
 
 type cavers struct {
-	*tview.Table
-	cavers                              chan *model.Caver
-	filterCol, filterTerm, filterAction string
+	*cview.Table
+	filterCol, filterTerm string
 }
 
 func newCavers(g *Gui) *cavers {
-	cavers := &cavers{
-		Table: tview.NewTable().
-			SetScrollBarVisibility(tview.ScrollBarNever).
-			SetSelectable(true, false).
-			Select(0, 0).
-			SetFixed(1, 1),
-	}
+	t := cview.NewTable()
+	t.SetScrollBarVisibility(cview.ScrollBarNever)
+	t.SetSelectable(true, false)
+	t.SetSortClicked(false)
+	t.Select(0, 0)
+	t.SetFixed(1, 1)
 
-	cavers.SetTitle(``).SetTitleAlign(tview.AlignLeft)
+	cavers := &cavers{Table: t}
 	cavers.SetBorder(true)
 	cavers.setEntries(g)
 	cavers.setKeybinding(g)
@@ -64,47 +62,54 @@ func (c *cavers) setKeybinding(g *Gui) {
 
 func (c *cavers) setEntries(g *Gui) {
 	c.entries(g)
-	table := c.Clear()
+	c.Clear()
 
-	headers := []string{
-		"Name",
-		"Club",
-		"Count",
-		"Last Trip",
+	headers := [][]byte{
+		[]byte("Name"),
+		[]byte("Club"),
+		[]byte("Count"),
+		[]byte("Last Trip"),
 	}
 
 	for i, header := range headers {
-		table.SetCell(0, i, &tview.TableCell{
+		c.SetCell(0, i, &cview.TableCell{
 			Text:            header,
 			NotSelectable:   true,
-			Align:           tview.AlignLeft,
-			Color:           tview.Styles.PrimaryTextColor,
-			BackgroundColor: tview.Styles.PrimitiveBackgroundColor,
+			Align:           cview.AlignLeft,
+			Color:           cview.Styles.PrimaryTextColor,
+			BackgroundColor: cview.Styles.PrimitiveBackgroundColor,
 			Attributes:      tcell.AttrBold,
 		})
 	}
 
+	var cell *cview.TableCell
 	for i, caver := range g.state.resources.people {
-		table.SetCell(i+1, 0, tview.NewTableCell(caver.Name).
-			SetTextColor(tview.Styles.PrimaryTextColor).
-			SetMaxWidth(30).
-			SetExpansion(1))
+		cell = cview.NewTableCell(caver.Name)
+		cell.SetTextColor(cview.Styles.PrimaryTextColor)
+		cell.SetMaxWidth(30)
+		cell.SetExpansion(1)
+		c.SetCell(i+1, 0, cell)
 
-		table.SetCell(i+1, 1, tview.NewTableCell(caver.Club).
-			SetTextColor(tview.Styles.PrimaryTextColor).
-			SetMaxWidth(0).
-			SetExpansion(1))
+		cell = cview.NewTableCell(caver.Club)
+		cell.SetTextColor(cview.Styles.PrimaryTextColor)
+		cell.SetMaxWidth(0)
+		cell.SetExpansion(1)
+		c.SetCell(i+1, 1, cell)
 
-		table.SetCell(i+1, 2, tview.NewTableCell(strconv.FormatInt(caver.Count, 10)).
-			SetTextColor(tview.Styles.PrimaryTextColor).
-			SetMaxWidth(0).
-			SetExpansion(1))
+		cell = cview.NewTableCell(strconv.FormatInt(caver.Count, 10))
+		cell.SetTextColor(cview.Styles.PrimaryTextColor)
+		cell.SetMaxWidth(0)
+		cell.SetExpansion(1)
+		c.SetCell(i+1, 2, cell)
 
-		table.SetCell(i+1, 3, tview.NewTableCell(caver.LastTrip).
-			SetTextColor(tview.Styles.PrimaryTextColor).
-			SetMaxWidth(0).
-			SetExpansion(1))
+		cell = cview.NewTableCell(caver.LastTrip)
+		cell.SetTextColor(cview.Styles.PrimaryTextColor)
+		cell.SetMaxWidth(0)
+		cell.SetExpansion(1)
+		c.SetCell(i+1, 3, cell)
 	}
+
+	c.Select(1, 1)
 }
 
 func (c *cavers) updateEntries(g *Gui) {
