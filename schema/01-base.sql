@@ -57,6 +57,7 @@ CREATE TABLE trip_group (
     caverid INTEGER NOT NULL,
     FOREIGN KEY (tripid) REFERENCES trip (id)
     FOREIGN KEY (caverid) REFERENCES caver (id)
+    UNIQUE (tripid, caverid)
 );
 
 DROP TRIGGER IF EXISTS trip_group_stats_insert;
@@ -104,7 +105,8 @@ CREATE TABLE cave (
     region TEXT,
     country TEXT,
     srt INTEGER NOT NULL,
-    notes BLOB
+    notes BLOB,
+    UNIQUE (name, region, country)
 );
 
 --------------------------------------------------------------------------------
@@ -114,7 +116,8 @@ CREATE TABLE caver (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     club TEXT,
-    notes BLOB
+    notes BLOB,
+    UNIQUE (name, club)
 );
 
 --------------------------------------------------------------------------------
@@ -123,5 +126,6 @@ DROP TABLE IF EXISTS stats;
 CREATE TABLE stats (
     kind TEXT NOT NULL,
     value INTEGER NOT NULL,
-    count INTEGER NOT NULL
+    count INTEGER NOT NULL,
+    UNIQUE (kind, value)
 );
