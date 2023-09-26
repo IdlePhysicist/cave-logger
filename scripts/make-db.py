@@ -73,7 +73,7 @@ tables = [
   {
     "name" : "trips",
     "cols" : ["id","date","caveid","notes"],
-    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","INTEGER","INTEGER","INTEGER","TEXT"]
+    "types": ["INTEGER PRIMARY KEY AUTOINCREMENT","INTEGER","INTEGER","TEXT"]
   },
   {
     "name" : "locations",
