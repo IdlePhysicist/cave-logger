@@ -8,7 +8,7 @@ import (
 
 // For retrieving the ID of a cave from the `locations` table.
 func (reg *Register) getCaveID(cave string) (int, error) {
-	result, err := reg.db.Query(`SELECT id FROM locations WHERE name == ?`, cave)
+	result, err := reg.db.Query(`SELECT id FROM cave WHERE name == ?`, cave)
 	if err != nil {
 		return 0, err
 	}
@@ -54,21 +54,13 @@ func (reg *Register) getCaverIDs(names string) ([]string, error) {
 	return caverIDs, nil
 }
 
-// For processing dates into UNIX timestamps
-func unixTimestamp(date string) (int64, error) {
-	d, err := time.Parse(datetime, strings.Join([]string{date, `12:00:00Z`}, `T`))
-	if err != nil {
-		return -1, err
-	}
-
-	return d.Unix(), nil
-}
-
-func (reg *Register) verifyTrip(date, location, names, notes string) ([]interface{}, []string, error) {
+func (reg *Register) verifyTrip(date, location, names, notes string) (
+	[]interface{}, []string, error,
+) {
 	var peopleIDs []string
 
 	// Conv the date to unix time
-	dateStamp, err := unixTimestamp(date)
+	_, err := time.Parse(dateFormat, date)
 	if err != nil {
 		return []interface{}{}, peopleIDs, err
 	}
@@ -85,5 +77,5 @@ func (reg *Register) verifyTrip(date, location, names, notes string) ([]interfac
 		return []interface{}{}, peopleIDs, err
 	}
 
-	return []interface{}{dateStamp, locationID, notes}, peopleIDs, nil
+	return []interface{}{date, locationID, notes}, peopleIDs, nil
 }
