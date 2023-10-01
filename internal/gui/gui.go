@@ -3,14 +3,17 @@ package gui
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"code.rocketnine.space/tslocum/cview"
 	"github.com/gdamore/tcell/v2"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/idlephysicist/cave-logger/internal/model"
 	"github.com/idlephysicist/cave-logger/internal/register"
 )
+
+var titleCaser = cases.Title(language.English, nil)
 
 type panels struct {
 	currentPanel int
@@ -21,7 +24,7 @@ type resources struct {
 	trips     []*model.Log
 	people    []*model.Caver
 	locations []*model.Cave
-	//statsLocations []*model.Statistic
+	// statsLocations []*model.Statistic
 }
 
 type state struct {
@@ -43,7 +46,7 @@ type Gui struct {
 	pages *cview.Pages
 	state *state
 	reg   *register.Register
-	//statsLocations *statsLocations
+	// statsLocations *statsLocations
 }
 
 func New(reg *register.Register) *Gui {
@@ -144,7 +147,6 @@ func (g *Gui) caversPanel() *cavers {
 */
 
 func (g *Gui) initPanels() {
-
 	g.state.tabBar = newTabBar(g)
 
 	// Page definitions
@@ -167,11 +169,11 @@ func (g *Gui) initPanels() {
 
 	// Add pages to the "book"
 	g.pages.AddPage(`trips`, trips, true, true)
-	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[""] `, 0, 1, strings.Title(trips.name()))
+	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[""] `, 0, 1, titleCaser.String(trips.name()))
 	g.pages.AddPage(`cavers`, cavers, true, true)
-	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[""] `, 1, 2, strings.Title(cavers.name()))
+	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[""] `, 1, 2, titleCaser.String(cavers.name()))
 	g.pages.AddPage(`caves`, caves, true, true)
-	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[""] `, 2, 3, strings.Title(caves.name()))
+	fmt.Fprintf(g.state.tabBar, `  ["%d"]%d %s[""] `, 2, 3, titleCaser.String(caves.name()))
 
 	g.state.tabBar.Highlight("0")
 
@@ -255,7 +257,6 @@ func (g *Gui) warning(message, page string, labels []string, doneFunc func()) {
 	g.pages.AddAndSwitchToPage("modal", g.modal(modal, 80, 29), true)
 }
 
-//
 // Functions for returning the selected item in the table
 // REVIEW: There might be better ways of doing this.
 func (g *Gui) selectedTrip() *model.Log {

@@ -73,9 +73,7 @@ func (g *Gui) inspectCaver() {
 	g.displayInspect(g.formatPerson(caver), "cavers")
 }
 
-//
 // Formatting Functions
-//
 func (g *Gui) formatTrip(t *model.Log) string {
 	return fmt.Sprintf(inspectorFormat[`trips`], t.Date, t.Cave, t.Names, t.Notes)
 }
