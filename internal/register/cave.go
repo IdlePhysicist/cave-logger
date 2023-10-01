@@ -11,7 +11,7 @@ func (reg *Register) AddCave(name, region, country, notes string, srt bool) erro
 	params := []any{name, region, country, srt, notes}
 
 	_, err := reg.executeTx(query, params)
-	return err
+	return errorWrapper("addcave", err)
 }
 
 func (reg *Register) GetAllCaves() ([]*model.Cave, error) {
@@ -37,8 +37,7 @@ func (reg *Register) GetAllCaves() ([]*model.Cave, error) {
     ORDER BY name`
 	result, err := reg.db.Query(query)
 	if err != nil {
-		// reg.log.Errorf("reg.getcavelist: Failed to get caves", err)
-		return nil, err
+		return nil, errorWrapper("getallcaves", err)
 	}
 
 	caves := make([]*model.Cave, 0)
@@ -50,7 +49,7 @@ func (reg *Register) GetAllCaves() ([]*model.Cave, error) {
 
 		err = result.Scan(&c.ID, &c.Name, &c.Region, &c.Country, &c.SRT, &c.Visits, &lastVisit)
 		if err != nil {
-			reg.log.Errorf("Scan: %v", err)
+			return nil, errorWrapper("getallcaves", err)
 		}
 
 		if lastVisit.Valid {
@@ -60,10 +59,9 @@ func (reg *Register) GetAllCaves() ([]*model.Cave, error) {
 		caves = append(caves, &c)
 	}
 	if err = result.Err(); err != nil {
-		reg.log.Errorf("reg.get: Step error: %s", err)
-		return caves, err
+		return caves, errorWrapper("getallcaves", err)
 	}
-	return caves, err
+	return caves, nil
 }
 
 func (reg *Register) GetCave(id string) (*model.Cave, error) {
@@ -89,7 +87,7 @@ func (reg *Register) GetCave(id string) (*model.Cave, error) {
 
 	result, err := reg.db.Query(query, id)
 	if err != nil {
-		return nil, err
+		return nil, errorWrapper("getcave", err)
 	}
 	defer result.Close()
 
@@ -100,8 +98,7 @@ func (reg *Register) GetCave(id string) (*model.Cave, error) {
 	for result.Next() {
 		err = result.Scan(&cave.ID, &cave.Name, &cave.Region, &cave.Country, &cave.SRT, &cave.Visits, &lastVisit, &cave.Notes)
 		if err != nil {
-			reg.log.Error(err)
-			return nil, err
+			return nil, errorWrapper("getcave", err)
 		}
 
 		if lastVisit.Valid {
@@ -109,16 +106,15 @@ func (reg *Register) GetCave(id string) (*model.Cave, error) {
 		}
 	}
 	if err = result.Err(); err != nil {
-		reg.log.Errorf("reg.get: Step error: %s", err)
-		return nil, err
+		return nil, errorWrapper("getcave", err)
 	}
 
-	return &cave, err
+	return &cave, nil
 }
 
 func (reg *Register) RemoveCave(id string) error {
 	_, err := reg.executeTx(`DELETE FROM cave WHERE id = ?`, []any{id})
-	return err
+	return errorWrapper("removecave", err)
 }
 
 //
@@ -129,5 +125,5 @@ func (reg *Register) ModifyCave(id, name, region, country, notes string, srt boo
 	params := []any{name, region, country, srt, notes, id}
 
 	_, err := reg.executeTx(query, params)
-	return err
+	return errorWrapper("modifycave", err)
 }

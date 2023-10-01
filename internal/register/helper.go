@@ -2,6 +2,7 @@ package register
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 )
@@ -10,22 +11,22 @@ import (
 func (reg *Register) getCaveID(cave string) (int, error) {
 	result, err := reg.db.Query(`SELECT id FROM cave WHERE name == ?`, cave)
 	if err != nil {
-		return 0, err
+		return 0, errorWrapper("getcaveid", err)
 	}
 	defer result.Close()
 
 	var caveID int
 	for result.Next() {
 		if err = result.Scan(&caveID); err != nil {
-			return caveID, err
+			return caveID, errorWrapper("getcaveid", err)
 		}
 	}
 
 	// Check for errors from iterating over rows.
 	if err := result.Err(); err != nil {
-		return 0, err
+		return 0, errorWrapper("getcaveid", err)
 	}
-	return caveID, err
+	return caveID, nil
 }
 
 // For formatting the ids for a new
@@ -34,7 +35,7 @@ func (reg *Register) getCaverIDs(names string) ([]string, error) {
 
 	cavers, err := reg.GetAllCavers()
 	if err != nil {
-		return caverIDs, err
+		return caverIDs, errorWrapper("getcaverids", err)
 	}
 
 	namesList := strings.Split(names, ", ")
@@ -48,34 +49,32 @@ func (reg *Register) getCaverIDs(names string) ([]string, error) {
 	}
 
 	if len(caverIDs) != len(namesList) {
-		return caverIDs, errors.New(`≥1 unknown cavers`)
+		return caverIDs, errorWrapper("getcaverids", errors.New(`≥1 unknown cavers`))
 	}
 
 	return caverIDs, nil
 }
 
 func (reg *Register) verifyTrip(date, location, names, notes string) (
-	[]interface{}, []string, error,
+	[]any, []string, error,
 ) {
 	var peopleIDs []string
 
-	// Conv the date to unix time
+	// Conv the date to unix time REVIEW: do I need this now?
 	_, err := time.Parse(dateFormat, date)
 	if err != nil {
-		return []interface{}{}, peopleIDs, err
+		return []any{}, peopleIDs, err
 	}
 
 	locationID, err := reg.getCaveID(location)
 	if err != nil {
-		return []interface{}{}, peopleIDs, err
-	} else if locationID == 0 {
-		return []interface{}{}, peopleIDs, errors.New(`verifyTrip: Cave not known`)
+		return []any{}, peopleIDs, fmt.Errorf("verifyTrip: Cave not known - %w", err)
 	}
 
 	peopleIDs, err = reg.getCaverIDs(names)
 	if err != nil {
-		return []interface{}{}, peopleIDs, err
+		return []any{}, peopleIDs, err
 	}
 
-	return []interface{}{date, locationID, notes}, peopleIDs, nil
+	return []any{date, locationID, notes}, peopleIDs, nil
 }

@@ -11,7 +11,7 @@ func (reg *Register) AddCaver(name, club, notes string) error {
 	params := []any{name, club, notes}
 
 	_, err := reg.executeTx(query, params)
-	return err
+	return errorWrapper("addcaver", err)
 }
 
 func (reg *Register) GetAllCavers() ([]*model.Caver, error) {
@@ -38,8 +38,7 @@ func (reg *Register) GetAllCavers() ([]*model.Caver, error) {
 
 	result, err := reg.db.Query(query)
 	if err != nil {
-		// reg.log.Errorf("reg.getcaverlist: Failed to get cavers", err)
-		return nil, err
+		return nil, errorWrapper("getallcavers", err)
 	}
 
 	cavers := make([]*model.Caver, 0)
@@ -51,7 +50,7 @@ func (reg *Register) GetAllCavers() ([]*model.Caver, error) {
 
 		err = result.Scan(&c.ID, &c.Name, &c.Club, &c.Count, &lastTrip)
 		if err != nil {
-			reg.log.Errorf("Scan: %v", err)
+			return nil, errorWrapper("getallcavers", err)
 		}
 
 		if lastTrip.Valid {
@@ -61,10 +60,9 @@ func (reg *Register) GetAllCavers() ([]*model.Caver, error) {
 		cavers = append(cavers, &c)
 	}
 	if err = result.Err(); err != nil {
-		reg.log.Errorf("reg.get: Step error: %s", err)
-		return cavers, err
+		return cavers, errorWrapper("getallcavers", err)
 	}
-	return cavers, err
+	return cavers, nil
 }
 
 func (reg *Register) GetCaver(id string) (*model.Caver, error) {
@@ -90,34 +88,31 @@ func (reg *Register) GetCaver(id string) (*model.Caver, error) {
 
 	result, err := reg.db.Query(query, id)
 	if err != nil {
-		// reg.qg.Errorf("reg.prepare: Failed to query database", err)
-		return nil, err
+		return nil, errorWrapper("getcaver", err)
 	}
 	defer result.Close()
 
 	var (
-		caver    model.Caver
+		c        model.Caver
 		lastTrip sql.NullString
 	)
 	for result.Next() {
 
-		err = result.Scan(&caver.ID, &caver.Name, &caver.Club, &caver.Count, &lastTrip, &caver.Notes)
+		err = result.Scan(&c.ID, &c.Name, &c.Club, &c.Count, &lastTrip, &c.Notes)
 		if err != nil {
-			// reg.log.Errorf("reg.scan", err)
-			return nil, err
+			return nil, errorWrapper("getcaver", err)
 		}
 
 		if lastTrip.Valid {
-			caver.LastTrip = lastTrip.String
+			c.LastTrip = lastTrip.String
 		}
 
 	}
 	if err = result.Err(); err != nil {
-		reg.log.Errorf("reg.get: Step error: %s", err)
-		return nil, err
+		return nil, errorWrapper("getcaver", err)
 	}
 
-	return &caver, err
+	return &c, nil
 }
 
 func (reg *Register) ModifyCaver(id, name, club, notes string) error {
@@ -125,10 +120,10 @@ func (reg *Register) ModifyCaver(id, name, club, notes string) error {
 	params := []any{name, club, notes, id}
 
 	_, err := reg.executeTx(query, params)
-	return err
+	return errorWrapper("modifycaver", err)
 }
 
 func (reg *Register) RemoveCaver(id string) error {
 	_, err := reg.executeTx(`DELETE FROM caver WHERE id = ?`, []any{id})
-	return err
+	return errorWrapper("removecaver", err)
 }
