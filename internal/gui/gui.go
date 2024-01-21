@@ -12,6 +12,10 @@ import (
 	"github.com/idlephysicist/cave-logger/internal/register"
 )
 
+const minWidth int = 80
+
+var inMinSizeModal bool = false
+
 type panels struct {
 	currentPanel int
 	panel        []panel
@@ -190,6 +194,20 @@ func (g *Gui) initPanels() {
 	layout.AddItem(g.state.tabBar, 1, 1, false)
 	layout.AddItem(g.pages, 0, 16, true)
 	layout.AddItem(statusBar, 1, 1, false)
+
+	g.app.SetAfterResizeFunc(func(width, height int) {
+		if width < minWidth {
+			modal := cview.NewModal()
+			modal.SetText("Window too small")
+			inMinSizeModal = true
+			g.app.SetRoot(modal, true)
+			return
+		}
+		if inMinSizeModal && width > minWidth {
+			inMinSizeModal = false
+			g.app.SetRoot(layout, true)
+		}
+	})
 
 	g.app.SetRoot(layout, true)
 	g.goTo(`trips`)
