@@ -161,7 +161,8 @@ LOOP:
 	}
 }
 
-func (g *Gui) uniqueClubs(input []*model.Caver) []string {
+// getUniqueClubs de-dupes the input list, it does no sorting of the input/output.
+func getUniqueClubs(input []*model.Caver) []string {
 	keys := make(map[string]bool)
 	uniq := []string{}
 

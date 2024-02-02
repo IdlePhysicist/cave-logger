@@ -91,7 +91,7 @@ func (g *Gui) createTripForm() {
 		g.closeAndSwitchPanel("form", "trips")
 	})
 
-	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true) //.ShowPage("main")
+	g.pages.AddAndSwitchToPage("form", g.modal(form, 80, 29), true)
 	//REVIEW: main or trips ? ^^
 }
 
@@ -195,7 +195,7 @@ func (g *Gui) createPersonForm() {
 			return
 		}
 
-		for _, club := range g.uniqueClubs(g.state.resources.people) {
+		for _, club := range getUniqueClubs(g.state.resources.people) {
 			if strings.HasPrefix(strings.ToLower(club), strings.ToLower(current)) {
 				matches = append(matches, cview.NewListItem(club))
 			}
@@ -360,7 +360,7 @@ func (g *Gui) modifyPersonForm() {
 			return
 		}
 
-		for _, club := range g.uniqueClubs(g.state.resources.people) {
+		for _, club := range getUniqueClubs(g.state.resources.people) {
 			if strings.HasPrefix(strings.ToLower(club), strings.ToLower(current)) {
 				matches = append(matches, cview.NewListItem(club))
 			}
