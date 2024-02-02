@@ -27,16 +27,8 @@ func newCavers(g *Gui) *cavers {
 	cavers := &cavers{Table: t}
 	cavers.SetBorder(true)
 	cavers.setEntries(g)
-	cavers.setKeybinding(g)
-	return cavers
-}
 
-func (c *cavers) name() string {
-	return `cavers`
-}
-
-func (c *cavers) setKeybinding(g *Gui) {
-	c.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	cavers.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		g.setGlobalKeybinding(event)
 
 		switch event.Key() {
@@ -44,7 +36,7 @@ func (c *cavers) setKeybinding(g *Gui) {
 			g.state.navigate.update("detail")
 			g.inspectCaver()
 		case tcell.KeyCtrlR:
-			c.setEntries(g)
+			cavers.setEntries(g)
 		}
 
 		switch event.Rune() {
@@ -58,6 +50,11 @@ func (c *cavers) setKeybinding(g *Gui) {
 
 		return event
 	})
+	return cavers
+}
+
+func (c *cavers) name() string {
+	return `cavers`
 }
 
 func (c *cavers) setEntries(g *Gui) {

@@ -5,7 +5,6 @@ type panel interface {
 	entries(*Gui)
 	setEntries(*Gui)
 	updateEntries(*Gui)
-	setKeybinding(*Gui)
 	focus(*Gui)
 	unfocus()
 	setFilter(string, string, string)

@@ -26,16 +26,8 @@ func newTrips(g *Gui) *trips {
 	trips := &trips{Table: t}
 	trips.SetBorder(true)
 	trips.setEntries(g)
-	trips.setKeybinding(g)
-	return trips
-}
 
-func (t *trips) name() string {
-	return `trips`
-}
-
-func (t *trips) setKeybinding(g *Gui) {
-	t.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	trips.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		g.setGlobalKeybinding(event)
 
 		switch event.Key() {
@@ -43,7 +35,7 @@ func (t *trips) setKeybinding(g *Gui) {
 			g.state.navigate.update("detail")
 			g.inspectTrip()
 		case tcell.KeyCtrlR:
-			t.setEntries(g)
+			trips.setEntries(g)
 		}
 
 		switch event.Rune() {
@@ -57,6 +49,11 @@ func (t *trips) setKeybinding(g *Gui) {
 
 		return event
 	})
+	return trips
+}
+
+func (t *trips) name() string {
+	return `trips`
 }
 
 func (t *trips) entries(g *Gui) {
