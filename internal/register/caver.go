@@ -32,7 +32,8 @@ func (reg *Register) GetAllCavers() ([]*model.Caver, error) {
               AND trip.id == trip_group.tripid
               AND trip_group.caverid == caver.id
             ORDER BY trip.date DESC, trip.id DESC LIMIT 1
-        ) AS 'last_trip'
+        ) AS 'last_trip',
+        caver.notes AS 'notes'
     FROM caver
     ORDER BY name`
 
@@ -48,7 +49,7 @@ func (reg *Register) GetAllCavers() ([]*model.Caver, error) {
 			lastTrip sql.NullString
 		)
 
-		err = result.Scan(&c.ID, &c.Name, &c.Club, &c.Count, &lastTrip)
+		err = result.Scan(&c.ID, &c.Name, &c.Club, &c.Count, &lastTrip, &c.Notes)
 		if err != nil {
 			return nil, errorWrapper("getallcavers", err)
 		}
