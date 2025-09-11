@@ -48,6 +48,7 @@ func (g *Gui) inspectTrip() {
 		return
 	}
 
+	g.state.navigate.update("detail")
 	g.displayInspect(g.formatTrip(trip), "trips")
 }
 

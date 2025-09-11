@@ -293,3 +293,30 @@ func (g *Gui) selectedPerson() *model.Caver {
 
 	return g.state.resources.people[row-1]
 }
+
+func (g *Gui) displayTripStats() {
+	stats, err := g.reg.GetTripStats()
+	if err != nil {
+		return
+	}
+
+	t := cview.NewTable()
+	t.SetTitle(" Trips /year ")
+	t.SetTitleAlign(cview.AlignLeft)
+	t.SetBorder(true)
+	t.InsertColumn(2)
+	t.InsertRow(len(stats))
+	for i, s := range stats {
+		t.SetCellSimple(i, 0, s.Year)
+		t.SetCellSimple(i, 1, s.Count)
+	}
+	t.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEsc || event.Rune() == 'q' {
+			g.closeAndSwitchPanel("stats", "trips")
+		}
+		return event
+	})
+
+	g.state.navigate.update("stats")
+	g.pages.AddAndSwitchToPage("stats", t, true)
+}

@@ -104,6 +104,33 @@ func (reg *Register) GetTrip(id string) (*model.Log, error) {
 	return &trip, nil
 }
 
+func (reg *Register) GetTripStats() ([]model.TripStats, error) {
+	query := `
+	SELECT STRFTIME('%Y', date) AS year, COUNT(*) FROM trip GROUP BY year`
+
+	result, err := reg.db.Query(query)
+	if err != nil {
+		return nil, errorWrapper("gettripstats", err)
+	}
+	defer result.Close()
+
+	stats := make([]model.TripStats, 0)
+	for result.Next() {
+		var stat model.TripStats
+		err = result.Scan(&stat.Year, &stat.Count)
+		if err != nil {
+			return nil, errorWrapper("gettripstats", err)
+		}
+
+		stats = append(stats, stat)
+	}
+	if err = result.Err(); err != nil {
+		return nil, errorWrapper("gettripstats", err)
+	}
+
+	return stats, nil
+}
+
 func (reg *Register) ModifyTrip(id, date, location, names, notes string) error {
 	query := `UPDATE trip SET date = ?, caveid = ?, notes = ? WHERE id = ?`
 

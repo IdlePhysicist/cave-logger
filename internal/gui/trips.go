@@ -40,7 +40,6 @@ func (t *trips) setKeybinding(g *Gui) {
 
 		switch event.Key() {
 		case tcell.KeyEnter:
-			g.state.navigate.update("detail")
 			g.inspectTrip()
 		case tcell.KeyCtrlR:
 			t.setEntries(g)
@@ -53,6 +52,8 @@ func (t *trips) setKeybinding(g *Gui) {
 			g.modifyTripForm()
 		case 'd':
 			g.deleteTrip()
+		case 's':
+			g.displayTripStats()
 		}
 
 		return event

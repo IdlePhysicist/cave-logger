@@ -27,3 +27,8 @@ type Log struct {
 	Names string // `, ` sep
 	Notes string
 }
+
+type TripStats struct {
+	Year  string
+	Count string
+}
